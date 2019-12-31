@@ -1,0 +1,72 @@
+/*
+ * Copyright (C) 2019 Intel Corporation
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+package postgres
+
+import (
+	"intel/isecl/sgx-host-verification-service/types"
+	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
+)
+
+type PostgresHostSgxDataRepository struct {
+	db *gorm.DB
+}
+
+func (r *PostgresHostSgxDataRepository) Create(h types.HostSgxData) (*types.HostSgxData, error) {
+	log.Trace("repository/postgres/pg_host_sgx_data: Create() Entering")
+	defer log.Trace("repository/postgres/pg_host_sgx_data: Create() Leaving")
+
+	err := r.db.Create(&h).Error
+	return &h, errors.Wrap(err, "Create: failed to create HostSgxData")
+}
+
+func (r *PostgresHostSgxDataRepository) Retrieve(h types.HostSgxData) (*types.HostSgxData, error) {
+	log.Trace("repository/postgres/pg_host_sgx_data: Retrieve() Entering")
+	defer log.Trace("repository/postgres/pg_host_sgx_data: Retrieve() Leaving")
+
+	var p types.HostSgxData
+	slog.WithField("HostSgxData", h).Debug("Retrieve Call")
+	err := r.db.Where(&h).First(&p).Error
+	if err != nil {
+		log.Trace("Error in fetch records Entering")
+		return nil, errors.Wrap(err, "Retrieve: failed to Retrieve HostSgxData")
+	}
+	return &p, nil
+}
+
+func (r *PostgresHostSgxDataRepository) RetrieveAll(h types.HostSgxData) (types.HostsSgxData, error) {
+	log.Trace("repository/postgres/pg_host_sgx_data: RetrieveAll() Entering")
+	defer log.Trace("repository/postgres/pg_host_sgx_data: RetrieveAll() Leaving")
+
+	var hs types.HostsSgxData
+	err := r.db.Where(&h).Find(&hs).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "RetrieveAll: failed to RetrieveAll HostSgxData")
+	}
+
+	slog.WithField("db hs", hs).Trace("RetrieveAll")
+	return hs, errors.Wrap(err, "RetrieveAll: failed to RetrieveAll HostSgxData")
+}
+
+func (r *PostgresHostSgxDataRepository) Update(h types.HostSgxData) error {
+	log.Trace("repository/postgres/pg_host_sgx_data: Update() Entering")
+	defer log.Trace("repository/postgres/pg_host_sgx_data: Update() Leaving")
+
+	if err := r.db.Save(&h).Error; err != nil {
+		return errors.Wrap(err, "Update: failed to update HostSgxData")
+	}
+	return nil
+}
+
+func (r *PostgresHostSgxDataRepository) Delete(h types.HostSgxData) error {
+	log.Trace("repository/postgres/pg_host_sgx_data: Delete() Entering")
+	defer log.Trace("repository/postgres/pg_host_sgx_data: Delete() Leaving")
+
+	if err := r.db.Delete(&h).Error; err != nil {
+		return errors.Wrap(err, "Delete: failed to delete HostSgxData")
+	}
+	return nil
+}
+
