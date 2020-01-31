@@ -5,48 +5,48 @@
 package main
 
 import (
-	"io"
-	"os"
-	"fmt"
+	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"flag"
-	"time"
+	"fmt"
+	"io"
+	"io/ioutil"
+	stdlog "log"
+	"net/http"
+	"os"
+	"os/exec"
+	"os/signal"
 	"path"
 	"strings"
 	"syscall"
-	"context"
-	"os/exec"
-	"net/http"
-	"os/signal"
-	"io/ioutil"
-	"crypto/tls"
-	stdlog "log"
-	"crypto/x509"
-	"crypto/x509/pkix"
+	"time"
 
-	"intel/isecl/sgx-host-verification-service/tasks"
+	"intel/isecl/lib/common/middleware"
 	"intel/isecl/sgx-host-verification-service/config"
-	"intel/isecl/sgx-host-verification-service/version"
-	"intel/isecl/sgx-host-verification-service/resource"
 	"intel/isecl/sgx-host-verification-service/constants"
 	"intel/isecl/sgx-host-verification-service/repository"
-	"intel/isecl/sgx-host-verification-service/resource/scheduler"
 	"intel/isecl/sgx-host-verification-service/repository/postgres"
+	"intel/isecl/sgx-host-verification-service/resource"
+	"intel/isecl/sgx-host-verification-service/resource/scheduler"
+	"intel/isecl/sgx-host-verification-service/tasks"
+	"intel/isecl/sgx-host-verification-service/version"
 
 	"intel/isecl/lib/common/crypt"
-	"intel/isecl/lib/common/setup"
 	e "intel/isecl/lib/common/exec"
-	cos "intel/isecl/lib/common/os"
-	"intel/isecl/lib/common/validation"
 	commLog "intel/isecl/lib/common/log"
 	commLogInt "intel/isecl/lib/common/log/setup"
+	cos "intel/isecl/lib/common/os"
+	"intel/isecl/lib/common/setup"
+	"intel/isecl/lib/common/validation"
 
-	"github.com/pkg/errors"
-	"github.com/gorilla/mux"
 	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 
 	// Import driver for GORM
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-
 )
 
 type App struct {
@@ -197,20 +197,20 @@ var secLogFile *os.File
 var defaultLogFile *os.File
 
 func (a *App) configureLogs(isStdOut bool, isFileOut bool) {
-        var ioWriterDefault io.Writer
-        ioWriterDefault = defaultLogFile
-        if isStdOut && isFileOut {
-                ioWriterDefault = io.MultiWriter(os.Stdout, defaultLogFile)
-        } else if isStdOut && !isFileOut {
-                ioWriterDefault = os.Stdout
-        }
+	var ioWriterDefault io.Writer
+	ioWriterDefault = defaultLogFile
+	if isStdOut && isFileOut {
+		ioWriterDefault = io.MultiWriter(os.Stdout, defaultLogFile)
+	} else if isStdOut && !isFileOut {
+		ioWriterDefault = os.Stdout
+	}
 
-        ioWriterSecurity := io.MultiWriter(ioWriterDefault, secLogFile)
-        commLogInt.SetLogger(commLog.DefaultLoggerName, a.configuration().LogLevel, nil, ioWriterDefault, false)
-        commLogInt.SetLogger(commLog.SecurityLoggerName, a.configuration().LogLevel, nil, ioWriterSecurity, false)
+	ioWriterSecurity := io.MultiWriter(ioWriterDefault, secLogFile)
+	commLogInt.SetLogger(commLog.DefaultLoggerName, a.configuration().LogLevel, nil, ioWriterDefault, false)
+	commLogInt.SetLogger(commLog.SecurityLoggerName, a.configuration().LogLevel, nil, ioWriterSecurity, false)
 
-        slog.Trace("sec log initiated")
-        log.Trace("loggers setup finished")
+	slog.Trace("sec log initiated")
+	log.Trace("loggers setup finished")
 }
 
 func (a *App) Run(args []string) error {
@@ -220,17 +220,16 @@ func (a *App) Run(args []string) error {
 		os.Exit(1)
 	}
 
-
 	var err error
 	secLogFile, err = os.OpenFile(constants.SecurityLogFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0755)
 	if err != nil {
-		log.Errorf("Could not open Security log file"+ err.Error())
+		log.Errorf("Could not open Security log file" + err.Error())
 		return err
 	}
 	os.Chmod(constants.SecurityLogFile, 0664)
 	defaultLogFile, err = os.OpenFile(constants.LogFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0755)
 	if err != nil {
-		log.Errorf("Could not open default log file"+ err.Error())
+		log.Errorf("Could not open default log file" + err.Error())
 		return err
 	}
 	os.Chmod(constants.LogFile, 0664)
@@ -325,10 +324,10 @@ func (a *App) Run(args []string) error {
 
 		a.Config = config.Global()
 		err = a.Config.SaveConfiguration(context)
-                if err != nil {
-                        fmt.Println("Error saving configuration: " + err.Error())
-		        return errors.New("Configuration save ends with error")
-                }
+		if err != nil {
+			fmt.Println("Error saving configuration: " + err.Error())
+			return errors.New("Configuration save ends with error")
+		}
 
 		task := strings.ToLower(args[2])
 		flags := args[3:]
@@ -390,12 +389,16 @@ func (a *App) Run(args []string) error {
 					Config:        a.configuration(),
 					ConsoleWriter: os.Stdout,
 				},
- 				tasks.Root_Ca{
-                                        Flags:            flags,
-                                        ConsoleWriter:    os.Stdout,
-                                        Config:           a.configuration(),
-                                },
-
+				tasks.JWT{
+					Flags:         flags,
+					Config:        a.configuration(),
+					ConsoleWriter: os.Stdout,
+				},
+				tasks.Root_Ca{
+					Flags:         flags,
+					ConsoleWriter: os.Stdout,
+					Config:        a.configuration(),
+				},
 			},
 			AskInput: false,
 		}
@@ -408,7 +411,7 @@ func (a *App) Run(args []string) error {
 		if err != nil {
 			fmt.Println("Error running setup: ", err)
 			return errors.Wrap(err, "app:Run() Error running setup")
-	        }
+		}
 	}
 	return nil
 }
@@ -417,51 +420,51 @@ func (a *App) retrieveJWTSigningCerts() error {
 	log.Trace("app:retrieveJWTSigningCerts() Entering")
 	defer log.Trace("app:retrieveJWTSigningCerts() Leaving")
 
-        c := a.configuration()
-        log.WithField("AuthServiceUrl", c.AuthServiceUrl).Debug("URL dump")
-        url := c.AuthServiceUrl + "noauth/jwt-certificates"
-        req, _ := http.NewRequest("GET", url, nil)
-        req.Header.Add("accept", "application/x-pem-file")
-        rootCaCertPems, err := cos.GetDirFileContents(constants.RootCADirPath, "*.pem" )
-        if err != nil {
-                return err
-        }
+	c := a.configuration()
+	log.WithField("AuthServiceUrl", c.AuthServiceUrl).Debug("URL dump")
+	url := c.AuthServiceUrl + "noauth/jwt-certificates"
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("accept", "application/x-pem-file")
+	rootCaCertPems, err := cos.GetDirFileContents(constants.RootCADirPath, "*.pem")
+	if err != nil {
+		return err
+	}
 
-        // Get the SystemCertPool, continue with an empty pool on error
-        rootCAs, _ := x509.SystemCertPool()
-        if rootCAs == nil {
-                rootCAs = x509.NewCertPool()
-        }
-        for _, rootCACert := range rootCaCertPems{
-                if ok := rootCAs.AppendCertsFromPEM(rootCACert); !ok {
-                        return err
-                }
-        }
+	// Get the SystemCertPool, continue with an empty pool on error
+	rootCAs, _ := x509.SystemCertPool()
+	if rootCAs == nil {
+		rootCAs = x509.NewCertPool()
+	}
+	for _, rootCACert := range rootCaCertPems {
+		if ok := rootCAs.AppendCertsFromPEM(rootCACert); !ok {
+			return err
+		}
+	}
 
-        httpClient := &http.Client{
-                                Transport: &http.Transport{
-                                        TLSClientConfig: &tls.Config{
-                                                InsecureSkipVerify: false,
-                                                RootCAs: rootCAs,
-                                                },
-                                        },
-                                }
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: false,
+				RootCAs:            rootCAs,
+			},
+		},
+	}
 
-        res, err := httpClient.Do(req)
-        if err != nil {
-        	log.WithError(err).Debug("Could not retrieve jwt certificate")
-                return fmt.Errorf("Could not retrieve jwt certificate")
-        }
-        defer res.Body.Close()
-        body, _ := ioutil.ReadAll(res.Body)
-        err = crypt.SavePemCertWithShortSha1FileName(body, constants.TrustedJWTSigningCertsDir)
-        if err != nil {
-                fmt.Println("Could not store Certificate")
-                return fmt.Errorf("Certificate setup: %v", err)
-        }
+	res, err := httpClient.Do(req)
+	if err != nil {
+		log.WithError(err).Debug("Could not retrieve jwt certificate")
+		return fmt.Errorf("Could not retrieve jwt certificate")
+	}
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+	err = crypt.SavePemCertWithShortSha1FileName(body, constants.TrustedJWTSigningCertsDir)
+	if err != nil {
+		fmt.Println("Could not store Certificate")
+		return fmt.Errorf("Certificate setup: %v", err)
+	}
 
-        log.WithField("Retrieve JWT cert", "compledted").Debug("successfully")
-        return nil
+	log.WithField("Retrieve JWT cert", "compledted").Debug("successfully")
+	return nil
 }
 
 func (a *App) startServer() error {
@@ -490,13 +493,14 @@ func (a *App) startServer() error {
 	// Create public routes that does not need any authentication
 	r := mux.NewRouter()
 
-        sr := r.PathPrefix("/sgx-hvs/v1/").Subrouter()
-        func(setters ...func(*mux.Router, repository.SHVSDatabase)) {
-                for _, setter := range setters {
-                        setter(sr, shvsDB)
-                }
-        }(resource.SGXHostRegisterOps)
-
+	sr := r.PathPrefix("/sgx-hvs/v1/").Subrouter()
+	var cacheTime, _ = time.ParseDuration(constants.JWTCertsCacheTime)
+	sr.Use(middleware.NewTokenAuth(constants.TrustedJWTSigningCertsDir, constants.TrustedCAsStoreDir, fnGetJwtCerts, cacheTime))
+	func(setters ...func(*mux.Router, repository.SHVSDatabase)) {
+		for _, setter := range setters {
+			setter(sr, shvsDB)
+		}
+	}(resource.SGXHostRegisterOps)
 
 	tlsconfig := &tls.Config{
 		MinVersion: tls.VersionTLS12,
@@ -506,10 +510,8 @@ func (a *App) startServer() error {
 			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256},
 	}
 
-
-	scheduler.StartWorkqueueScheduler(c.SchedulerTimer+60)
+	scheduler.StartWorkqueueScheduler(c.SchedulerTimer + 60)
 	scheduler.StartSHVSScheduler(shvsDB, c.SchedulerTimer)
-
 
 	// Setup signal handlers to gracefully handle termination
 	stop := make(chan os.Signal)
@@ -670,7 +672,7 @@ func validateSetupArgs(cmd string, args []string) error {
 		return nil
 
 	case "download_cert":
-	     return nil
+		return nil
 
 	case "database":
 		env_names_cmd_opts := map[string]string{
@@ -761,22 +763,22 @@ func validateSetupArgs(cmd string, args []string) error {
 
 	return nil
 }
-func (a* App) PrintDirFileContents(dir string) error {
+func (a *App) PrintDirFileContents(dir string) error {
 	log.Trace("app:PrintDirFileContents() Entering")
 	defer log.Trace("app:PrintDirFileContents() Leaving")
 
-        if dir == "" {
-                return fmt.Errorf("PrintDirFileContents needs a directory path to look for files")
-        }
-        data, err := cos.GetDirFileContents(dir, "")
-        if err != nil {
-                return err
-        }
-        for i, fileData := range data {
-                fmt.Println("File :", i)
-                fmt.Printf("%s",fileData)
-        }
-        return nil
+	if dir == "" {
+		return fmt.Errorf("PrintDirFileContents needs a directory path to look for files")
+	}
+	data, err := cos.GetDirFileContents(dir, "")
+	if err != nil {
+		return err
+	}
+	for i, fileData := range data {
+		fmt.Println("File :", i)
+		fmt.Printf("%s", fileData)
+	}
+	return nil
 }
 
 func (a *App) DatabaseFactory() (repository.SHVSDatabase, error) {
@@ -790,4 +792,11 @@ func (a *App) DatabaseFactory() (repository.SHVSDatabase, error) {
 		return nil, err
 	}
 	return p, nil
+}
+
+//To be implemented if JWT certificate is needed from any other services
+func fnGetJwtCerts() error {
+	log.Trace("resource/service:fnGetJwtCerts() Entering")
+	defer log.Trace("resource/service:fnGetJwtCerts() Leaving")
+	return nil
 }
