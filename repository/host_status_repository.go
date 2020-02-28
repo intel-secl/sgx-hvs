@@ -6,7 +6,6 @@ package repository
 
 import (
 	"intel/isecl/sgx-host-verification-service/types"
-	"time"
 )
 
 type HostStatusRepository interface {

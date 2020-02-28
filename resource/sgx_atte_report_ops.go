@@ -575,12 +575,18 @@ func GetLatestTCBInfoCB(workerId int, jobData interface{}) error {
 		return errors.Wrap(errors.New("GetLatestTCBInfoCB:"), "Error in getting host record as it is null")
 	}
 
-	_, err = FetchLatestTCBInfoFromSCS(db, hostPlatformData)
-	if err != nil {
-		log.Error("GetLatestTCBInfoCB: Fetch TCB Info From SCS ends with Error:" + err.Error())
+	flag, err := FetchLatestTCBInfoFromSCS(db, hostPlatformData)
+
+	if flag == false && err != nil {
+		log.Error("GetSGXDataFromAgentCB: Fetch Sgx Data From Agent ends with Error:" + err.Error())
 		err := UpdateHostStatus(hostId, db, constants.HostStatusProcessError)
 		if err != nil {
-			return errors.New("GetLatestTCBInfoCB: Error while Updating Host Status Information: " + err.Error())
+			return errors.New("GetSGXDataFromAgentCB: Error while Updating Host Status Information: " + err.Error())
+		}
+	} else if flag == true {
+		err = UpdateHostStatus(hostId, db, constants.HostStatusTCBSCSStatusQueued)
+		if err != nil {
+			return errors.New("GetSGXDataFromAgentCB: Error while Updating Host Status Information: " + err.Error())
 		}
 	}
 

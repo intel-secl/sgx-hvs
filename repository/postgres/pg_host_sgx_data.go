@@ -51,14 +51,14 @@ func (r *PostgresHostSgxDataRepository) RetrieveAll(h types.HostSgxData) (types.
 	return hs, errors.Wrap(err, "RetrieveAll: failed to RetrieveAll HostSgxData")
 }
 
-func (r *PostgresHostSgxDataRepository) GetPlatformData(updatedTime time.Time) (types.HostsSgxData, error) {
+func (r *PostgresHostSgxDataRepository) GetPlatformData(timeIntervalFilter time.Time) (types.HostsSgxData, error) {
 	log.Trace("repository/postgres/pg_host_sgx_data: RetrieveByHostId() Entering")
 	defer log.Trace("repository/postgres/pg_host_sgx_data: RetrieveByHostId() Leaving")
 
 	var hs types.HostsSgxData
 	cols := "host_sgx_data.host_id, host_sgx_data.sgx_supported, host_sgx_data.sgx_enabled, host_sgx_data.flc_enabled, host_sgx_data.epc_size, host_sgx_data.tcb_uptodate"
 
-	tx := r.db.Joins("INNER JOIN host_statuses on host_statuses.host_id = host_sgx_data.host_id").Where("status = 'CONNECTED' AND updated_time >= (?)", updatedTime)
+	tx := r.db.Joins("INNER JOIN host_statuses on host_statuses.host_id = host_sgx_data.host_id").Where("status = 'CONNECTED' AND updated_time >= (?)", timeIntervalFilter)
 	tx = tx.Select(cols)
 	err := tx.Find(&hs).Error
 	if err != nil {
