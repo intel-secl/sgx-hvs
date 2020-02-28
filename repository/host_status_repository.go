@@ -4,7 +4,10 @@
  */
 package repository
 
-import "intel/isecl/sgx-host-verification-service/types"
+import (
+	"intel/isecl/sgx-host-verification-service/types"
+	"time"
+)
 
 type HostStatusRepository interface {
 	Create(types.HostStatus) (*types.HostStatus, error)
@@ -14,4 +17,5 @@ type HostStatusRepository interface {
 	Update(types.HostStatus) error
 	Delete(types.HostStatus) error
 	GetHostStateInfo() (types.HostsStatus, error)
+	RetrieveExpiredHosts() (types.HostsStatus, error)
 }

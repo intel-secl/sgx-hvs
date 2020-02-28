@@ -509,8 +509,8 @@ func (a *App) startServer() error {
 			tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
 			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256},
 	}
-
 	scheduler.StartWorkqueueScheduler(c.SchedulerTimer + 60)
+	scheduler.StartAutoRefreshSchedular(shvsDB, c.SHVSRefreshTimer)
 	scheduler.StartSHVSScheduler(shvsDB, c.SchedulerTimer)
 
 	// Setup signal handlers to gracefully handle termination

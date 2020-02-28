@@ -5,9 +5,9 @@
 package postgres
 
 import (
-	"intel/isecl/sgx-host-verification-service/types"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"intel/isecl/sgx-host-verification-service/types"
 )
 
 type PostgresHostRepository struct {
@@ -50,6 +50,38 @@ func (r *PostgresHostRepository) RetrieveAll(h types.Host) (types.Hosts, error) 
 	return hs, errors.Wrap(err, "RetrieveAll: failed to RetrieveAll Host")
 }
 
+func (r *PostgresHostRepository) GetHostQuery(queryData *types.Host) (types.Hosts, error) {
+	log.Trace("repository/postgres/pg_host: GetHostQuery() Entering")
+	defer log.Trace("repository/postgres/pg_host: GetHostQuery() Leaving")
+
+	var hrs types.Hosts
+	tx := buildHostSearchQuery(r.db, queryData)
+	if tx == nil {
+		return hrs, errors.New("Unexpected Error. Could not build a gorm query object in Hosts RetrieveAll function.")
+	}
+	if err := tx.Find(&hrs).Error; err != nil {
+		return hrs, errors.Wrap(err, "hosts retrieve all: failed")
+	}
+	return hrs, nil
+}
+
+func buildHostSearchQuery(tx *gorm.DB, rs *types.Host) *gorm.DB {
+	log.Trace("host buildHostSearchQuery")
+	defer log.Trace("host buildHostSearchQuery done")
+
+	if tx == nil {
+		return nil
+	}
+
+	if len(rs.HardwareUUID) != 0 {
+		tx = tx.Where("hardware_uuid = (?)", rs.HardwareUUID)
+	}
+	if len(rs.Name) != 0 {
+		tx = tx.Where("Name = (?)", rs.Name)
+	}
+	return tx
+}
+
 func (r *PostgresHostRepository) Update(h types.Host) error {
 	log.Trace("repository/postgres/pg_host: Update() Entering")
 	defer log.Trace("repository/postgres/pg_host: Update() Leaving")
@@ -69,4 +101,3 @@ func (r *PostgresHostRepository) Delete(h types.Host) error {
 	}
 	return nil
 }
-

@@ -43,12 +43,14 @@ type Configuration struct {
 		IncludeKid        bool
 		TokenDurationMins int
 	}
-	CMSBaseUrl     string
-	AuthServiceUrl string
-	ScsBaseUrl     string
-	BearerToken    string
-	SchedulerTimer int
-	Subject        struct {
+	CMSBaseUrl             string
+	AuthServiceUrl         string
+	ScsBaseUrl             string
+	BearerToken            string
+	SchedulerTimer         int
+	SHVSRefreshTimer       int
+	SHVSHostInfoExpiryTime int
+	Subject                struct {
 		TLSCertCommonName string
 		Organization      string
 		Country           string
@@ -174,8 +176,22 @@ func (conf *Configuration) SaveConfiguration(c setup.Context) error {
 	} else if conf.SchedulerTimer == 0 {
 		conf.SchedulerTimer = constants.DefaultSHVSSchedulerTimer
 	}
-	return conf.Save()
 
+	autoRefreshTimeout, err := c.GetenvInt("SHVS_AUTO_REFRESH_TIMER", "SHVS autoRefresh Timeout Seconds")
+	if err == nil && autoRefreshTimeout != 0 {
+		conf.SHVSRefreshTimer = autoRefreshTimeout
+	} else if conf.SHVSRefreshTimer == 0 {
+		conf.SHVSRefreshTimer = constants.DefaultSHVSAutoRefreshTimer
+	}
+
+	hostPlatformInfoexpiryTime, err := c.GetenvInt("SHVS_HOST_PLATFORM_EXPIRY_TIME", "SHVS autoRefresh Timeout Seconds")
+	if err == nil && hostPlatformInfoexpiryTime != 0 {
+		conf.SHVSHostInfoExpiryTime = hostPlatformInfoexpiryTime
+	} else if conf.SHVSHostInfoExpiryTime == 0 {
+		conf.SHVSHostInfoExpiryTime = constants.DefaultSHVSHostInfoExpiryTime
+	}
+
+	return conf.Save()
 }
 
 func Load(path string) *Configuration {

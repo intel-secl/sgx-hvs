@@ -5,9 +5,10 @@
 package postgres
 
 import (
-	"intel/isecl/sgx-host-verification-service/types"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"intel/isecl/sgx-host-verification-service/types"
+	"time"
 )
 
 type PostgresHostStatusRepository struct {
@@ -64,6 +65,20 @@ func (r *PostgresHostStatusRepository) RetrieveAllQueues(status []string) (types
 	return hs, errors.Wrap(err, "RetrieveAll: failed to RetrieveAll HostStatus")
 }
 
+func (r *PostgresHostStatusRepository) RetrieveExpiredHosts() (types.HostsStatus, error) {
+	log.Trace("repository/postgres/pg_host_status: RetrieveExpiredHosts() Entering")
+	defer log.Trace("repository/postgres/pg_host_status: RetrieveExpiredHosts() Leaving")
+
+	var hs types.HostsStatus
+	var current_time = time.Now()
+	err := r.db.Where("(expiry_time < (?) and STATUS in ('CONNECTED')) OR (STATUS in ('AGENT-CONNECTION-FAILURE','SCS-CONNECTION-FAILURE', 'TCBStatus-SCS-CONNECTION-FAILURE', 'PROCESSING-ERROR', 'UNKNOWN', 'UNSUPPORTED_SGX'))", current_time).Find(&hs).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "RetrieveExpiredHosts: failed to RetrieveAll HostStatus")
+	}
+
+	slog.WithField("db hs", hs).Debug("RetrieveExpiredHosts")
+	return hs, errors.Wrap(err, "RetrieveExpiredHosts: failed to Retrieve ExpiredHosts id")
+}
 
 func (r *PostgresHostStatusRepository) Update(h types.HostStatus) error {
 	log.Trace("repository/postgres/pg_host_status: Update() Entering")
@@ -85,19 +100,19 @@ func (r *PostgresHostStatusRepository) Delete(h types.HostStatus) error {
 	return nil
 }
 
-func (r *PostgresHostStatusRepository) GetHostStateInfo() ( types.HostsStatus, error) {
-        log.Trace("repository/postgres/pg_host_status: GetHostStatusQuary() Entering")
-        defer log.Trace("repository/postgres/pg_host_status: GetHostStatusQuary() Leaving")
+func (r *PostgresHostStatusRepository) GetHostStateInfo() (types.HostsStatus, error) {
+	log.Trace("repository/postgres/pg_host_status: GetHostStatusQuary() Entering")
+	defer log.Trace("repository/postgres/pg_host_status: GetHostStatusQuary() Leaving")
 
-        var hs types.HostsStatus
+	var hs types.HostsStatus
 
-        query := `SELECT *FROM host_statuses WHERE host_id IN (SELECT Id FROM hosts WHERE deleted='f')`
+	query := `SELECT *FROM host_statuses WHERE host_id IN (SELECT Id FROM hosts WHERE deleted='f')`
 
-        log.Debug("query:",query)
+	log.Debug("query:", query)
 
-        r.db.Raw(query).Scan(&hs)
-        if len(hs) == 0 {
-                return nil, errors.New("Could not find reports in Database")
-        }
-        return hs, nil
+	r.db.Raw(query).Scan(&hs)
+	if len(hs) == 0 {
+		return nil, errors.New("Could not find reports in Database")
+	}
+	return hs, nil
 }

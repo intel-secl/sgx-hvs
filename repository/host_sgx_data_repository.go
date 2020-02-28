@@ -4,7 +4,10 @@
  */
 package repository
 
-import "intel/isecl/sgx-host-verification-service/types"
+import (
+	"intel/isecl/sgx-host-verification-service/types"
+	"time"
+)
 
 type HostSgxDataRepository interface {
 	Create(types.HostSgxData) (*types.HostSgxData, error)
@@ -12,4 +15,5 @@ type HostSgxDataRepository interface {
 	RetrieveAll(user types.HostSgxData) (types.HostsSgxData, error)
 	Update(types.HostSgxData) error
 	Delete(types.HostSgxData) error
+	GetPlatformData(updatedTime time.Time) (types.HostsSgxData, error)
 }

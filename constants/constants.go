@@ -44,6 +44,8 @@ const (
 	DefaultSHVSCertProvince        = "SF"
 	DefaultSHVSCertLocality        = "SC"
 	DefaultSHVSSchedulerTimer      = 60
+	DefaultSHVSAutoRefreshTimer    = 120
+	DefaultSHVSHostInfoExpiryTime  = 240
 	DefaultJwtValidateCacheKeyMins = 60
 	UUID                           = "uuid"
 	Description                    = "description"
@@ -58,14 +60,19 @@ const (
 	HostStatusSCSQueued            = "SCS-QUEUE"
 	HostStatusSCSRetry             = "SCS-RETRY"
 	HostStatusSCSProcessing        = "SCS-PROCESSING"
+	HostStatusTCBSCSStatusQueued   = "TCBStatus-SCS-QUEUED"
+	HostStatusSCSTCBProcessing     = "SCS_TCB-PROCESSING"
+	HostStatusTCBSCSRetry          = "SCS_TCB-RETRY"
 	HostStatusAgentConnFailure     = "AGENT-CONNECTION-FAILURE"
 	HostStatusSCSConnFailure       = "SCS-CONNECTION-FAILURE"
+	HostStatusTCBSCSConnFailure    = "TCBStatus-SCS-CONNECTION-FAILURE"
 	HostStatusProcessError         = "PROCESSING-ERROR"
 	HostStatusUnknown              = "UNKNOWN"
 	HostStatusConnected            = "CONNECTED"
 	HostStatusRemoved              = "REMOVED"
 	HostStatusUnsupportedSGX       = "UNSUPPORTED_SGX"
-	MaxRetryConnection             = 5
+
+	MaxRetryConnection = 5
 )
 
 // State represents whether or not a daemon is running or not
