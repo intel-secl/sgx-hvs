@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	"strconv"
 
 	"intel/isecl/lib/common/validation"
 	"intel/isecl/sgx-host-verification-service/constants"
@@ -146,7 +147,6 @@ func QueryHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
 		w.Write(js)
-
 		log.Debug("QueryHosts leaving")
 		return nil
 	}
@@ -157,24 +157,48 @@ func GetPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 		log.Debug("GetPaltformDataCB entering")
 
 		log.Debug("query", r.URL.Query())
-		numberOfMinutes := r.URL.Query().Get("numberOfMinutes")
-
-		if numberOfMinutes != "" {
-			if !ValidateInputString(constants.HostName, numberOfMinutes) {
-				return &resourceError{Message: "GetPaltformDataCB : Invalid query Param Data",
+		var platformData types.HostsSgxData
+		hostName := r.URL.Query().Get("HostName")
+		if hostName != "" {
+			if !ValidateInputString(constants.HostName, hostName) {
+				return &resourceError{Message: "QueryHostsCB: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
 			}
-		}
+			rs := types.Host{Name: hostName}
+			///Get hosts data with the given hostname
+			hostData, err := db.HostRepository().Retrieve(rs)
+			if err != nil {
+				log.WithError(err).WithField("HostName", hostName).Info("failed to retrieve hosts")
+				return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
+			}
+			rs1 := types.HostSgxData{HostId: hostData.Id}
+			platformData, err = db.HostSgxDataRepository().RetrieveAll(rs1)
+			if err != nil {
+				log.WithError(err).WithField("HostName", hostName).Info("failed to retrieve host data")
+				return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
+			}
 
-		///Get all the hosts from host_statuses who are updated recently and status="CONNECTED"
-		m, _ := time.ParseDuration(numberOfMinutes + "m")
+		} else {
+			numberOfMinutes := r.URL.Query().Get("numberOfMinutes")
+			if numberOfMinutes != "" {
+				_, err := strconv.Atoi(numberOfMinutes)
+				if err != nil {
+					log.Info("error came: ", err)
+					return &resourceError{Message: "GetPaltformDataCB : Invalid query Param Data",
+						StatusCode: http.StatusBadRequest}
+				}
+			}
+			///Get all the hosts from host_statuses who are updated recently and status="CONNECTED"
+			m, _ := time.ParseDuration(numberOfMinutes + "m")
 
-		updatedTime := time.Now().Add(time.Duration((-m)))
+			updatedTime := time.Now().Add(time.Duration((-m)))
 
-		platformData, err := db.HostSgxDataRepository().GetPlatformData(updatedTime)
-		if err != nil {
-			log.WithError(err).WithField("numberOfMinutes", updatedTime).Info("failed to retrieve updated hosts")
-			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
+			var err error
+			platformData, err = db.HostSgxDataRepository().GetPlatformData(updatedTime)
+			if err != nil {
+				log.WithError(err).WithField("numberOfMinutes", updatedTime).Info("failed to retrieve updated hosts")
+				return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
+			}
 		}
 		log.Info("platformData: ", platformData)
 		if len(platformData) == 0 {
@@ -184,7 +208,6 @@ func GetPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK) // HTTP 200
-		//js, err := json.Marshal(fmt.Sprintf("%s", platformData))
 		js, err := json.Marshal(platformData)
 		if err != nil {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
