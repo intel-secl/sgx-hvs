@@ -5,7 +5,7 @@
 package tasks
 
 import (
-	"intel/isecl/lib/common/setup"
+	"intel/isecl/lib/common/v2/setup"
 	"intel/isecl/sgx-host-verification-service/config"
 	"os"
 

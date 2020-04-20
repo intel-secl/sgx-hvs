@@ -4,7 +4,10 @@
  */
 package constants
 
-import "crypto"
+import (
+	"crypto"
+	"time"
+)
 
 const (
 	HomeDir                        = "/opt/sgx-host-verification-service/"
@@ -17,16 +20,13 @@ const (
 	SecurityLogFile                = LogDir + "sgx-host-verification-service-security.log"
 	HTTPLogFile                    = LogDir + "http.log"
 	ConfigFile                     = "config.yml"
-	TLSCertFile                    = "cert.pem"
-	JWTCertsCacheTime              = "1m"
-	TLSKeyFile                     = "key.pem"
+	DefaultTLSCertFile             = ConfigDir + "tls-cert.pem"
+	DefaultTLSKeyFile              = ConfigDir + "tls.key"
 	TrustedJWTSigningCertsDir      = ConfigDir + "certs/trustedjwt/"
 	TrustedCAsStoreDir             = ConfigDir + "certs/trustedca/"
-	RootCADirPath                  = ConfigDir + "certs/cms-root-ca/"
-	PIDFile                        = "sgx-host-verification-service.pid"
 	ServiceRemoveCmd               = "systemctl disable sgx-host-verification-service"
 	HashingAlgorithm               = crypto.SHA384
-	PasswordRandomLength           = 20
+	JWTCertsCacheTime              = "60m"
 	DefaultAuthDefendMaxAttempts   = 5
 	DefaultAuthDefendIntervalMins  = 5
 	DefaultAuthDefendLockoutMins   = 15
@@ -34,19 +34,23 @@ const (
 	DefaultDBRotationMaxTableCnt   = 10
 	DefaultSSLCertFilePath         = ConfigDir + "sgx-host-verification-service-dbcert.pem"
 	ServiceName                    = "sgx-host-verification-service"
+	SHVSUserName                   = "shvs"
 	DefaultHttpPort                = 13000
 	DefaultKeyAlgorithm            = "rsa"
 	DefaultKeyAlgorithmLength      = 3072
 	DefaultSHVSTlsSan              = "127.0.0.1,localhost"
 	DefaultSHVSTlsCn               = "SGX HVS TLS Certificate"
-	DefaultSHVSCertOrganization    = "INTEL"
-	DefaultSHVSCertCountry         = "US"
-	DefaultSHVSCertProvince        = "SF"
-	DefaultSHVSCertLocality        = "SC"
 	DefaultSHVSSchedulerTimer      = 60
 	DefaultSHVSAutoRefreshTimer    = 120
 	DefaultSHVSHostInfoExpiryTime  = 240
 	DefaultJwtValidateCacheKeyMins = 60
+	CmsTlsCertDigestEnv           = "CMS_TLS_CERT_SHA384"
+	DefaultReadTimeout             = 30 * time.Second
+	DefaultReadHeaderTimeout       = 10 * time.Second
+	DefaultWriteTimeout            = 10 * time.Second
+	DefaultIdleTimeout             = 10 * time.Second
+	DefaultMaxHeaderBytes          = 1 << 20
+	DefaultLogEntryMaxLength      = 300
 	UUID                           = "uuid"
 	Description                    = "description"
 	HostName                       = "host-name"
@@ -71,7 +75,6 @@ const (
 	HostStatusConnected            = "CONNECTED"
 	HostStatusRemoved              = "REMOVED"
 	HostStatusUnsupportedSGX       = "UNSUPPORTED_SGX"
-
 	MaxRetryConnection = 5
 )
 

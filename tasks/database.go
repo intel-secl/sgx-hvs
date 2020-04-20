@@ -11,9 +11,9 @@ import (
 	"intel/isecl/sgx-host-verification-service/config"
 	"intel/isecl/sgx-host-verification-service/constants"
 	"intel/isecl/sgx-host-verification-service/repository/postgres"
-	cos "intel/isecl/lib/common/os"
-	"intel/isecl/lib/common/setup"
-	"intel/isecl/lib/common/validation"
+	cos "intel/isecl/lib/common/v2/os"
+	"intel/isecl/lib/common/v2/setup"
+	"intel/isecl/lib/common/v2/validation"
 	"github.com/pkg/errors"
 	"io"
 	"os"
@@ -48,7 +48,7 @@ func (db Database) Run(c setup.Context) error {
 	fs.StringVar(&envDBSSLCertSrc, "db-sslcertsrc", envDBSSLCertSrc, "DB SSL certificate to be copied from")
 	err := fs.Parse(db.Flags)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "setup database: failed to parse cmd flags")
 	}
 
 	var valid_err error

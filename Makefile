@@ -1,13 +1,12 @@
 GITTAG := $(shell git describe --tags --abbrev=0 2> /dev/null)
-#GITCOMMIT := $(shell git describe --always)
-GITCOMMIT := e991de2 
-GITCOMMITDATE := $(shell git log -1 --date=short --pretty=format:%cd)
+GITCOMMIT := $(shell git describe --always)
 VERSION := $(or ${GITTAG}, v0.0.0)
+BUILDDATE := $(shell TZ=UTC date +%Y-%m-%dT%H:%M:%S%z)
 
 .PHONY: sgx-host-verification-service installer docker all test clean
 
 sgx-host-verification-service:
-	env GOOS=linux go build -ldflags "-X intel/isecl/sgx-host-verification-service/version.Version=$(VERSION) -X intel/isecl/sgx-host-verification-service/version.GitHash=$(GITCOMMIT)" -o out/sgx-host-verification-service
+	env GOOS=linux GOSUMDB=off GOPROXY=direct go build -ldflags "-X intel/isecl/scs/version.BuildDate=$(BUILDDATE) -X intel/isecl/sgx-host-verification-service/version.Version=$(VERSION) -X intel/isecl/sgx-host-verification-service/version.GitHash=$(GITCOMMIT)" -o out/sgx-host-verification-service
 
 test:
 	go test ./... -coverprofile cover.out

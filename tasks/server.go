@@ -7,11 +7,13 @@ package tasks
 import (
 	"flag"
 	"fmt"
+	"github.com/pkg/errors"
+	commLog "intel/isecl/lib/common/v2/log"
+	"intel/isecl/lib/common/v2/setup"
 	"intel/isecl/sgx-host-verification-service/config"
 	"intel/isecl/sgx-host-verification-service/constants"
-	"intel/isecl/lib/common/setup"
-	"github.com/pkg/errors"
 	"io"
+	"time"
 )
 
 type Server struct {
@@ -19,6 +21,9 @@ type Server struct {
 	Config        *config.Configuration
 	ConsoleWriter io.Writer
 }
+
+var log = commLog.GetDefaultLogger()
+var seclog = commLog.GetSecurityLogger()
 
 func (s Server) Run(c setup.Context) error {
 	log.Trace("tasks/server:Run() Entering")
@@ -45,13 +50,61 @@ func (s Server) Run(c setup.Context) error {
 	s.Config.AuthDefender.IntervalMins = constants.DefaultAuthDefendIntervalMins
 	s.Config.AuthDefender.LockoutDurationMins = constants.DefaultAuthDefendLockoutMins
 
-	cmsBaseUrl, err := c.GetenvString("CMS_BASE_URL", "CMS Base URL")
+	readTimeout, err := c.GetenvInt("SHVS_SERVER_READ_TIMEOUT", "SGX Host Verification Service Read Timeout")
 	if err != nil {
-		fmt.Fprintf(s.ConsoleWriter, "CMS Url not provided\n")
-		return err
+		s.Config.ReadTimeout = constants.DefaultReadTimeout
+	} else {
+		s.Config.ReadTimeout = time.Duration(readTimeout) * time.Second
 	}
-	s.Config.CMSBaseUrl = cmsBaseUrl
-	return s.Config.Save()
+
+	readHeaderTimeout, err := c.GetenvInt("SHVS_SERVER_READ_HEADER_TIMEOUT", "SGX Host Verification Service Read Header Timeout")
+	if err != nil {
+		s.Config.ReadHeaderTimeout = constants.DefaultReadHeaderTimeout
+	} else {
+		s.Config.ReadHeaderTimeout = time.Duration(readHeaderTimeout) * time.Second
+	}
+
+	writeTimeout, err := c.GetenvInt("SHVS_SERVER_WRITE_TIMEOUT", "SGX Host Verification Service Write Timeout")
+	if err != nil {
+		s.Config.WriteTimeout = constants.DefaultWriteTimeout
+	} else {
+		s.Config.WriteTimeout = time.Duration(writeTimeout) * time.Second
+	}
+
+	idleTimeout, err := c.GetenvInt("SHVS_SERVER_IDLE_TIMEOUT", "SGX Host Verification Service Service Idle Timeout")
+	if err != nil {
+		s.Config.IdleTimeout = constants.DefaultIdleTimeout
+	} else {
+		s.Config.IdleTimeout = time.Duration(idleTimeout) * time.Second
+	}
+
+	maxHeaderBytes, err := c.GetenvInt("SHVS_SERVER_MAX_HEADER_BYTES", "SGX Host Verification Service Max Header Bytes Timeout")
+	if err != nil {
+		s.Config.MaxHeaderBytes = constants.DefaultMaxHeaderBytes
+	} else {
+		s.Config.MaxHeaderBytes = maxHeaderBytes
+	}
+
+	logMaxLen, err := c.GetenvInt("SHVS_LOG_MAX_LENGTH", "SGX Host Verification Service Log maximum length")
+	if err != nil || logMaxLen < constants.DefaultLogEntryMaxLength {
+		s.Config.LogMaxLength = constants.DefaultLogEntryMaxLength
+	} else {
+		s.Config.LogMaxLength = logMaxLen
+	}
+
+	s.Config.LogEnableStdout = false
+	logEnableStdout, err := c.GetenvString("SHVS_ENABLE_CONSOLE_LOG", "SGX Host Verification Service Enable standard output")
+	if err != nil || len(logEnableStdout) == 0 {
+		s.Config.LogEnableStdout = false
+	} else {
+		s.Config.LogEnableStdout = true
+	}
+
+	err = s.Config.Save()
+	if err != nil {
+		return errors.Wrap(err, "failed to save SHVS config")
+	}
+	return nil
 }
 
 func (s Server) Validate(c setup.Context) error {

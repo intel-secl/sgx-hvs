@@ -7,7 +7,7 @@ package scheduler
 import (
 	"sync"
 	"container/list"
-	clog "intel/isecl/lib/common/log"
+	clog "intel/isecl/lib/common/v2/log"
 )
 
 type ThreadSafeDLL struct {

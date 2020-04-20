@@ -16,7 +16,7 @@ import (
 	"github.com/pkg/errors"
 	"strconv"
 
-	"intel/isecl/lib/common/validation"
+	"intel/isecl/lib/common/v2/validation"
 	"intel/isecl/sgx-host-verification-service/constants"
 	"intel/isecl/sgx-host-verification-service/repository"
 	"intel/isecl/sgx-host-verification-service/types"

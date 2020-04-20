@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	cos "intel/isecl/lib/common/os"
+	cos "intel/isecl/lib/common/v2/os"
 	"intel/isecl/sgx-host-verification-service/config"
 	"intel/isecl/sgx-host-verification-service/constants"
 	"intel/isecl/sgx-host-verification-service/repository"
@@ -154,7 +154,7 @@ func UpdateHostStatus(hostId string, db repository.SHVSDatabase, status string) 
 
 func GetClientObj() (*http.Client, error) {
 
-	rootCaCertPems, err := cos.GetDirFileContents(constants.RootCADirPath, "*.pem")
+	rootCaCertPems, err := cos.GetDirFileContents(constants.TrustedCAsStoreDir, "*.pem")
 	if err != nil {
 		return nil, errors.Wrap(err, "GetClientObj: failed to get file contents")
 	}

@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http/httptest"
 	"github.com/stretchr/testify/assert"
-	"intel/isecl/lib/common/middleware"
+	"intel/isecl/lib/common/v2/middleware"
 	"intel/isecl/sgx-host-verification-service/repository"
 	"intel/isecl/sgx-host-verification-service/constants"
 )

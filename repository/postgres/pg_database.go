@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"intel/isecl/sgx-host-verification-service/repository"
 	"intel/isecl/sgx-host-verification-service/types"
-	 commLog "intel/isecl/lib/common/log"
+	 commLog "intel/isecl/lib/common/v2/log"
 	"io/ioutil"
 	"strings"
 	"time"

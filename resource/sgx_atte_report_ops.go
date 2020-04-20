@@ -248,7 +248,7 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 		return false, errors.Wrap(errors.New("FetchLatestTCBInfoFromSCS: Configuration pointer is null"), "Config error")
 	}
 
-	getTcbInfoUrl := conf.ScsBaseUrl + "platforminfo/tcbstatus?pceid=" + platformData.PceId
+	getTcbInfoUrl := conf.ScsBaseUrl + "platforminfo/tcbstatus?qeid=" + platformData.QeId
 
 	req, err := http.NewRequest("GET", getTcbInfoUrl, nil)
 	if err != nil {
@@ -258,9 +258,8 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
-	///TODO: Will be enabled once Caching service provids authentication.
-	/*bearerToken := conf.BearerToken
-	req.Header.Set("Authorization", "Bearer "+bearerToken)*/
+	bearerToken := conf.BearerToken
+	req.Header.Set("Authorization", "Bearer "+bearerToken)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -276,18 +275,17 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 		return false, errors.New(fmt.Sprintf("FetchLatestTCBInfoFromSCS: Invalid status code received:%d", resp.StatusCode))
 	}
 
-	///TODO: SCS needs to give response json.
-	//var scsResponse SCSGetResponse
-	/*dec := json.NewDecoder(resp.Body)
+	var scsResponse SCSGetResponse
+	dec := json.NewDecoder(resp.Body)
 	dec.DisallowUnknownFields()
 
 	err = dec.Decode(&scsResponse)
 	if err != nil {
 		return false, errors.Wrap(err, "FetchLatestTCBInfoFromSCS: Read Response failed")
-	}*/
+	}
 
-	//log.Debug("FetchLatestTCBInfoFromSCS: Status: ", scsResponse)
-	//resp.Body.Close()
+	log.Debug("FetchLatestTCBInfoFromSCS: Status: ", scsResponse)
+	resp.Body.Close()
 
 	///Update the data in database
 	///Get existing data
@@ -310,7 +308,7 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 		EpcAddr:      existingHostData.EpcAddr,
 		EpcSize:      existingHostData.EpcSize,
 		CreatedTime:  existingHostData.CreatedTime,
-		TcbUptodate:  true, ///this will be changed to value returned by SCS
+		TcbUptodate:  scsResponse.LatestTCBInfo,
 	}
 
 	err = db.HostSgxDataRepository().Update(tcbUpToDate)
@@ -352,6 +350,8 @@ func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+	bearerToken := conf.BearerToken
+	req.Header.Set("Authorization", "Bearer "+bearerToken)
 
 	resp, err := client.Do(req)
 	if err != nil {
