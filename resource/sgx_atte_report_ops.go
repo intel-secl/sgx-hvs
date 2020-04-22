@@ -46,7 +46,8 @@ type SCSPushResponse struct {
 }
 
 type SCSGetResponse struct {
-	LatestTCBInfo bool `json:"TCB_level_status"`
+	Status  string `json:"Status"`
+	Message string `json:"Message"`
 }
 
 func RetriveHostAttestationReportCB(db repository.SHVSDatabase) errorHandlerFunc {
@@ -156,6 +157,7 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 		if err != nil {
 			return true, errors.Wrap(err, "FetchSGXDataFromAgent: Error while caching Host Status Information: "+err.Error())
 		}
+		return true, errors.Wrap(err, "FetchSGXDataFromAgent: client call failed")
 	}
 
 	log.Debug("FetchSGXDataFromAgent: Status: ", resp.StatusCode)
@@ -177,7 +179,15 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 	log.Debug("FetchSGXDataFromAgent: Status: ", agentResponse)
 	resp.Body.Close()
 
-	if agentResponse.SgxDataValue.SgxSupported == true && agentResponse.SgxDataValue.SgxEnabled == true {
+	hostData := &types.HostSgxData{
+		HostId: hostId,
+	}
+
+	hostSGXData, err := db.HostSgxDataRepository().Retrieve(*hostData)
+
+	if hostSGXData == nil || err != nil {
+		log.Debug("GetSGXDataFromAgentCB: No host record found will create new one")
+
 		sgxData := types.HostSgxData{
 			Id:           uuid.New().String(),
 			HostId:       hostId,
@@ -188,47 +198,65 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 			EpcSize:      agentResponse.SgxDataValue.EpcSize,
 			CreatedTime:  time.Now(),
 		}
+		_, err = db.HostSgxDataRepository().Create(sgxData)
+	} else {
+		log.Debug("GetSGXDataFromAgentCB: Host record found will update existing one")
+		sgxData := types.HostSgxData{
+			Id:           hostSGXData.Id,
+			HostId:       hostId,
+			SgxSupported: agentResponse.SgxDataValue.SgxSupported,
+			SgxEnabled:   agentResponse.SgxDataValue.SgxEnabled,
+			FlcEnabled:   agentResponse.SgxDataValue.FlcEnabled,
+			EpcAddr:      agentResponse.SgxDataValue.EpcOffset,
+			EpcSize:      agentResponse.SgxDataValue.EpcSize,
+			CreatedTime:  time.Now(),
+		}
+		err = db.HostSgxDataRepository().Update(sgxData)
+	}
+	if err != nil {
+		log.Error("FetchSGXDataFromAgent: Error in creating host sgx data")
+		return false, errors.Wrap(err, "FetchSGXDataFromAgent: Error in creating host sgx data")
+	}
 
-		_, err := db.HostSgxDataRepository().Create(sgxData)
-		if err != nil {
-			log.Error("FetchSGXDataFromAgent: Error in creating host sgx data")
-			return false, errors.Wrap(err, "FetchSGXDataFromAgent: Error in creating host sgx data")
+	if agentResponse.SgxDataValue.SgxSupported == true && agentResponse.SgxDataValue.SgxEnabled == true {
+		platformData := &types.PlatformTcb{
+			HostId: hostId,
 		}
 
-		platformData := types.PlatformTcb{
-			Id:          uuid.New().String(),
-			QeId:        agentResponse.PlatformSgxDataValue.QeId,
-			HostId:      hostId,
-			PceId:       agentResponse.PlatformSgxDataValue.PceId,
-			CpuSvn:      agentResponse.PlatformSgxDataValue.CpuSvn,
-			PceSvn:      agentResponse.PlatformSgxDataValue.PceSvn,
-			Encppid:     agentResponse.PlatformSgxDataValue.EncryptedPPID,
-			CreatedTime: time.Now(),
-		}
+		platformSGXData, err := db.PlatformTcbRepository().Retrieve(*platformData)
 
-		_, err = db.PlatformTcbRepository().Create(platformData)
+		if platformSGXData == nil || err != nil {
+			platformData := types.PlatformTcb{
+				Id:          uuid.New().String(),
+				QeId:        agentResponse.PlatformSgxDataValue.QeId,
+				HostId:      hostId,
+				PceId:       agentResponse.PlatformSgxDataValue.PceId,
+				CpuSvn:      agentResponse.PlatformSgxDataValue.CpuSvn,
+				PceSvn:      agentResponse.PlatformSgxDataValue.PceSvn,
+				Encppid:     agentResponse.PlatformSgxDataValue.EncryptedPPID,
+				CreatedTime: time.Now(),
+			}
+			_, err = db.PlatformTcbRepository().Create(platformData)
+		} else {
+			platformData := types.PlatformTcb{
+				Id:          platformSGXData.Id,
+				QeId:        agentResponse.PlatformSgxDataValue.QeId,
+				HostId:      hostId,
+				PceId:       agentResponse.PlatformSgxDataValue.PceId,
+				CpuSvn:      agentResponse.PlatformSgxDataValue.CpuSvn,
+				PceSvn:      agentResponse.PlatformSgxDataValue.PceSvn,
+				Encppid:     agentResponse.PlatformSgxDataValue.EncryptedPPID,
+				CreatedTime: time.Now(),
+			}
+			err = db.PlatformTcbRepository().Update(platformData)
+		}
 		if err != nil {
 			log.Error("FetchSGXDataFromAgent: Error in creating platform tcb data")
 			return false, errors.Wrap(err, "FetchSGXDataFromAgent: Error in creating platform tcb data")
 		}
 		return true, nil
 	} else {
-		sgxData := types.HostSgxData{
-			Id:           uuid.New().String(),
-			HostId:       hostId,
-			SgxSupported: false,
-			SgxEnabled:   false,
-			FlcEnabled:   false,
-			CreatedTime:  time.Now(),
-		}
-
-		_, err := db.HostSgxDataRepository().Create(sgxData)
-		if err != nil {
-			log.Error("FetchSGXDataFromAgent: Error in creating host sgx data")
-			return false, errors.Wrap(err, "FetchSGXDataFromAgent: Error in creating host sgx data")
-		}
-
-		err = UpdateHostStatus(hostId, db, constants.HostStatusUnsupportedSGX)
+		err = UpdateHostStatus(hostId, db, constants.HostStatusConnected)
 		if err != nil {
 			return true, errors.New("UpdateSGXHostInfo: Error while caching Host Status Information: " + err.Error())
 		}
@@ -299,6 +327,8 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 		return false, errors.New("FetchLatestTCBInfoFromSCS: Error in getting HostSgxData")
 	}
 
+	status, _ := strconv.ParseBool(scsResponse.Status)
+
 	tcbUpToDate := types.HostSgxData{
 		Id:           existingHostData.Id,
 		HostId:       existingHostData.HostId,
@@ -308,7 +338,7 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 		EpcAddr:      existingHostData.EpcAddr,
 		EpcSize:      existingHostData.EpcSize,
 		CreatedTime:  existingHostData.CreatedTime,
-		TcbUptodate:  scsResponse.LatestTCBInfo,
+		TcbUptodate:  status,
 	}
 
 	err = db.HostSgxDataRepository().Update(tcbUpToDate)
@@ -521,7 +551,7 @@ func GetSGXDataFromAgentCB(workerId int, jobData interface{}) error {
 		if err != nil {
 			return errors.New("GetSGXDataFromAgentCB: Error while Updating Host Status Information: " + err.Error())
 		}
-	} else if flag == true {
+	} else if flag == true && err == nil {
 		err = UpdateHostStatus(hostId, db, constants.HostStatusSCSQueued)
 		if err != nil {
 			return errors.New("GetSGXDataFromAgentCB: Error while Updating Host Status Information: " + err.Error())
@@ -578,21 +608,16 @@ func GetLatestTCBInfoCB(workerId int, jobData interface{}) error {
 	flag, err := FetchLatestTCBInfoFromSCS(db, hostPlatformData)
 
 	if flag == false && err != nil {
-		log.Error("GetSGXDataFromAgentCB: Fetch Sgx Data From Agent ends with Error:" + err.Error())
+		log.Error("GetLatestTCBInfoCB: Fetch tcbInfo From SCS ends with Error:" + err.Error())
 		err := UpdateHostStatus(hostId, db, constants.HostStatusProcessError)
 		if err != nil {
-			return errors.New("GetSGXDataFromAgentCB: Error while Updating Host Status Information: " + err.Error())
+			return errors.New("GetLatestTCBInfoCB: Error while Updating Host Status Information: " + err.Error())
 		}
-	} else if flag == true {
-		err = UpdateHostStatus(hostId, db, constants.HostStatusTCBSCSStatusQueued)
+	} else if flag == true && err == nil {
+		err = UpdateHostStatus(hostId, db, constants.HostStatusConnected)
 		if err != nil {
 			return errors.New("GetSGXDataFromAgentCB: Error while Updating Host Status Information: " + err.Error())
 		}
-	}
-
-	err = UpdateHostStatus(hostId, db, constants.HostStatusConnected)
-	if err != nil {
-		return errors.New("GetLatestTCBInfoCB: Error while Updating Host Status Information: " + err.Error())
 	}
 
 	log.Debug("GetLatestTCBInfoCB: Completed successfully")

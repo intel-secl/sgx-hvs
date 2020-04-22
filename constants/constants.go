@@ -44,13 +44,13 @@ const (
 	DefaultSHVSAutoRefreshTimer    = 120
 	DefaultSHVSHostInfoExpiryTime  = 240
 	DefaultJwtValidateCacheKeyMins = 60
-	CmsTlsCertDigestEnv           = "CMS_TLS_CERT_SHA384"
+	CmsTlsCertDigestEnv            = "CMS_TLS_CERT_SHA384"
 	DefaultReadTimeout             = 30 * time.Second
 	DefaultReadHeaderTimeout       = 10 * time.Second
 	DefaultWriteTimeout            = 10 * time.Second
 	DefaultIdleTimeout             = 10 * time.Second
 	DefaultMaxHeaderBytes          = 1 << 20
-	DefaultLogEntryMaxLength      = 300
+	DefaultLogEntryMaxLength       = 300
 	UUID                           = "uuid"
 	Description                    = "description"
 	HostName                       = "host-name"
@@ -74,8 +74,7 @@ const (
 	HostStatusUnknown              = "UNKNOWN"
 	HostStatusConnected            = "CONNECTED"
 	HostStatusRemoved              = "REMOVED"
-	HostStatusUnsupportedSGX       = "UNSUPPORTED_SGX"
-	MaxRetryConnection = 5
+	MaxRetryConnection             = 5
 )
 
 // State represents whether or not a daemon is running or not
