@@ -359,7 +359,8 @@ func RegisterHostCB(db repository.SHVSDatabase) errorHandlerFunc {
 
 		if !ValidateInputString(constants.HostName, data.HostName) ||
 			!ValidateInputString(constants.ConnectionString, data.ConnectionString) ||
-			!ValidateInputString(constants.UUID, data.UUID) {
+			!ValidateInputString(constants.UUID, data.UUID) ||
+			!ValidateInputString(constants.Description, data.Description) {
 
 			res = RegisterResponse{HttpStatus: http.StatusBadRequest,
 				Response: ResponseJson{Status: "Failed",
