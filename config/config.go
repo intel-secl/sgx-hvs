@@ -14,6 +14,7 @@ import (
 	"intel/isecl/sgx-host-verification-service/constants"
 	"os"
 	"path"
+	"strings"
 	"sync"
 	"time"
 )
@@ -44,7 +45,10 @@ type Configuration struct {
 		IntervalMins        int
 		LockoutDurationMins int
 	}
-
+	SHVS struct {
+		User     string
+		Password string
+	}
 	Token struct {
 		IncludeKid        bool
 		TokenDurationMins int
@@ -52,7 +56,6 @@ type Configuration struct {
 	CMSBaseUrl             string
 	AuthServiceUrl         string
 	ScsBaseUrl             string
-	BearerToken            string
 	SchedulerTimer         int
 	SHVSRefreshTimer       int
 	SHVSHostInfoExpiryTime int
@@ -148,11 +151,20 @@ func (conf *Configuration) SaveConfiguration(c setup.Context) error {
 		log.Error("SCS_BASE_URL is not defined in environment")
 	}
 
-	bearerToken, err := c.GetenvString("BEARER_TOKEN", "SGX Agent BEARER_TOKEN")
-	if err == nil && bearerToken != "" {
-		conf.BearerToken = bearerToken
-	} else if conf.BearerToken == "" {
-		log.Error("BEARER_TOKEN is not defined in environment")
+	shvsAASUser, err := c.GetenvString(constants.SHVS_USER, "SHVS Service Username")
+	if err == nil && shvsAASUser != "" {
+		conf.SHVS.User = shvsAASUser
+	} else if conf.SHVS.User == "" {
+		commLog.GetDefaultLogger().Error("SHVS_ADMIN_USERNAME is not defined in environment or configuration file")
+		return errorLog.Wrap(err, "SHVS_ADMIN_USERNAME is not defined in environment or configuration file")
+	}
+
+	shvsAASPassword, err := c.GetenvSecret(constants.SHVS_PASSWORD, "SHVS Service Password")
+	if err == nil && shvsAASPassword != "" {
+		conf.SHVS.Password = shvsAASPassword
+	} else if strings.TrimSpace(conf.SHVS.Password) == "" {
+		commLog.GetDefaultLogger().Error("SHVS_ADMIN_PASSWORD is not defined in environment or configuration file")
+		return errorLog.Wrap(err, "SHVS_ADMIN_PASSWORD is not defined in environment or configuration file")
 	}
 
 	tlsCertCN, err := c.GetenvString("SHVS_TLS_CERT_CN", "SHVS TLS Certificate Common Name")

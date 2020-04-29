@@ -5,15 +5,14 @@
 package resource
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"github.com/pkg/errors"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
 
-	cos "intel/isecl/lib/common/v2/os"
+	"intel/isecl/lib/clients/v2"
+	"intel/isecl/lib/clients/v2/aas"
 	"intel/isecl/sgx-host-verification-service/config"
 	"intel/isecl/sgx-host-verification-service/constants"
 	"intel/isecl/sgx-host-verification-service/repository"
@@ -21,6 +20,63 @@ import (
 )
 
 var statusUpdateLock *sync.Mutex
+
+var (
+	c = config.Global()
+	aasClient = aas.NewJWTClient(c.AuthServiceUrl)
+	aasRWLock = sync.RWMutex{}
+)
+
+func init() {
+	aasRWLock.Lock()
+	defer aasRWLock.Unlock()
+	if aasClient.HTTPClient == nil {
+		c, err := clients.HTTPClientWithCADir(constants.TrustedCAsStoreDir)
+		if err != nil {
+			return
+		}
+		aasClient.HTTPClient = c
+	}
+}
+
+func addJWTToken(req *http.Request) error {
+	log.Trace("resource/utils:addJWTToken() Entering")
+	defer log.Trace("resource/utils:addJWTToken() Leaving")
+
+	if aasClient.BaseURL == "" {
+		aasClient = aas.NewJWTClient(c.AuthServiceUrl)
+		if aasClient.HTTPClient == nil {
+			c, err := clients.HTTPClientWithCADir(constants.TrustedCAsStoreDir)
+			if err != nil {
+				return errors.Wrap(err, "resource/utils:addJWTToken() Error initializing http client")
+			}
+			aasClient.HTTPClient = c
+		}
+	}
+	aasRWLock.RLock()
+	jwtToken, err := aasClient.GetUserToken(c.SHVS.User)
+	aasRWLock.RUnlock()
+	// something wrong
+	if err != nil {
+		// lock aas with w lock
+		aasRWLock.Lock()
+		defer aasRWLock.Unlock()
+		// check if other thread fix it already
+		jwtToken, err = aasClient.GetUserToken(c.SHVS.User)
+		// it is not fixed
+		if err != nil {
+			aasClient.AddUser(c.SHVS.User, c.SHVS.Password)
+			err = aasClient.FetchAllTokens()
+			jwtToken, err = aasClient.GetUserToken(c.SHVS.User)
+			if err != nil {
+				return errors.Wrap(err, "resource/utils:addJWTToken() Could not fetch token")
+			}
+		}
+	}
+	log.Debug("resource/utils:addJWTToken() successfully added jwt bearer token")
+	req.Header.Set("Authorization", "Bearer "+string(jwtToken))
+	return nil
+}
 
 func UpdateHostStatus(hostId string, db repository.SHVSDatabase, status string) error {
 
@@ -150,34 +206,4 @@ func UpdateHostStatus(hostId string, db repository.SHVSDatabase, status string) 
 	}
 	statusUpdateLock.Unlock()
 	return nil
-}
-
-func GetClientObj() (*http.Client, error) {
-
-	rootCaCertPems, err := cos.GetDirFileContents(constants.TrustedCAsStoreDir, "*.pem")
-	if err != nil {
-		return nil, errors.Wrap(err, "GetClientObj: failed to get file contents")
-	}
-
-	// Get the SystemCertPool, continue with an empty pool on error
-	rootCAs, _ := x509.SystemCertPool()
-	if rootCAs == nil {
-		rootCAs = x509.NewCertPool()
-	}
-
-	for _, rootCACert := range rootCaCertPems {
-		if ok := rootCAs.AppendCertsFromPEM(rootCACert); !ok {
-			return nil, errors.Wrap(err, "GetClientObj: failed to append certs from pem")
-		}
-	}
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: false,
-				RootCAs:            rootCAs,
-			},
-		},
-	}
-	return client, nil
 }

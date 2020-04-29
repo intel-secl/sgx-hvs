@@ -10,6 +10,7 @@ import (
 	"fmt"
 	uuid "github.com/google/uuid"
 	"github.com/pkg/errors"
+	"intel/isecl/lib/clients/v2"
 	"net/http"
 	"strconv"
 	"time"
@@ -130,9 +131,9 @@ func RetriveHostAttestationReportCB(db repository.SHVSDatabase) errorHandlerFunc
 
 func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl string) (bool, error) {
 
-	client, err := GetClientObj()
+	client, err := clients.HTTPClientWithCADir(constants.TrustedCAsStoreDir)
 	if err != nil {
-		return false, errors.New("FetchSGXDataFromAgent: Error in getting client object")
+		return false, errors.Wrap(err, "FetchSGXDataFromAgent: Error in getting client object")
 	}
 
 	req, err := http.NewRequest("GET", AgentUrl, nil)
@@ -148,8 +149,10 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 		return false, errors.Wrap(errors.New("PushSGXData: Configuration pointer is null"), "Config error")
 	}
 
-	bearerToken := conf.BearerToken
-	req.Header.Set("Authorization", "Bearer "+bearerToken)
+	err = addJWTToken(req)
+	if err != nil {
+		return false, errors.Wrap(err, "resource/sgx_atte_report_ops: FetchSGXDataFromAgent() Failed to add JWT token")
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -266,9 +269,9 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 
 func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.PlatformTcb) (bool, error) {
 
-	client, err := GetClientObj()
+	client, err := clients.HTTPClientWithCADir(constants.TrustedCAsStoreDir)
 	if err != nil {
-		return false, errors.New("FetchLatestTCBInfoFromSCS : Error in getting client object")
+		return false, errors.Wrap(err, "FetchLatestTCBInfoFromSCS : Error in getting client object")
 	}
 
 	conf := config.Global()
@@ -286,8 +289,10 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
-	bearerToken := conf.BearerToken
-	req.Header.Set("Authorization", "Bearer "+bearerToken)
+	err = addJWTToken(req)
+	if err != nil {
+		return false, errors.Wrap(err, "resource/sgx_atte_report_ops: FetchLatestTCBInfoFromSCS() Failed to add JWT token")
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -350,9 +355,9 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 }
 
 func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (bool, error) {
-	client, err := GetClientObj()
+	client, err := clients.HTTPClientWithCADir(constants.TrustedCAsStoreDir)
 	if err != nil {
-		return false, errors.New("PushSGXData: Error in getting client object")
+		return false, errors.Wrap(err, "PushSGXData: Error in getting client object")
 	}
 
 	conf := config.Global()
@@ -380,8 +385,10 @@ func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	bearerToken := conf.BearerToken
-	req.Header.Set("Authorization", "Bearer "+bearerToken)
+	err = addJWTToken(req)
+	if err != nil {
+		return false, errors.Wrap(err, "resource/sgx_atte_report_ops: PushSGXData() Failed to add JWT token")
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
