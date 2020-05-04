@@ -79,20 +79,7 @@ func (db Database) Run(c setup.Context) error {
 		return errors.Wrap(err, "setup database: failed to open database")
 	}
 	p.Migrate()
-/*
-	
-		if err := p.ExecuteSqlFile("/opt/sgx-host-verification-service/dbscripts/db_rotation.sql"); err != nil{
-			return err
-		}
-		sql := "DELETE FROM rotate_reports_args;"
-		if err := p.ExecuteSql(&sql); err != nil{
-			return err
-		}
-		sql = fmt.Sprintf("INSERT INTO rotate_reports_args (max_row_count, num_rotations) VALUES (%d, %d);", envDBRotateMaxRow, envDBRotateTableCnt)
-		if err := p.ExecuteSql(&sql); err != nil{
-			return err
-		}
-	*/
+
 	err = db.Config.Save()
 	if err != nil {
 		 return errors.Wrap(err, "setup database: failed to save config")
@@ -105,8 +92,8 @@ func configureDBSSLParams(sslMode, sslCertSrc, sslCert string) (string, string, 
 	sslCert = strings.TrimSpace(sslCert)
 	sslCertSrc = strings.TrimSpace(sslCertSrc)
 
-	if sslMode != "disable" && sslMode != "require" && sslMode != "allow" && sslMode != "prefer" && sslMode != "verify-ca" && sslMode != "verify-full" {
-		sslMode = "require"
+	if  sslMode != "allow" && sslMode != "prefer" && sslMode != "require" && sslMode != "verify-ca" {
+		sslMode = "verify-full"
 	}
 
 	if sslMode == "verify-ca" || sslMode == "verify-full" {
