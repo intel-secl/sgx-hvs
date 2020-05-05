@@ -280,10 +280,10 @@ func (a *App) Run(args []string) error {
 		a.configureLogs(a.configuration().LogEnableStdout, true)
 		return a.status()
 	case "uninstall":
-		var keepConfig bool
-		flag.CommandLine.BoolVar(&keepConfig, "keep-config", false, "keep config when uninstalling")
+		var purge bool
+		flag.CommandLine.BoolVar(&purge, "purge", false, "purge config when uninstalling")
 		flag.CommandLine.Parse(args[2:])
-		a.uninstall(keepConfig)
+		a.uninstall(purge)
 		log.Info("app:Run() Uninstalled SGX Caching Service")
 		os.Exit(0)
 	case "version":
@@ -537,7 +537,7 @@ func (a *App) status() error {
 	return syscall.Exec(systemctl, []string{"systemctl", "status", "sgx-host-verification-service"}, os.Environ())
 }
 
-func (a *App) uninstall(keepConfig bool) {
+func (a *App) uninstall(purge bool) {
 	log.Trace("app:uninstall() Entering")
 	defer log.Trace("app:uninstall() Leaving")
 
@@ -561,7 +561,7 @@ func (a *App) uninstall(keepConfig bool) {
 		log.WithError(err).Error("error removing ", a.execLinkPath())
 	}
 
-	if !keepConfig {
+	if purge {
 		fmt.Println("removing : ", a.configDir())
 		err = os.RemoveAll(a.configDir())
 		if err != nil {
