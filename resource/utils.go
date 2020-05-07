@@ -22,7 +22,7 @@ import (
 var statusUpdateLock *sync.Mutex
 
 var (
-	c = config.Global()
+	c         = config.Global()
 	aasClient = aas.NewJWTClient(c.AuthServiceUrl)
 	aasRWLock = sync.RWMutex{}
 )
@@ -89,7 +89,7 @@ func UpdateHostStatus(hostId string, db repository.SHVSDatabase, status string) 
 
 	existingHostStatusRec, err := db.HostStatusRepository().Retrieve(*existingHostStatus)
 	if err != nil || existingHostStatusRec == nil {
-		log.Debug("trace 1: ", existingHostStatus)
+		log.WithError(err).WithField("hostStatus", existingHostStatus).Info("Error while caching Host Status Information")
 		return errors.New("UpdateHostStatus: Error while caching Host Status Information: ")
 	}
 
@@ -200,7 +200,7 @@ func UpdateHostStatus(hostId string, db repository.SHVSDatabase, status string) 
 
 	err = db.HostStatusRepository().Update(hostStatus)
 	if err != nil {
-		log.Debug("trace 2")
+		log.WithError(err).Info("Error while caching Host Status Information")
 		statusUpdateLock.Unlock()
 		return errors.New("UpdateHostStatus: Error while caching Host Status Information: " + err.Error())
 	}

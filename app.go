@@ -284,7 +284,6 @@ func (a *App) Run(args []string) error {
 		flag.CommandLine.BoolVar(&purge, "purge", false, "purge config when uninstalling")
 		flag.CommandLine.Parse(args[2:])
 		a.uninstall(purge)
-		log.Info("app:Run() Uninstalled SGX Caching Service")
 		os.Exit(0)
 	case "version":
 		fmt.Fprintf(a.consoleWriter(), "SGX Host Verification Service %s-%s\nBuilt %s\n", version.Version, version.GitHash, version.BuildDate)
@@ -294,7 +293,6 @@ func (a *App) Run(args []string) error {
 		var context setup.Context
 		if len(args) <= 2 {
 			a.printUsage()
-			log.Error("app:Run() Invalid command")
 			os.Exit(1)
 		}
 
@@ -330,11 +328,11 @@ func (a *App) Run(args []string) error {
 		setupRunner := &setup.Runner{
 			Tasks: []setup.Task{
 				setup.Download_Ca_Cert{
-					Flags:         flags,
-					CmsBaseURL:    a.Config.CMSBaseUrl,
-					CaCertDirPath: constants.TrustedCAsStoreDir,
+					Flags:                flags,
+					CmsBaseURL:           a.Config.CMSBaseUrl,
+					CaCertDirPath:        constants.TrustedCAsStoreDir,
 					TrustedTlsCertDigest: a.Config.CmsTlsCertDigest,
-					ConsoleWriter: os.Stdout,
+					ConsoleWriter:        os.Stdout,
 				},
 				setup.Download_Cert{
 					Flags:              flags,
@@ -344,7 +342,7 @@ func (a *App) Run(args []string) error {
 					KeyAlgorithmLength: constants.DefaultKeyAlgorithmLength,
 					CmsBaseURL:         a.Config.CMSBaseUrl,
 					Subject: pkix.Name{
-						CommonName:   a.Config.Subject.TLSCertCommonName,
+						CommonName: a.Config.Subject.TLSCertCommonName,
 					},
 					SanList:       a.Config.CertSANList,
 					CertType:      "TLS",
@@ -379,24 +377,24 @@ func (a *App) Run(args []string) error {
 
 		shvsUser, err := user.Lookup(constants.SHVSUserName)
 		if err != nil {
-			return errors.Wrapf(err,"Could not find user '%s'", constants.SHVSUserName)
+			return errors.Wrapf(err, "Could not find user '%s'", constants.SHVSUserName)
 		}
 
 		uid, err := strconv.Atoi(shvsUser.Uid)
 		if err != nil {
-			return errors.Wrapf(err,"Could not parse shvs user uid '%s'", shvsUser.Uid)
+			return errors.Wrapf(err, "Could not parse shvs user uid '%s'", shvsUser.Uid)
 		}
 
 		gid, err := strconv.Atoi(shvsUser.Gid)
 		if err != nil {
-			return errors.Wrapf(err,"Could not parse shvs user gid '%s'", shvsUser.Gid)
+			return errors.Wrapf(err, "Could not parse shvs user gid '%s'", shvsUser.Gid)
 		}
 
 		//Change the file ownership to shvs user
 
 		err = cos.ChownR(constants.ConfigDir, uid, gid)
 		if err != nil {
-			return errors.Wrap(err,"Error while changing file ownership")
+			return errors.Wrap(err, "Error while changing file ownership")
 		}
 		if task == "download_cert" {
 			err = os.Chown(a.Config.TLSKeyFile, uid, gid)
@@ -435,7 +433,7 @@ func (a *App) startServer() error {
 		return err
 	}
 	defer shvsDB.Close()
-	log.Info("Migrating Database")
+	log.Trace("Migrating Database")
 	shvsDB.Migrate()
 
 	// Create Router, set routes
@@ -469,8 +467,8 @@ func (a *App) startServer() error {
 	h := &http.Server{
 		Addr:              fmt.Sprintf(":%d", c.Port),
 		Handler:           handlers.RecoveryHandler(handlers.RecoveryLogger(httpLog), handlers.PrintRecoveryStack(true))(handlers.CombinedLoggingHandler(a.httpLogWriter(), r)),
-		ErrorLog:	       httpLog,
-		TLSConfig:	       tlsconfig,
+		ErrorLog:          httpLog,
+		TLSConfig:         tlsconfig,
 		ReadTimeout:       c.ReadTimeout,
 		ReadHeaderTimeout: c.ReadHeaderTimeout,
 		WriteTimeout:      c.WriteTimeout,
@@ -541,7 +539,7 @@ func (a *App) uninstall(purge bool) {
 	log.Trace("app:uninstall() Entering")
 	defer log.Trace("app:uninstall() Leaving")
 
-	fmt.Println("Uninstalling SGX Caching Service")
+	fmt.Println("Uninstalling SGX Host Verification Service")
 	removeService()
 
 	fmt.Println("removing : ", a.executablePath())
@@ -578,7 +576,7 @@ func (a *App) uninstall(purge bool) {
 	if err != nil {
 		log.WithError(err).Error("error removing home dir")
 	}
-	fmt.Fprintln(a.consoleWriter(), "SGX Caching Service uninstalled")
+	fmt.Fprintln(a.consoleWriter(), "SGX Host Verification uninstalled")
 	a.stop()
 }
 
@@ -588,7 +586,7 @@ func removeService() {
 
 	_, _, err := e.RunCommandWithTimeout(constants.ServiceRemoveCmd, 5)
 	if err != nil {
-		fmt.Println("Could not remove SGX Caching Service")
+		fmt.Println("Could not remove SGX Host Verification Service")
 		fmt.Println("Error : ", err)
 	}
 }
@@ -734,7 +732,7 @@ func fnGetJwtCerts() error {
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: false,
-				RootCAs: rootCAs,
+				RootCAs:            rootCAs,
 			},
 		},
 	}

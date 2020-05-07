@@ -18,8 +18,8 @@ import (
 )
 
 func StartAutoRefreshSchedular(db repository.SHVSDatabase, timer int) {
-	log.Debug("StartAutoRefreshSchedular: started")
-	defer log.Debug("StartAutoRefreshSchedular: Leaving")
+	log.Trace("StartAutoRefreshSchedular: started")
+	defer log.Trace("StartAutoRefreshSchedular: Leaving")
 	stop := make(chan os.Signal)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
@@ -34,7 +34,7 @@ func StartAutoRefreshSchedular(db repository.SHVSDatabase, timer int) {
 				log.Debug("StartAutoRefreshSchedular: Timer started", t)
 				_, err := SHVSAutoRefreshSchedulerJobCB(db)
 				if err != nil {
-					log.Error("StartAutoRefreshSchedular: HostQueueScheduler:" + err.Error())
+					log.WithError(err).Info("StartAutoRefreshSchedular: HostQueueScheduler got error")
 					break
 				}
 			}
@@ -48,7 +48,7 @@ func SHVSAutoRefreshSchedulerJobCB(db repository.SHVSDatabase) (bool, error) {
 
 	expiredHosts, err := db.HostStatusRepository().RetrieveExpiredHosts()
 	if err != nil {
-		log.Debug("StartAutoRefreshSchedular: Error in Get Host Status Repository: ", err)
+		log.WithError(err).Info("StartAutoRefreshSchedular: Error in Get Host Status Repository")
 		return false, errors.New("StartAutoRefreshSchedular: Error in Get Host Status Repository")
 	}
 

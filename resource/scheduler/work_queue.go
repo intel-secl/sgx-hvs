@@ -69,7 +69,6 @@ func (wq *WorkerQueue) GetJobFromWQList() *Job {
 	}
 	i := wq.wList.GetElementFromList()
 	if i == nil {
-		log.Debug("GetJobFromWQList: Invalid job got from workqueue")
 		log.Error("GetJobFromWQList: Invalid job got from workqueue")
 		return nil
 	}
@@ -90,14 +89,14 @@ func WorkerCB(id int, wq *WorkerQueue) {
 		log.Debug("Worker: ", id, " got signal")
 
 		if wq.GetShutDownFlag() {
-			log.Info("WorkerCB: Got shutdown signal")
+			log.Trace("WorkerCB: Got shutdown signal")
 			worker.UpdateWorkerStatus(WorkerStatusDied)
 			wq.wQCond.L.Unlock()
 			break
 		}
 
 		if worker.GetWorkerStatus() != WorkerStatusFree {
-			log.Info("WorkerCB: Worker is currently busy")
+			log.Trace("WorkerCB: Worker is currently busy")
 			wq.wQCond.L.Unlock()
 			continue
 		}
@@ -106,7 +105,6 @@ func WorkerCB(id int, wq *WorkerQueue) {
 		job := wq.GetJobFromWQList()
 		if job == nil {
 			log.Debug("Worker: ", id, " get invalid job or Queue is empty")
-			log.Info("Worker: ", id, " get invalid job")
 			log.Debug("Worker: ", id, " Completed the Job.....")
 			wq.wQCond.L.Unlock()
 			continue
@@ -178,7 +176,7 @@ func InitWorkerQueue() *WorkerQueue {
 			go WorkerCB(id, wq)
 		}
 	} else {
-		log.Info("InitWorkerQueue: Workqueue init already completed")
+		log.Trace("InitWorkerQueue: Workqueue init already completed")
 		return nil
 	}
 	return wq

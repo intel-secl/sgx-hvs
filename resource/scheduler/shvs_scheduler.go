@@ -19,8 +19,8 @@ import (
 )
 
 func StartSHVSScheduler(db repository.SHVSDatabase, timer int) {
-	log.Debug("StartSHVSScheduler: started")
-	defer log.Debug("StartSHVSScheduler: Leaving")
+	log.Trace("StartSHVSScheduler: started")
+	defer log.Trace("StartSHVSScheduler: Leaving")
 	stop := make(chan os.Signal)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
@@ -35,7 +35,7 @@ func StartSHVSScheduler(db repository.SHVSDatabase, timer int) {
 				log.Debug("StartSHVSScheduler: Timer started", t)
 				_, err := SHVSSchedulerJobCB(db)
 				if err != nil {
-					log.Error("StartSHVSScheduler: HostQueueScheduler:" + err.Error())
+					log.WithError(err).Info("StartSHVSScheduler: HostQueueScheduler got error")
 					break
 				}
 			}
@@ -45,12 +45,12 @@ func StartSHVSScheduler(db repository.SHVSDatabase, timer int) {
 
 func SHVSSchedulerJobCB(db repository.SHVSDatabase) (bool, error) {
 
-	log.Debug("SHVSSchedulerJobCB: Job stated")
+	log.Trace("SHVSSchedulerJobCB: Job stated")
 	queues := []string{constants.HostStatusSCSQueued, constants.HostStatusAgentQueued, constants.HostStatusTCBSCSStatusQueued}
 
 	queuedHosts, err := db.HostStatusRepository().RetrieveAllQueues(queues)
 	if err != nil {
-		log.Info("SHVSSchedulerJobCB: Error in Get Host Status Repository", err)
+		log.WithError(err).Info("SHVSSchedulerJobCB: Error in Get Host Status Repository")
 		return false, errors.New("SHVSSchedulerJobCB: Error in Get Host Status Repository")
 	}
 
@@ -62,7 +62,7 @@ func SHVSSchedulerJobCB(db repository.SHVSDatabase) (bool, error) {
 	wq := GetWorkerQueue()
 	if wq == nil {
 		fmt.Fprintln(os.Stderr, "SHVSSchedulerJobCB: Workqueue is nil")
-		log.Info("SHVSSchedulerJobCB: Workqueue is nil")
+		log.Error("SHVSSchedulerJobCB: Workqueue is nil")
 		return false, errors.New("SHVSSchedulerJobCB: Workqueue is nil")
 	}
 
@@ -85,7 +85,7 @@ func SHVSSchedulerJobCB(db repository.SHVSDatabase) (bool, error) {
 		job.UpdateJobStatus(JobStatusInit)
 
 		wq.AddJobAndSendSignalToWorkQueue(job)
-		log.Debug("SHVSSchedulerJobCB: Job ended")
+		log.Trace("SHVSSchedulerJobCB: Job ended")
 	}
 	return true, nil
 }

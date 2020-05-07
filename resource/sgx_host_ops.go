@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"time"
 
-	//	"fmt"
 	uuid "github.com/google/uuid"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -63,9 +62,8 @@ func SGXHostRegisterOps(r *mux.Router, db repository.SHVSDatabase) {
 
 func GetHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
-		log.Info("GetHostsCB entering")
+		log.Trace("GetHostsCB entering")
 		id := mux.Vars(r)["id"]
-		log.Info("id: ", id)
 		validation_err := validation.ValidateUUIDv4(id)
 		if validation_err != nil {
 			return &resourceError{Message: validation_err.Error(), StatusCode: http.StatusBadRequest}
@@ -89,22 +87,20 @@ func GetHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		js, err := json.Marshal(host_Info)
-		log.Info("host information: ", host_Info)
 		if err != nil {
-			log.Debug("Marshalling unsuccessful")
+			log.WithError(err).Info("Marshalling unsuccessful")
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
 		w.Write(js)
-		log.Info("GetHostsCB leaving")
+		log.Trace("GetHostsCB leaving")
 		return nil
 	}
 }
 
 func QueryHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
-		log.Debug("QueryHostsCB entering")
+		log.Trace("QueryHostsCB entering")
 
-		log.Debug("query", r.URL.Query())
 		hardwareUUID := r.URL.Query().Get("HardwareUUID")
 		hostName := r.URL.Query().Get("HostName")
 
@@ -134,29 +130,26 @@ func QueryHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
 		if len(hostData) == 0 {
-			log.Info("no data is found")
+			log.Error("no data is found")
 			return &resourceError{Message: "no host is found", StatusCode: http.StatusOK}
 		}
-		log.Info("hostData: ", hostData)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK) // HTTP 200
-		//js, err := json.Marshal(fmt.Sprintf("%s", hostData))
 		js, err := json.Marshal(hostData)
 		if err != nil {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
 		w.Write(js)
-		log.Debug("QueryHosts leaving")
+		log.Trace("QueryHosts leaving")
 		return nil
 	}
 }
 
 func GetPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
-		log.Debug("GetPaltformDataCB entering")
+		log.Trace("GetPaltformDataCB entering")
 
-		log.Debug("query", r.URL.Query())
 		var platformData types.HostsSgxData
 		hostName := r.URL.Query().Get("HostName")
 		if hostName != "" {
@@ -183,7 +176,7 @@ func GetPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 			if numberOfMinutes != "" {
 				_, err := strconv.Atoi(numberOfMinutes)
 				if err != nil {
-					log.Info("error came: ", err)
+					log.WithError(err).Info("error came in converting numberOfMinutes from string to integer")
 					return &resourceError{Message: "GetPaltformDataCB : Invalid query Param Data",
 						StatusCode: http.StatusBadRequest}
 				}
@@ -200,9 +193,9 @@ func GetPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 				return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 			}
 		}
-		log.Info("platformData: ", platformData)
+		log.Debug("platformData: ", platformData)
 		if len(platformData) == 0 {
-			log.Info("no data is updated")
+			log.Error("no data is updated")
 			return &resourceError{Message: "no host is updated", StatusCode: http.StatusOK}
 		}
 
@@ -214,7 +207,7 @@ func GetPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 		}
 		w.Write(js)
 
-		log.Debug("GetPaltformDataCB leaving")
+		log.Trace("GetPaltformDataCB leaving")
 		return nil
 	}
 }
@@ -259,7 +252,7 @@ func DeleteHostCB(db repository.SHVSDatabase) errorHandlerFunc {
 }
 
 func UpdateSGXHostInfo(db repository.SHVSDatabase, existingHostData *types.Host, hostInfo RegisterHostInfo) error {
-	log.Debug("UpdateSGXHostInfo: caching sgx data:", hostInfo)
+	log.Trace("UpdateSGXHostInfo: caching sgx data:", hostInfo)
 
 	host := types.Host{
 		Id:               existingHostData.Id,
@@ -279,15 +272,15 @@ func UpdateSGXHostInfo(db repository.SHVSDatabase, existingHostData *types.Host,
 
 	err = UpdateHostStatus(existingHostData.Id, db, constants.HostStatusAgentQueued)
 	if err != nil {
-		log.Debug("UpdateSGXHostInfo failed")
+		log.WithError(err).Info("UpdateSGXHostInfo failed")
 		return errors.New("UpdateSGXHostInfo: Error while Updating Host Status Information: " + err.Error())
 	}
-	log.Debug("UpdateSGXHostInfo: Update SGX Host Data")
+	log.Trace("UpdateSGXHostInfo: Update SGX Host Data")
 	return nil
 }
 
 func CreateSGXHostInfo(db repository.SHVSDatabase, hostInfo RegisterHostInfo) (string, error) {
-	log.Debug("CreateSGXHostInfo: caching sgx data:", hostInfo)
+	log.Trace("CreateSGXHostInfo: caching sgx data:", hostInfo)
 
 	hostId := uuid.New().String()
 	host := types.Host{
@@ -317,7 +310,7 @@ func CreateSGXHostInfo(db repository.SHVSDatabase, hostInfo RegisterHostInfo) (s
 		return "", errors.New("CreateSGXHostInfo: Error while caching Host Status Information: " + err.Error())
 	}
 
-	log.Debug("CreateSGXHostInfo: Insert SGX Host Data")
+	log.Trace("CreateSGXHostInfo: Insert SGX Host Data")
 	return hostId, nil
 }
 

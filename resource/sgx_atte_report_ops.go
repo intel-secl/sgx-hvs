@@ -133,11 +133,13 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 
 	client, err := clients.HTTPClientWithCADir(constants.TrustedCAsStoreDir)
 	if err != nil {
+		log.WithError(err).WithField("id", hostId).Info("Error in getting client object")
 		return false, errors.Wrap(err, "FetchSGXDataFromAgent: Error in getting client object")
 	}
 
 	req, err := http.NewRequest("GET", AgentUrl, nil)
 	if err != nil {
+		log.WithError(err).Info("Failed to Get New request")
 		return false, errors.Wrap(err, "FetchSGXDataFromAgent: Failed to Get New request")
 	}
 
@@ -217,7 +219,7 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 		err = db.HostSgxDataRepository().Update(sgxData)
 	}
 	if err != nil {
-		log.Error("FetchSGXDataFromAgent: Error in creating host sgx data")
+		log.WithError(err).Info("Error in creating host sgx data")
 		return false, errors.Wrap(err, "FetchSGXDataFromAgent: Error in creating host sgx data")
 	}
 
@@ -254,7 +256,7 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 			err = db.PlatformTcbRepository().Update(platformData)
 		}
 		if err != nil {
-			log.Error("FetchSGXDataFromAgent: Error in creating platform tcb data")
+			log.WithError(err).Info("Error in creating platform tcb data")
 			return false, errors.Wrap(err, "FetchSGXDataFromAgent: Error in creating platform tcb data")
 		}
 		return true, nil
@@ -348,7 +350,7 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 
 	err = db.HostSgxDataRepository().Update(tcbUpToDate)
 	if err != nil {
-		log.Error("FetchLatestTCBInfoFromSCS: Error in updating tcbUpToDate sgx data")
+		log.WithError(err).Info("Error in updating tcbUpToDate sgx data")
 		return false, errors.Wrap(err, "FetchLatestTCBInfoFromSCS: Error in updating tcbUpToDate sgx data")
 	}
 	return true, nil
@@ -429,7 +431,7 @@ func CreateHostReport(db repository.SHVSDatabase, hostId string, status string) 
 
 	_, err := db.HostReportRepository().Create(report)
 	if err != nil {
-		log.Error("CreateHostReport: Error in creating report")
+		log.WithError(err).Info("Error in creating report")
 		return errors.Wrap(err, "CreateHostReport: Error in Host report: "+err.Error())
 	}
 	return nil
@@ -542,7 +544,7 @@ func GetSGXDataFromAgentCB(workerId int, jobData interface{}) error {
 
 	hostData, err := db.HostRepository().Retrieve(*host)
 	if err != nil {
-		log.Error("GetSGXDataFromAgentCB: Error in getting host record")
+		log.WithError(err).Info("Error in getting host record")
 		return errors.Wrap(err, "GetSGXDataFromAgentCB: Error in getting host record")
 	}
 
@@ -553,7 +555,7 @@ func GetSGXDataFromAgentCB(workerId int, jobData interface{}) error {
 
 	flag, err := FetchSGXDataFromAgent(hostData.Id, db, hostData.ConnectionString)
 	if flag == false && err != nil {
-		log.Error("GetSGXDataFromAgentCB: Fetch Sgx Data From Agent ends with Error:" + err.Error())
+		log.WithError(err).Info("Fetch Sgx Data From Agent ends with Error")
 		err := UpdateHostStatus(hostId, db, constants.HostStatusProcessError)
 		if err != nil {
 			return errors.New("GetSGXDataFromAgentCB: Error while Updating Host Status Information: " + err.Error())
@@ -595,7 +597,7 @@ func GetLatestTCBInfoCB(workerId int, jobData interface{}) error {
 
 	hostPlatformData, err := db.PlatformTcbRepository().Retrieve(*host)
 	if err != nil {
-		log.Error("GetLatestTCBInfoCB: Error in getting host platform record")
+		log.WithError(err).Info("Error in getting host platform record")
 		err := UpdateHostStatus(hostId, db, constants.HostStatusProcessError)
 		if err != nil {
 			return errors.New("GetLatestTCBInfoCB: Error while Updating Host Status Information: " + err.Error())
@@ -615,7 +617,7 @@ func GetLatestTCBInfoCB(workerId int, jobData interface{}) error {
 	flag, err := FetchLatestTCBInfoFromSCS(db, hostPlatformData)
 
 	if flag == false && err != nil {
-		log.Error("GetLatestTCBInfoCB: Fetch tcbInfo From SCS ends with Error:" + err.Error())
+		log.WithError(err).Info("Fetch tcbInfo From SCS ends with Error")
 		err := UpdateHostStatus(hostId, db, constants.HostStatusProcessError)
 		if err != nil {
 			return errors.New("GetLatestTCBInfoCB: Error while Updating Host Status Information: " + err.Error())
@@ -627,6 +629,6 @@ func GetLatestTCBInfoCB(workerId int, jobData interface{}) error {
 		}
 	}
 
-	log.Debug("GetLatestTCBInfoCB: Completed successfully")
+	log.Trace("GetLatestTCBInfoCB: Completed successfully")
 	return nil
 }
