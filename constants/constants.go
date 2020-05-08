@@ -45,6 +45,7 @@ const (
 	DefaultSHVSHostInfoExpiryTime  = 240
 	DefaultJwtValidateCacheKeyMins = 60
 	CmsTlsCertDigestEnv            = "CMS_TLS_CERT_SHA384"
+	SHVSLogLevel                   = "SHVS_LOGLEVEL"
 	SHVS_USER                      = "SHVS_ADMIN_USERNAME"
 	SHVS_PASSWORD                  = "SHVS_ADMIN_PASSWORD"
 	DefaultReadTimeout             = 30 * time.Second
