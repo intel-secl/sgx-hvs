@@ -167,8 +167,23 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 
 	log.Debug("FetchSGXDataFromAgent: Status: ", resp.StatusCode)
 
+	if resp.StatusCode == http.StatusUnauthorized {
+		// fetch token and try again
+		aasRWLock.Lock()
+		aasClient.FetchAllTokens()
+		aasRWLock.Unlock()
+		err = addJWTToken(req)
+		if err != nil {
+			return false, errors.Wrap(err, "FetchSGXDataFromAgent: Failed to add JWT token")
+		}
+		resp, err = client.Do(req)
+		if err != nil {
+			return false, errors.Wrap(err, "FetchSGXDataFromAgent: Error from response")
+		}
+	}
+
 	if resp.StatusCode != 200 {
-		return false, errors.New(fmt.Sprintf("FetchSGXDataFromAgent: Invalid status code received:%d", resp.StatusCode))
+		return false, errors.Wrapf(err,"FetchSGXDataFromAgent: Invalid status code received:%d", resp.StatusCode)
 	}
 
 	var agentResponse SgxAgentResponse
@@ -306,8 +321,23 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 
 	log.Debug("FetchLatestTCBInfoFromSCS: Status: ", resp.StatusCode)
 
+	if resp.StatusCode == http.StatusUnauthorized {
+		// fetch token and try again
+		aasRWLock.Lock()
+		aasClient.FetchAllTokens()
+		aasRWLock.Unlock()
+		err = addJWTToken(req)
+		if err != nil {
+			return false, errors.Wrap(err, "FetchLatestTCBInfoFromSCS: Failed to add JWT token")
+		}
+		resp, err = client.Do(req)
+		if err != nil {
+			return false, errors.Wrap(err, "FetchLatestTCBInfoFromSCS: Error from response")
+		}
+	}
+
 	if resp.StatusCode != 200 {
-		return false, errors.New(fmt.Sprintf("FetchLatestTCBInfoFromSCS: Invalid status code received:%d", resp.StatusCode))
+		return false, errors.Wrapf(err,"FetchLatestTCBInfoFromSCS: Invalid status code received:%d", resp.StatusCode)
 	}
 
 	var scsResponse SCSGetResponse
@@ -402,8 +432,23 @@ func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 
 	log.Debug("PushSGXData: Status: ", resp.StatusCode)
 
+	if resp.StatusCode == http.StatusUnauthorized {
+		// fetch token and try again
+		aasRWLock.Lock()
+		aasClient.FetchAllTokens()
+		aasRWLock.Unlock()
+		err = addJWTToken(req)
+		if err != nil {
+			return false, errors.Wrap(err, "PushSGXData: Failed to add JWT token")
+		}
+		resp, err = client.Do(req)
+		if err != nil {
+			return false, errors.Wrap(err, "PushSGXData: Error from response")
+		}
+	}
+
 	if resp.StatusCode != 201 && resp.StatusCode != 200 {
-		return false, errors.New(fmt.Sprintf("PushSGXData: Invalid status code received:%d", resp.StatusCode))
+		return false, errors.Wrapf(err,"PushSGXData: Invalid status code received:%d", resp.StatusCode)
 	}
 
 	var pushResponse SCSPushResponse
