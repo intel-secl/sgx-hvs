@@ -101,6 +101,11 @@ func QueryHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		log.Trace("QueryHostsCB entering")
 
+		err := AuthorizeEndpoint(r, constants.HostListReaderGroupName, true)
+		if err != nil {
+			return err
+		}
+
 		hardwareUUID := r.URL.Query().Get("HardwareUUID")
 		hostName := r.URL.Query().Get("HostName")
 
@@ -149,6 +154,11 @@ func QueryHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
 func GetPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		log.Trace("GetPaltformDataCB entering")
+
+		err := AuthorizeEndpoint(r, constants.HostDataReaderGroupName, true)
+		if err != nil {
+			return err
+		}
 
 		var platformData types.HostsSgxData
 		hostName := r.URL.Query().Get("HostName")
@@ -329,6 +339,11 @@ func SendHostRegisterResponse(w http.ResponseWriter, res RegisterResponse) error
 func RegisterHostCB(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 
+		err := AuthorizeEndpoint(r, constants.RegisterHostGroupName, true)
+		if err != nil {
+			return err
+		}
+
 		var res RegisterResponse
 		var data RegisterHostInfo
 		if r.ContentLength == 0 {
@@ -340,7 +355,7 @@ func RegisterHostCB(db repository.SHVSDatabase) errorHandlerFunc {
 
 		dec := json.NewDecoder(r.Body)
 		dec.DisallowUnknownFields()
-		err := dec.Decode(&data)
+		err = dec.Decode(&data)
 		if err != nil {
 			res = RegisterResponse{HttpStatus: http.StatusBadRequest,
 				Response: ResponseJson{Status: "Failed",

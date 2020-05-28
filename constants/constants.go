@@ -33,7 +33,10 @@ const (
 	DefaultDBRotationMaxRowCnt     = 100000
 	DefaultDBRotationMaxTableCnt   = 10
 	DefaultSSLCertFilePath         = ConfigDir + "sgx-host-verification-service-dbcert.pem"
-	ServiceName                    = "sgx-host-verification-service"
+	ServiceName                    = "SHVS"
+	RegisterHostGroupName          = "HostRegistration"
+	HostListReaderGroupName        = "HostsListReader"
+	HostDataReaderGroupName        = "HostDataReader"
 	SHVSUserName                   = "shvs"
 	DefaultHttpPort                = 13000
 	DefaultKeyAlgorithm            = "rsa"
