@@ -33,7 +33,7 @@ func StartSHVSScheduler(db repository.SHVSDatabase, timer int) {
 				break
 			case t := <-ticker.C:
 				log.Debug("StartSHVSScheduler: Timer started", t)
-				_, err := SHVSSchedulerJobCB(db)
+				_, err := shvsSchedulerJobCB(db)
 				if err != nil {
 					log.WithError(err).Info("StartSHVSScheduler: HostQueueScheduler got error")
 					break
@@ -43,7 +43,7 @@ func StartSHVSScheduler(db repository.SHVSDatabase, timer int) {
 	}()
 }
 
-func SHVSSchedulerJobCB(db repository.SHVSDatabase) (bool, error) {
+func shvsSchedulerJobCB(db repository.SHVSDatabase) (bool, error) {
 
 	log.Trace("SHVSSchedulerJobCB: Job stated")
 	queues := []string{constants.HostStatusSCSQueued, constants.HostStatusAgentQueued, constants.HostStatusTCBSCSStatusQueued}

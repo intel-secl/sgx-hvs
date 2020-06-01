@@ -32,7 +32,7 @@ func StartAutoRefreshSchedular(db repository.SHVSDatabase, timer int) {
 				break
 			case t := <-ticker.C:
 				log.Debug("StartAutoRefreshSchedular: Timer started", t)
-				_, err := SHVSAutoRefreshSchedulerJobCB(db)
+				_, err := shvsAutoRefreshSchedulerJobCB(db)
 				if err != nil {
 					log.WithError(err).Info("StartAutoRefreshSchedular: HostQueueScheduler got error")
 					break
@@ -42,9 +42,9 @@ func StartAutoRefreshSchedular(db repository.SHVSDatabase, timer int) {
 	}()
 }
 
-func SHVSAutoRefreshSchedulerJobCB(db repository.SHVSDatabase) (bool, error) {
+func shvsAutoRefreshSchedulerJobCB(db repository.SHVSDatabase) (bool, error) {
 
-	log.Trace("SHVSAutoRefreshSchedulerJobCB: Job stated")
+	log.Trace("shvsAutoRefreshSchedulerJobCB: Job stated")
 
 	expiredHosts, err := db.HostStatusRepository().RetrieveExpiredHosts()
 	if err != nil {
@@ -56,13 +56,13 @@ func SHVSAutoRefreshSchedulerJobCB(db repository.SHVSDatabase) (bool, error) {
 		log.Debug("StartAutoRefreshSchedular: No Host is expired ............. Nothing to do")
 		return true, nil
 	}
-	log.Debug("SHVSAutoRefreshSchedulerJobCB hosts found")
+	log.Debug("shvsAutoRefreshSchedulerJobCB hosts found")
 
 	///For each expired hosts change status in host_statuses = QUEUE
 	for i := 0; i < len(expiredHosts); i++ {
 		hostData := expiredHosts[i]
 		hostId := hostData.HostId
-		log.Debug("SHVSAutoRefreshSchedulerJobCB hostId: is expired.", hostId)
+		log.Debug("shvsAutoRefreshSchedulerJobCB hostId: is expired.", hostId)
 		err = resource.UpdateHostStatus(hostId, db, constants.HostStatusAgentQueued)
 		if err != nil {
 			return false, errors.New("GetSGXDataFromAgentCB: Error while Updating Host Status Information: " + err.Error())

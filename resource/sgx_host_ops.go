@@ -50,17 +50,17 @@ func SGXHostRegisterOps(r *mux.Router, db repository.SHVSDatabase) {
 	log.Trace("resource/registerhost_ops: RegisterHostOps() Entering")
 	defer log.Trace("resource/registerhost_ops: RegisterHostOps() Leaving")
 
-	r.Handle("/hosts", handlers.ContentTypeHandler(RegisterHostCB(db), "application/json")).Methods("POST")
-	r.Handle("/hosts/{id}", handlers.ContentTypeHandler(GetHostsCB(db), "application/json")).Methods("GET")
-	r.Handle("/hosts", handlers.ContentTypeHandler(QueryHostsCB(db), "application/json")).Methods("GET")
-	r.Handle("/platform-data", handlers.ContentTypeHandler(GetPaltformDataCB(db), "application/json")).Methods("GET")
+	r.Handle("/hosts", handlers.ContentTypeHandler(registerHostCB(db), "application/json")).Methods("POST")
+	r.Handle("/hosts/{id}", handlers.ContentTypeHandler(getHostsCB(db), "application/json")).Methods("GET")
+	r.Handle("/hosts", handlers.ContentTypeHandler(queryHostsCB(db), "application/json")).Methods("GET")
+	r.Handle("/platform-data", handlers.ContentTypeHandler(getPaltformDataCB(db), "application/json")).Methods("GET")
 	r.Handle("/reports", handlers.ContentTypeHandler(RetriveHostAttestationReportCB(db), "application/json")).Methods("GET")
 	r.Handle("/latestPerHost", handlers.ContentTypeHandler(RetriveHostAttestationReportCB(db), "application/json")).Methods("GET")
 	r.Handle("/host-status", handlers.ContentTypeHandler(HostStateInformationCB(db), "application/json")).Methods("GET")
-	r.Handle("/hosts/{id}", DeleteHostCB(db)).Methods("DELETE")
+	r.Handle("/hosts/{id}", deleteHostCB(db)).Methods("DELETE")
 }
 
-func GetHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
+func getHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		log.Trace("GetHostsCB entering")
 		id := mux.Vars(r)["id"]
@@ -97,9 +97,9 @@ func GetHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
 	}
 }
 
-func QueryHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
+func queryHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
-		log.Trace("QueryHostsCB entering")
+		log.Trace("queryHostsCB entering")
 
 		err := AuthorizeEndpoint(r, constants.HostListReaderGroupName, true)
 		if err != nil {
@@ -111,14 +111,14 @@ func QueryHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
 
 		if hostName != "" {
 			if !ValidateInputString(constants.HostName, hostName) {
-				return &resourceError{Message: "QueryHostsCB: Invalid query Param Data",
+				return &resourceError{Message: "queryHostsCB: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
 			}
 		}
 
 		if hardwareUUID != "" {
 			if !ValidateInputString(constants.UUID, hardwareUUID) {
-				return &resourceError{Message: "QueryHostsCB: Invalid query Param Data",
+				return &resourceError{Message: "queryHostsCB: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
 			}
 		}
@@ -146,14 +146,14 @@ func QueryHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
 		w.Write(js)
-		log.Trace("QueryHosts leaving")
+		log.Trace("queryHosts leaving")
 		return nil
 	}
 }
 
-func GetPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
+func getPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
-		log.Trace("GetPaltformDataCB entering")
+		log.Trace("getPaltformDataCB entering")
 
 		err := AuthorizeEndpoint(r, constants.HostDataReaderGroupName, true)
 		if err != nil {
@@ -164,7 +164,7 @@ func GetPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 		hostName := r.URL.Query().Get("HostName")
 		if hostName != "" {
 			if !ValidateInputString(constants.HostName, hostName) {
-				return &resourceError{Message: "QueryHostsCB: Invalid query Param Data",
+				return &resourceError{Message: "getPaltformDataCB: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
 			}
 			rs := types.Host{Name: hostName}
@@ -187,7 +187,7 @@ func GetPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 				_, err := strconv.Atoi(numberOfMinutes)
 				if err != nil {
 					log.WithError(err).Info("error came in converting numberOfMinutes from string to integer")
-					return &resourceError{Message: "GetPaltformDataCB : Invalid query Param Data",
+					return &resourceError{Message: "getPaltformDataCB : Invalid query Param Data",
 						StatusCode: http.StatusBadRequest}
 				}
 			}
@@ -217,12 +217,12 @@ func GetPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 		}
 		w.Write(js)
 
-		log.Trace("GetPaltformDataCB leaving")
+		log.Trace("getPaltformDataCB leaving")
 		return nil
 	}
 }
 
-func DeleteHostCB(db repository.SHVSDatabase) errorHandlerFunc {
+func deleteHostCB(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		id := mux.Vars(r)["id"]
 		validation_err := validation.ValidateUUIDv4(id)
@@ -249,12 +249,12 @@ func DeleteHostCB(db repository.SHVSDatabase) errorHandlerFunc {
 		}
 		err = db.HostRepository().Update(host)
 		if err != nil {
-			return errors.New("DeleteHostCB: Error while Updating Host Information: " + err.Error())
+			return errors.New("deleteHostCB: Error while Updating Host Information: " + err.Error())
 		}
 		slog.WithField("user", ext_host).Info("User deleted by:", r.RemoteAddr)
 		err = UpdateHostStatus(ext_host.Id, db, constants.HostStatusRemoved)
 		if err != nil {
-			return errors.New("DeleteHostCB: Error while Updating Host Status Information: " + err.Error())
+			return errors.New("deleteHostCB: Error while Updating Host Status Information: " + err.Error())
 		}
 		w.WriteHeader(http.StatusNoContent)
 		return nil
@@ -289,7 +289,7 @@ func UpdateSGXHostInfo(db repository.SHVSDatabase, existingHostData *types.Host,
 	return nil
 }
 
-func CreateSGXHostInfo(db repository.SHVSDatabase, hostInfo RegisterHostInfo) (string, error) {
+func createSGXHostInfo(db repository.SHVSDatabase, hostInfo RegisterHostInfo) (string, error) {
 	log.Trace("CreateSGXHostInfo: caching sgx data:", hostInfo)
 
 	hostId := uuid.New().String()
@@ -304,7 +304,7 @@ func CreateSGXHostInfo(db repository.SHVSDatabase, hostInfo RegisterHostInfo) (s
 	}
 	_, err := db.HostRepository().Create(host)
 	if err != nil {
-		return "", errors.New("CreateSGXHostInfo: Error while caching Host Information: " + err.Error())
+		return "", errors.New("createSGXHostInfo: Error while caching Host Information: " + err.Error())
 	}
 
 	hostStatus := types.HostStatus{
@@ -317,14 +317,14 @@ func CreateSGXHostInfo(db repository.SHVSDatabase, hostInfo RegisterHostInfo) (s
 
 	_, err = db.HostStatusRepository().Create(hostStatus)
 	if err != nil {
-		return "", errors.New("CreateSGXHostInfo: Error while caching Host Status Information: " + err.Error())
+		return "", errors.New("createSGXHostInfo: Error while caching Host Status Information: " + err.Error())
 	}
 
-	log.Trace("CreateSGXHostInfo: Insert SGX Host Data")
+	log.Trace("createSGXHostInfo: Insert SGX Host Data")
 	return hostId, nil
 }
 
-func SendHostRegisterResponse(w http.ResponseWriter, res RegisterResponse) error {
+func sendHostRegisterResponse(w http.ResponseWriter, res RegisterResponse) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(res.HttpStatus)
 
@@ -336,7 +336,7 @@ func SendHostRegisterResponse(w http.ResponseWriter, res RegisterResponse) error
 	return nil
 }
 
-func RegisterHostCB(db repository.SHVSDatabase) errorHandlerFunc {
+func registerHostCB(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 
 		err := AuthorizeEndpoint(r, constants.RegisterHostGroupName, true)
@@ -349,8 +349,8 @@ func RegisterHostCB(db repository.SHVSDatabase) errorHandlerFunc {
 		if r.ContentLength == 0 {
 			res = RegisterResponse{HttpStatus: http.StatusBadRequest,
 				Response: ResponseJson{Status: "Failed",
-					Message: "RegisterHostCB: No request data"}}
-			return SendHostRegisterResponse(w, res)
+					Message: "registerHostCB: No request data"}}
+			return sendHostRegisterResponse(w, res)
 		}
 
 		dec := json.NewDecoder(r.Body)
@@ -359,11 +359,11 @@ func RegisterHostCB(db repository.SHVSDatabase) errorHandlerFunc {
 		if err != nil {
 			res = RegisterResponse{HttpStatus: http.StatusBadRequest,
 				Response: ResponseJson{Status: "Failed",
-					Message: "RegisterHostCB: Invalid Json Post Data"}}
-			return SendHostRegisterResponse(w, res)
+					Message: "registerHostCB: Invalid Json Post Data"}}
+			return sendHostRegisterResponse(w, res)
 		}
 
-		log.Debug("Calling RegisterHostCB.................", data)
+		log.Debug("Calling registerHostCB.................", data)
 
 		if !ValidateInputString(constants.HostName, data.HostName) ||
 			!ValidateInputString(constants.ConnectionString, data.ConnectionString) ||
@@ -372,8 +372,8 @@ func RegisterHostCB(db repository.SHVSDatabase) errorHandlerFunc {
 
 			res = RegisterResponse{HttpStatus: http.StatusBadRequest,
 				Response: ResponseJson{Status: "Failed",
-					Message: "RegisterHostCB: Invalid query Param Data"}}
-			return SendHostRegisterResponse(w, res)
+					Message: "registerHostCB: Invalid query Param Data"}}
+			return sendHostRegisterResponse(w, res)
 		}
 
 		host := &types.Host{
@@ -386,43 +386,43 @@ func RegisterHostCB(db repository.SHVSDatabase) errorHandlerFunc {
 				Response: ResponseJson{Status: "Success",
 					Id:      existingHostData.Id,
 					Message: "Host already registerd in SGX HVS"}}
-			return SendHostRegisterResponse(w, res)
+			return sendHostRegisterResponse(w, res)
 		} else if existingHostData != nil && data.Overwrite == true {
 			err = UpdateSGXHostInfo(db, existingHostData, data)
 			if err != nil {
 				res = RegisterResponse{HttpStatus: http.StatusInternalServerError,
 					Response: ResponseJson{Status: "Failed",
-						Message: "RegisterHostCB: " + err.Error()}}
-				return SendHostRegisterResponse(w, res)
+						Message: "registerHostCB: " + err.Error()}}
+				return sendHostRegisterResponse(w, res)
 			}
 
 			res = RegisterResponse{HttpStatus: http.StatusCreated,
 				Response: ResponseJson{Status: "Created",
 					Id:      existingHostData.Id,
 					Message: "SGX Host Re-registered Successfully"}}
-			return SendHostRegisterResponse(w, res)
+			return sendHostRegisterResponse(w, res)
 
 		} else if existingHostData == nil { //if existingHostData == nil
 
-			hostId, err := CreateSGXHostInfo(db, data)
+			hostId, err := createSGXHostInfo(db, data)
 			if err != nil {
 				res = RegisterResponse{HttpStatus: http.StatusInternalServerError,
 					Response: ResponseJson{Status: "Failed",
-						Message: "RegisterHostCB: " + err.Error()}}
-				return SendHostRegisterResponse(w, res)
+						Message: "registerHostCB: " + err.Error()}}
+				return sendHostRegisterResponse(w, res)
 			}
 
 			res = RegisterResponse{HttpStatus: http.StatusCreated,
 				Response: ResponseJson{Status: "Success",
 					Id:      hostId,
 					Message: "SGX Host Registered Successfully"}}
-			return SendHostRegisterResponse(w, res)
+			return sendHostRegisterResponse(w, res)
 		} else {
 
 			res = RegisterResponse{HttpStatus: http.StatusInternalServerError,
 				Response: ResponseJson{Status: "Failed",
 					Message: "Invalid data"}}
-			return SendHostRegisterResponse(w, res)
+			return sendHostRegisterResponse(w, res)
 		}
 	}
 }

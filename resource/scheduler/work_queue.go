@@ -61,24 +61,24 @@ const (
 	WorkerCount = 5
 )
 
-func (wq *WorkerQueue) GetJobFromWQList() *Job {
-	log.Debug("GetJobFromWQList: Get job from list")
+func (wq *WorkerQueue) getJobFromWQList() *Job {
+	log.Debug("getJobFromWQList: Get job from list")
 	if wq.wList == nil {
-		log.Error("GetJobFromWQList: WorkQueue list is empty")
+		log.Error("getJobFromWQList: WorkQueue list is empty")
 		return nil
 	}
 	i := wq.wList.GetElementFromList()
 	if i == nil {
-		log.Error("GetJobFromWQList: Invalid job got from workqueue")
+		log.Error("getJobFromWQList: Invalid job got from workqueue")
 		return nil
 	}
 	job := i.(*Job)
 
-	log.Debug("GetJobFromWQList: Got job from Queue:", job)
+	log.Debug("getJobFromWQList: Got job from Queue:", job)
 	return job
 }
 
-func WorkerCB(id int, wq *WorkerQueue) {
+func workerCB(id int, wq *WorkerQueue) {
 	for {
 		worker := wq.workers[id]
 		wq.wQCond.L.Lock()
@@ -102,7 +102,7 @@ func WorkerCB(id int, wq *WorkerQueue) {
 		}
 
 		log.Debug("Worker: ", id, " Get job from WorkQuelist")
-		job := wq.GetJobFromWQList()
+		job := wq.getJobFromWQList()
 		if job == nil {
 			log.Debug("Worker: ", id, " get invalid job or Queue is empty")
 			log.Debug("Worker: ", id, " Completed the Job.....")
@@ -173,7 +173,7 @@ func InitWorkerQueue() *WorkerQueue {
 		}
 
 		for id := 0; id < wq.wCount; id++ {
-			go WorkerCB(id, wq)
+			go workerCB(id, wq)
 		}
 	} else {
 		log.Trace("InitWorkerQueue: Workqueue init already completed")

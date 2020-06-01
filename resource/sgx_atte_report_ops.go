@@ -27,6 +27,7 @@ type PlatformSgxData struct {
 	PceSvn        string `json:"pcesvn"`
 	PceId         string `json:"pceid"`
 	QeId          string `json:"qeid"`
+	Manifest      string `json:"manifest"`
 }
 type SgxData struct {
 	SgxSupported bool   `json:"sgx-supported"`
@@ -183,7 +184,7 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 	}
 
 	if resp.StatusCode != 200 {
-		return false, errors.Wrapf(err,"FetchSGXDataFromAgent: Invalid status code received:%d", resp.StatusCode)
+		return false, errors.Wrapf(err, "FetchSGXDataFromAgent: Invalid status code received:%d", resp.StatusCode)
 	}
 
 	var agentResponse SgxAgentResponse
@@ -254,6 +255,7 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 				CpuSvn:      agentResponse.PlatformSgxDataValue.CpuSvn,
 				PceSvn:      agentResponse.PlatformSgxDataValue.PceSvn,
 				Encppid:     agentResponse.PlatformSgxDataValue.EncryptedPPID,
+				Manifest:    agentResponse.PlatformSgxDataValue.Manifest,
 				CreatedTime: time.Now(),
 			}
 			_, err = db.PlatformTcbRepository().Create(platformData)
@@ -266,6 +268,7 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 				CpuSvn:      agentResponse.PlatformSgxDataValue.CpuSvn,
 				PceSvn:      agentResponse.PlatformSgxDataValue.PceSvn,
 				Encppid:     agentResponse.PlatformSgxDataValue.EncryptedPPID,
+				Manifest:    agentResponse.PlatformSgxDataValue.Manifest,
 				CreatedTime: time.Now(),
 			}
 			err = db.PlatformTcbRepository().Update(platformData)
@@ -337,7 +340,7 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 	}
 
 	if resp.StatusCode != 200 {
-		return false, errors.Wrapf(err,"FetchLatestTCBInfoFromSCS: Invalid status code received:%d", resp.StatusCode)
+		return false, errors.Wrapf(err, "FetchLatestTCBInfoFromSCS: Invalid status code received:%d", resp.StatusCode)
 	}
 
 	var scsResponse SCSGetResponse
@@ -404,7 +407,8 @@ func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 		"cpu_svn":  platformData.CpuSvn,
 		"pce_svn":  platformData.PceSvn,
 		"pce_id":   platformData.PceId,
-		"qe_id":    platformData.QeId}
+		"qe_id":    platformData.QeId,
+		"manifest": platformData.Manifest}
 
 	reqBytes, err := json.Marshal(requestStr)
 	if err != nil {
@@ -448,7 +452,7 @@ func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 	}
 
 	if resp.StatusCode != 201 && resp.StatusCode != 200 {
-		return false, errors.Wrapf(err,"PushSGXData: Invalid status code received:%d", resp.StatusCode)
+		return false, errors.Wrapf(err, "PushSGXData: Invalid status code received:%d", resp.StatusCode)
 	}
 
 	var pushResponse SCSPushResponse
