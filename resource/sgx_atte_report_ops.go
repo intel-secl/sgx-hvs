@@ -27,7 +27,7 @@ type PlatformSgxData struct {
 	PceSvn        string `json:"pcesvn"`
 	PceId         string `json:"pceid"`
 	QeId          string `json:"qeid"`
-	Manifest      string `json:"manifest"`
+	Manifest      string `json:"Manifest"`
 }
 type SgxData struct {
 	SgxSupported bool   `json:"sgx-supported"`
@@ -131,6 +131,8 @@ func RetriveHostAttestationReportCB(db repository.SHVSDatabase) errorHandlerFunc
 }
 
 func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl string) (bool, error) {
+	log.Trace("resource/sgx_atte_report_ops: FetchSGXDataFromAgent() Entering")
+	defer log.Trace("resource/sgx_atte_report_ops: FetchSGXDataFromAgent() Leaving")
 
 	client, err := clients.HTTPClientWithCADir(constants.TrustedCAsStoreDir)
 	if err != nil {
@@ -390,6 +392,8 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 }
 
 func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (bool, error) {
+	log.Trace("resource/sgx_atte_report_ops: PushSGXData() Entering")
+	defer log.Trace("resource/sgx_atte_report_ops: PushSGXData() Leaving")
 	client, err := clients.HTTPClientWithCADir(constants.TrustedCAsStoreDir)
 	if err != nil {
 		return false, errors.Wrap(err, "PushSGXData: Error in getting client object")
@@ -452,9 +456,11 @@ func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 	}
 
 	if resp.StatusCode != 201 && resp.StatusCode != 200 {
+		log.Info("resp.StatusCode is not what expected: ", resp.StatusCode)
 		return false, errors.Wrapf(err, "PushSGXData: Invalid status code received:%d", resp.StatusCode)
 	}
 
+	log.Info("resp.StatusCode: ", resp.StatusCode)
 	var pushResponse SCSPushResponse
 
 	dec := json.NewDecoder(resp.Body)
@@ -487,6 +493,8 @@ func CreateHostReport(db repository.SHVSDatabase, hostId string, status string) 
 }
 
 func PushSGXDataToCachingServiceCB(workerId int, jobData interface{}) error {
+	log.Trace("resource/sgx_atte_report_ops: PushSGXDataToCachingServiceCB() Entering")
+	defer log.Trace("resource/sgx_atte_report_ops: PushSGXDataToCachingServiceCB() Leaving")
 
 	if workerId < 0 || jobData == nil {
 		log.Error("PushSGXDataToCachingServiceCB: Invalid inputs provided")
@@ -535,6 +543,7 @@ func PushSGXDataToCachingServiceCB(workerId int, jobData interface{}) error {
 
 	_, err = PushSGXData(db, hostPlatformData)
 	if err != nil {
+		log.Info("trace 1")
 		log.Error("PushSGXDataToCachingServiceCB: Error in SGX Data push: ", err.Error())
 		err := UpdateHostStatus(hostId, db, constants.HostStatusProcessError)
 		if err != nil {
@@ -564,6 +573,8 @@ func PushSGXDataToCachingServiceCB(workerId int, jobData interface{}) error {
 }
 
 func GetSGXDataFromAgentCB(workerId int, jobData interface{}) error {
+	log.Trace("resource/sgx_atte_report_ops: GetSGXDataFromAgentCB() Entering")
+	defer log.Trace("resource/sgx_atte_report_ops: GetSGXDataFromAgentCB() Leaving")
 
 	if workerId < 0 || jobData == nil {
 		log.Error("GetSGXDataFromAgentCB: Invalid inputs provided")
@@ -620,7 +631,8 @@ func GetSGXDataFromAgentCB(workerId int, jobData interface{}) error {
 }
 
 func GetLatestTCBInfoCB(workerId int, jobData interface{}) error {
-	log.Debug("GetLatestTCBInfoCB: Invoked")
+	log.Trace("resource/sgx_atte_report_ops: GetLatestTCBInfoCB() Entering")
+	defer log.Trace("resource/sgx_atte_report_ops: GetLatestTCBInfoCB() Leaving")
 
 	if workerId < 0 || jobData == nil {
 		log.Error("GetLatestTCBInfoCB: Invalid inputs provided")
@@ -677,7 +689,5 @@ func GetLatestTCBInfoCB(workerId int, jobData interface{}) error {
 			return errors.New("GetSGXDataFromAgentCB: Error while Updating Host Status Information: " + err.Error())
 		}
 	}
-
-	log.Trace("GetLatestTCBInfoCB: Completed successfully")
 	return nil
 }
