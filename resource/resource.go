@@ -27,7 +27,7 @@ func (ehf errorHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer log.Trace("resource/resource:ServeHTTP() Leaving")
 
 	if err := ehf(w, r); err != nil {
-		log.WithError(err).Error("HTTP Error")
+		slog.WithError(err).Error("HTTP Error")
 		if gorm.IsRecordNotFoundError(err) {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return

@@ -69,8 +69,6 @@ func openLogFiles() (logFile *os.File, httpLogFile *os.File, secLogFile *os.File
 }
 
 func main() {
-        log.Trace("main:main() Entering")
-        defer log.Trace("main:main() Leaving")
 
         l, h, s, err := openLogFiles()
         var app *App
