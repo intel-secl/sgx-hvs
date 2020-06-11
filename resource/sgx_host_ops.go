@@ -205,8 +205,7 @@ func getPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 		}
 		log.Debug("platformData: ", platformData)
 		if len(platformData) == 0 {
-			log.Error("no data is updated")
-			return &resourceError{Message: "no host is updated", StatusCode: http.StatusOK}
+			log.Info("getPlatformDataCB: no platform data has been updated")
 		}
 
 		w.Header().Set("Content-Type", "application/json")
