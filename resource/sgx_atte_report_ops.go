@@ -161,9 +161,9 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 
 	resp, err := client.Do(req)
 	if err != nil {
-		err = UpdateHostStatus(hostId, db, constants.HostStatusAgentRetry)
-		if err != nil {
-			return true, errors.Wrap(err, "FetchSGXDataFromAgent: Error while caching Host Status Information: "+err.Error())
+		err1 := UpdateHostStatus(hostId, db, constants.HostStatusAgentRetry)
+		if err1 != nil {
+			return true, errors.Wrap(err1, "FetchSGXDataFromAgent: Error while caching Host Status Information: "+err.Error())
 		}
 		return true, errors.Wrap(err, "FetchSGXDataFromAgent: client call failed")
 	}
@@ -185,7 +185,7 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 		}
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return false, errors.Wrapf(err, "FetchSGXDataFromAgent: Invalid status code received:%d", resp.StatusCode)
 	}
 
@@ -318,10 +318,11 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 
 	resp, err := client.Do(req)
 	if err != nil {
-		err = UpdateHostStatus(platformData.HostId, db, constants.HostStatusTCBSCSRetry)
-		if err != nil {
+		err1 := UpdateHostStatus(platformData.HostId, db, constants.HostStatusTCBSCSRetry)
+		if err1 != nil {
 			return true, errors.Wrap(err, "FetchLatestTCBInfoFromSCS: Error while updating Host Status Information: "+err.Error())
 		}
+		return true, errors.Wrap(err, "FetchLatestTCBInfoFromSCS: client call failed. Retrying")
 	}
 
 	log.Debug("FetchLatestTCBInfoFromSCS: Status: ", resp.StatusCode)
@@ -341,8 +342,8 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 		}
 	}
 
-	if resp.StatusCode != 200 {
-		return false, errors.Wrapf(err, "FetchLatestTCBInfoFromSCS: Invalid status code received:%d", resp.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		return false, errors.New("FetchLatestTCBInfoFromSCS: Invalid status code received: " + strconv.Itoa(resp.StatusCode))
 	}
 
 	var scsResponse SCSGetResponse
@@ -432,10 +433,11 @@ func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 
 	resp, err := client.Do(req)
 	if err != nil {
-		err = UpdateHostStatus(platformData.HostId, db, constants.HostStatusSCSRetry)
-		if err != nil {
-			return false, errors.Wrap(err, "PushSGXData: Error while caching Host Status Information: "+err.Error())
+		err1 := UpdateHostStatus(platformData.HostId, db, constants.HostStatusSCSRetry)
+		if err1 != nil {
+			return true, errors.Wrap(err, "PushSGXData: Error while caching Host Status Information: "+err.Error())
 		}
+		return true, errors.Wrap(err, "PushSGXData: client call failed")
 	}
 
 	log.Debug("PushSGXData: Status: ", resp.StatusCode)
@@ -455,9 +457,8 @@ func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 		}
 	}
 
-	if resp.StatusCode != 201 && resp.StatusCode != 200 {
-		log.Info("resp.StatusCode is not what expected: ", resp.StatusCode)
-		return false, errors.Wrapf(err, "PushSGXData: Invalid status code received:%d", resp.StatusCode)
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
+		return false, errors.New("PushSGXData: Invalid status code received: " + strconv.Itoa(resp.StatusCode))
 	}
 
 	log.Info("resp.StatusCode: ", resp.StatusCode)
@@ -501,7 +502,6 @@ func PushSGXDataToCachingServiceCB(workerId int, jobData interface{}) error {
 		return errors.New("PushSGXDataToCachingServiceCB: Invalid inputs provided")
 	}
 
-	log.Debug("PushSGXDataToCachingServiceCB: Invoked")
 	jobDataCasted := jobData.(*AttReportThreadData)
 	db := jobDataCasted.Conn
 	hostId := jobDataCasted.Uuid
@@ -541,19 +541,27 @@ func PushSGXDataToCachingServiceCB(workerId int, jobData interface{}) error {
 		return errors.Wrap(errors.New("PushSGXDataToCachingServiceCB:"), "Error in getting host record")
 	}
 
-	_, err = PushSGXData(db, hostPlatformData)
-	if err != nil {
-		log.Info("trace 1")
+	flag, err := PushSGXData(db, hostPlatformData)
+	if flag == false && err != nil {
 		log.Error("PushSGXDataToCachingServiceCB: Error in SGX Data push: ", err.Error())
 		err := UpdateHostStatus(hostId, db, constants.HostStatusProcessError)
 		if err != nil {
 			return errors.New("PushSGXDataToCachingServiceCB: Error while Updating Host Status Information: " + err.Error())
 		}
-		return errors.Wrap(err, "PushSGXDataToCachingServiceCB: Error in SGX Data push: Error in getting host record")
+	} else if flag == true && err != nil {
+		///Status is already changed to retry.
+		log.WithError(err).Info("Fetch Sgx Data From Agent ends with Error. Will Retry.")
+		return errors.New("Fetch Sgx Data From Agent ends with Error. Will Retry." + err.Error())
+
+	} else if flag == true && err == nil {
+		err = UpdateHostStatus(hostId, db, constants.HostStatusTCBSCSStatusQueued)
+		if err != nil {
+			return errors.New("PushSGXDataToCachingServiceCB: Error while Updating Host Status Information: " + err.Error())
+		}
 	}
 
 	//TODO Platform Status should be generated by SGX Caching Service and update the result in Status
-	err = CreateHostReport(db, hostId, "Platform-Status: Updated")
+	/*err = CreateHostReport(db, hostId, "Platform-Status: Updated")
 	if err != nil {
 		log.Error("PushSGXDataToCachingServiceCB: Error in Host Report Generation: ", err.Error())
 		err := UpdateHostStatus(hostId, db, constants.HostStatusProcessError)
@@ -561,12 +569,8 @@ func PushSGXDataToCachingServiceCB(workerId int, jobData interface{}) error {
 			return errors.New("PushSGXDataToCachingServiceCB: Error while Updating Host Status Information: " + err.Error())
 		}
 		return errors.Wrap(err, "PushSGXDataToCachingServiceCB: Error in Host Report Genration: Error in getting host record")
-	}
+	}*/
 
-	err = UpdateHostStatus(hostId, db, constants.HostStatusTCBSCSStatusQueued)
-	if err != nil {
-		return errors.New("PushSGXDataToCachingServiceCB: Error while Updating Host Status Information: " + err.Error())
-	}
 	log.Debug("PushSGXDataToCachingServiceCB: Completed successfully")
 
 	return nil
@@ -625,6 +629,11 @@ func GetSGXDataFromAgentCB(workerId int, jobData interface{}) error {
 		if err != nil {
 			return errors.New("GetSGXDataFromAgentCB: Error while Updating Host Status Information: " + err.Error())
 		}
+	} else if flag == true && err != nil {
+		///Status is already changed to retry.
+		log.WithError(err).Info("Fetch Sgx Data From Agent ends with Error. Will Retry.")
+		return errors.New("Fetch Sgx Data From Agent ends with Error. Will Retry." + err.Error())
+
 	}
 	log.Debug("GetSGXDataFromAgentCB: Completed successfully")
 	return nil
@@ -688,6 +697,10 @@ func GetLatestTCBInfoCB(workerId int, jobData interface{}) error {
 		if err != nil {
 			return errors.New("GetSGXDataFromAgentCB: Error while Updating Host Status Information: " + err.Error())
 		}
+	} else if flag == true && err != nil {
+		///Status is already changed to retry.
+		log.WithError(err).Info("Fetch TCBInfo latest ends with Error. Will Retry.")
+		return errors.New("Fetch TCBInfo latest ends with Error. Will Retry." + err.Error())
 	}
 	return nil
 }
