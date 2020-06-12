@@ -550,8 +550,8 @@ func PushSGXDataToCachingServiceCB(workerId int, jobData interface{}) error {
 		}
 	} else if flag == true && err != nil {
 		///Status is already changed to retry.
-		log.WithError(err).Info("Fetch Sgx Data From Agent ends with Error. Will Retry.")
-		return errors.New("Fetch Sgx Data From Agent ends with Error. Will Retry." + err.Error())
+		log.WithError(err).Info("Pushing data to SCS ended with Error. Will Retry.")
+		return errors.New("Pushing data to SCS ended with Error. Will Retry." + err.Error())
 
 	} else if flag == true && err == nil {
 		err = UpdateHostStatus(hostId, db, constants.HostStatusTCBSCSStatusQueued)
