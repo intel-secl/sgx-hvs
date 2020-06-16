@@ -7,6 +7,7 @@ package resource
 
 import (
         "fmt"
+        "intel/isecl/sgx-host-verification-service/constants"
         "net/http"
         "encoding/json"
         "intel/isecl/sgx-host-verification-service/repository"
@@ -17,14 +18,18 @@ func HostStateInformationCB (db repository.SHVSDatabase) (errorHandlerFunc) {
                 log.Trace("resource/sgx_host_status: HostStateInformationCB() Entering")
                 defer log.Trace("resource/sgx_host_status: HostStateInformationCB() Leaving")
 
-		if ( len(r.URL.Query()) == 0) {
-                        return &resourceError{Message: "HostStateInformationCB: The Request Query Data not provided",
-                                                                        StatusCode: http.StatusBadRequest}
-                }
-		
-		hostStatusData, err := db.HostStatusRepository().GetHostStateInfo()
+                err := AuthorizeEndpoint(r, constants.HostDataReaderGroupName, true)
                 if err != nil {
-                        return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
+                        return err
+                }
+	        if ( len(r.URL.Query()) == 0) {
+	                return &resourceError{Message: "HostStateInformationCB: The Request Query Data not provided", StatusCode: http.StatusBadRequest}
+                }
+
+	        hostStatusData, err := db.HostStatusRepository().GetHostStateInfo()
+	        if err != nil {
+			log.WithError(err).Error("resource/sgx_host_status: HostStateInformationCB() Error in retrieving host state information")
+	                return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
                 }
                 log.Debug("hostStatusData",hostStatusData)
 

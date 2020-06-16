@@ -103,7 +103,8 @@ create_roles() {
 		local agent_role_id=$( create_user_roles "SGX_AGENT" "HostDataReader" "" )
 		local scs_role_id1=$( create_user_roles "SCS" "HostDataUpdater" "" )
 		local scs_role_id2=$( create_user_roles "SCS" "HostDataReader" "" )
-		ROLE_ID_TO_MAP=`echo \"$cms_role_id\",\"$agent_role_id\",\"$scs_role_id1\",\"$scs_role_id2\"`
+		local shvs_role_id=$( create_user_roles "SHVS" "HostListManager" "" )
+		ROLE_ID_TO_MAP=`echo \"$cms_role_id\",\"$agent_role_id\",\"$scs_role_id1\",\"$scs_role_id2\",\"$shvs_role_id\"`
 		echo $ROLE_ID_TO_MAP
 }
 

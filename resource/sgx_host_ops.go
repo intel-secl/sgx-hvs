@@ -63,6 +63,12 @@ func SGXHostRegisterOps(r *mux.Router, db repository.SHVSDatabase) {
 func getHostsCB(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		log.Trace("GetHostsCB entering")
+
+		err := AuthorizeEndpoint(r, constants.HostListReaderGroupName, true)
+		if err != nil {
+			return err
+		}
+
 		id := mux.Vars(r)["id"]
 		validation_err := validation.ValidateUUIDv4(id)
 		if validation_err != nil {
@@ -223,6 +229,12 @@ func getPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 
 func deleteHostCB(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
+
+		err := AuthorizeEndpoint(r, constants.HostListManagerGroupName, true)
+		if err != nil {
+			return err
+		}
+
 		id := mux.Vars(r)["id"]
 		validation_err := validation.ValidateUUIDv4(id)
 		if validation_err != nil {

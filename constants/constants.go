@@ -37,6 +37,7 @@ const (
 	RegisterHostGroupName          = "HostRegistration"
 	HostListReaderGroupName        = "HostsListReader"
 	HostDataReaderGroupName        = "HostDataReader"
+	HostListManagerGroupName       = "HostListManager"
 	SHVSUserName                   = "shvs"
 	DefaultHttpPort                = 13000
 	DefaultKeyAlgorithm            = "rsa"
