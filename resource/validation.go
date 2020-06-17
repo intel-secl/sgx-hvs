@@ -12,7 +12,7 @@ import (
 var regExMap = map[string]*regexp.Regexp{
 	constants.HostName:         regexp.MustCompile(`^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$`),
 	constants.ConnectionString: regexp.MustCompile(`^\S+$`),
-	constants.Description:      regexp.MustCompile(`^[0-9a-zA-Z]{0,31}$`),
+	constants.Description:      regexp.MustCompile(`^[0-9a-zA-Z ]{0,31}$`),
 	constants.ID:               regexp.MustCompile(`([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}){1}`),
 	constants.HostID:           regexp.MustCompile(`([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}){1}`),
 	constants.HostStatus:       regexp.MustCompile(`^[A-Za-z]*$`),
