@@ -5,7 +5,7 @@
 package mock
 
 import (
-	"intel/isecl/sgx-host-verification-service/repository"
+	"intel/isecl/shvs/repository"
 )
 
 type MockDatabase struct {

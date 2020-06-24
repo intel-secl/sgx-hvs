@@ -12,7 +12,7 @@ unset http_proxy
 aas_hostname=${AAS_URL:-"https://10.80.245.104:8444"}
 CURL_OPTS="-s -k"
 IPADDR="10.80.245.104,127.0.0.1,localhost"
-CN="SGX HVS TLS Certificate"
+CN="SHVS TLS Certificate"
 
 mkdir -p /tmp/setup/shvs
 tmpdir=$(mktemp -d -p /tmp/setup/shvs)

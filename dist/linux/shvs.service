@@ -5,12 +5,12 @@ Description=SGX Host Verification Service
 Type=simple
 User=shvs
 Group=shvs
-ExecStart=/usr/bin/sgx-host-verification-service run
+ExecStart=/usr/bin/shvs run
 ExecReload=/bin/kill -s HUP $MAINPID
 TimeoutStartSec=0
 Restart=on-failure
 PermissionsStartOnly=true
-RuntimeDirectory=sgx-host-verification-service
+RuntimeDirectory=shvs
 RuntimeDirectoryMode=0775
 
 [Install]

@@ -5,7 +5,7 @@
 package mock
 
 import (
-	"intel/isecl/sgx-host-verification-service/types"
+	"intel/isecl/shvs/types"
 )
 
 type MockPckCertRepository struct {

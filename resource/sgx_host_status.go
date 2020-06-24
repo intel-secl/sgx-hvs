@@ -7,10 +7,10 @@ package resource
 
 import (
         "fmt"
-        "intel/isecl/sgx-host-verification-service/constants"
+        "intel/isecl/shvs/constants"
         "net/http"
         "encoding/json"
-        "intel/isecl/sgx-host-verification-service/repository"
+        "intel/isecl/shvs/repository"
 )
 
 func HostStateInformationCB (db repository.SHVSDatabase) (errorHandlerFunc) {

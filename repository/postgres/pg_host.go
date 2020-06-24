@@ -7,7 +7,7 @@ package postgres
 import (
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
-	"intel/isecl/sgx-host-verification-service/types"
+	"intel/isecl/shvs/types"
 )
 
 type PostgresHostRepository struct {

@@ -15,10 +15,10 @@ import (
 	"strconv"
 	"time"
 
-	"intel/isecl/sgx-host-verification-service/config"
-	"intel/isecl/sgx-host-verification-service/constants"
-	"intel/isecl/sgx-host-verification-service/repository"
-	"intel/isecl/sgx-host-verification-service/types"
+	"intel/isecl/shvs/config"
+	"intel/isecl/shvs/constants"
+	"intel/isecl/shvs/repository"
+	"intel/isecl/shvs/types"
 )
 
 type PlatformSgxData struct {

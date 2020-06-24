@@ -11,7 +11,7 @@ import (
 	errorLog "github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 	"intel/isecl/lib/common/v2/setup"
-	"intel/isecl/sgx-host-verification-service/constants"
+	"intel/isecl/shvs/constants"
 	"os"
 	"path"
 	"strings"

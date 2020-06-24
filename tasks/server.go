@@ -10,8 +10,8 @@ import (
 	"github.com/pkg/errors"
 	commLog "intel/isecl/lib/common/v2/log"
 	"intel/isecl/lib/common/v2/setup"
-	"intel/isecl/sgx-host-verification-service/config"
-	"intel/isecl/sgx-host-verification-service/constants"
+	"intel/isecl/shvs/config"
+	"intel/isecl/shvs/constants"
 	"io"
 	"time"
 )

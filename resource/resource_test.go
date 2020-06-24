@@ -11,8 +11,8 @@ import (
 	"net/http/httptest"
 	"github.com/stretchr/testify/assert"
 	"intel/isecl/lib/common/v2/middleware"
-	"intel/isecl/sgx-host-verification-service/repository"
-	"intel/isecl/sgx-host-verification-service/constants"
+	"intel/isecl/shvs/repository"
+	"intel/isecl/shvs/constants"
 )
 
 

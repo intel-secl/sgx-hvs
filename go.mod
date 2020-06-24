@@ -1,4 +1,4 @@
-module intel/isecl/sgx-host-verification-service
+module intel/isecl/shvs
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

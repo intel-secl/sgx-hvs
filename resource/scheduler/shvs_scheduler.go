@@ -12,10 +12,10 @@ import (
 	"syscall"
 	"time"
 
-	//"intel/isecl/sgx-host-verification-service/types"
-	"intel/isecl/sgx-host-verification-service/constants"
-	"intel/isecl/sgx-host-verification-service/repository"
-	"intel/isecl/sgx-host-verification-service/resource"
+	//"intel/isecl/shvs/types"
+	"intel/isecl/shvs/constants"
+	"intel/isecl/shvs/repository"
+	"intel/isecl/shvs/resource"
 )
 
 func StartSHVSScheduler(db repository.SHVSDatabase, timer int) {

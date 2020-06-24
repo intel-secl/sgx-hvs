@@ -15,9 +15,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"intel/isecl/lib/common/v2/validation"
-	"intel/isecl/sgx-host-verification-service/constants"
-	"intel/isecl/sgx-host-verification-service/repository"
-	"intel/isecl/sgx-host-verification-service/types"
+	"intel/isecl/shvs/constants"
+	"intel/isecl/shvs/repository"
+	"intel/isecl/shvs/types"
 )
 
 type ResponseJson struct {

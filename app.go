@@ -25,14 +25,14 @@ import (
 	"time"
 
 	"intel/isecl/lib/common/v2/middleware"
-	"intel/isecl/sgx-host-verification-service/config"
-	"intel/isecl/sgx-host-verification-service/constants"
-	"intel/isecl/sgx-host-verification-service/repository"
-	"intel/isecl/sgx-host-verification-service/repository/postgres"
-	"intel/isecl/sgx-host-verification-service/resource"
-	"intel/isecl/sgx-host-verification-service/resource/scheduler"
-	"intel/isecl/sgx-host-verification-service/tasks"
-	"intel/isecl/sgx-host-verification-service/version"
+	"intel/isecl/shvs/config"
+	"intel/isecl/shvs/constants"
+	"intel/isecl/shvs/repository"
+	"intel/isecl/shvs/repository/postgres"
+	"intel/isecl/shvs/resource"
+	"intel/isecl/shvs/resource/scheduler"
+	"intel/isecl/shvs/tasks"
+	"intel/isecl/shvs/version"
 
 	"intel/isecl/lib/common/v2/crypt"
 	e "intel/isecl/lib/common/v2/exec"
@@ -69,17 +69,17 @@ func (a *App) printUsage() {
 	w := a.consoleWriter()
 	fmt.Fprintln(w, "Usage:")
 	fmt.Fprintln(w, "")
-	fmt.Fprintln(w, "    sgx-host-verification-service <command> [arguments]")
+	fmt.Fprintln(w, "    shvs <command> [arguments]")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "Avaliable Commands:")
 	fmt.Fprintln(w, "    help|-h|-help    Show this help message")
 	fmt.Fprintln(w, "    setup [task]     Run setup task")
-	fmt.Fprintln(w, "    start            Start sgx-host-verification-service")
-	fmt.Fprintln(w, "    status           Show the status of sgx-host-verification-service")
-	fmt.Fprintln(w, "    stop             Stop sgx-host-verification-service")
+	fmt.Fprintln(w, "    start            Start SGX Host Verification Service")
+	fmt.Fprintln(w, "    status           Show the status of SGX Host Verification Service")
+	fmt.Fprintln(w, "    stop             Stop SGX Host Verification Service")
 	fmt.Fprintln(w, "    tlscertsha384    Show the SHA384 of the certificate used for TLS")
-	fmt.Fprintln(w, "    uninstall        Uninstall sgx-host-verification-service")
-	fmt.Fprintln(w, "    version          Show the version of sgx-host-verification-service")
+	fmt.Fprintln(w, "    uninstall        Uninstall SGX Host Verification Service")
+	fmt.Fprintln(w, "    version          Show the version of SGX Host Verification Service")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "Available Tasks for setup:")
 	fmt.Fprintln(w, "    all                       Runs all setup tasks")
@@ -88,7 +88,7 @@ func (a *App) printUsage() {
 	fmt.Fprintln(w, "                              Optional env variables:")
 	fmt.Fprintln(w, "                                  - get optional env variables from all the setup tasks")
 	fmt.Fprintln(w, "")
-	fmt.Fprintln(w, "    sgx-host-verification-service setup database [-force] [--arguments=<argument_value>]")
+	fmt.Fprintln(w, "    shvs setup database [-force] [--arguments=<argument_value>]")
 	fmt.Fprintln(w, "        - Avaliable arguments are:")
 	fmt.Fprintln(w, "            - db-host    alternatively, set environment variable SHVS_DB_HOSTNAME")
 	fmt.Fprintln(w, "            - db-port    alternatively, set environment variable SHVS_DB_PORT")
@@ -99,7 +99,7 @@ func (a *App) printUsage() {
 	fmt.Fprintln(w, "                         alternatively, set environment variable SHVS_DB_SSLMODE")
 	fmt.Fprintln(w, "            - db-sslcert path to where the certificate file of database. Only applicable")
 	fmt.Fprintln(w, "                         for db-sslmode=<verify-ca|verify-full. If left empty, the cert")
-	fmt.Fprintln(w, "                         will be copied to /etc/sgx-host-verification-service/tdcertdb.pem")
+	fmt.Fprintln(w, "                         will be copied to /etc/shvs/shvs-dbcert.pem")
 	fmt.Fprintln(w, "                         alternatively, set environment variable SHVS_DB_SSLCERT")
 	fmt.Fprintln(w, "            - db-sslcertsrc <path to where the database ssl/tls certificate file>")
 	fmt.Fprintln(w, "                         mandatory if db-sslcert does not already exist")
@@ -107,7 +107,7 @@ func (a *App) printUsage() {
 	fmt.Fprintln(w, "        - Run this command with environment variable SHVS_DB_REPORT_MAX_ROWS and")
 	fmt.Fprintln(w, "          SHVS_DB_REPORT_NUM_ROTATIONS can update db rotation arguments")
 	fmt.Fprintln(w, "")
-	fmt.Fprintln(w, "    sgx-host-verification-service setup server [--port=<port>]")
+	fmt.Fprintln(w, "    shvs setup server [--port=<port>]")
 	fmt.Fprintln(w, "        - Setup http server on <port>")
 	fmt.Fprintln(w, "        - Environment variable SHVS_PORT=<port> can be set alternatively")
 	fmt.Fprintln(w, "")
@@ -265,7 +265,7 @@ func (a *App) Run(args []string) error {
 			fmt.Fprintln(os.Stderr, "Error: daemon did not start - ", err.Error())
 			// wait some time for logs to flush - otherwise, there will be no entry in syslog
 			time.Sleep(10 * time.Millisecond)
-			return errors.Wrap(err, "app:Run() Error starting sgx-host-verification-service service")
+			return errors.Wrap(err, "app:Run() Error starting SGX Host Verification Service")
 		}
 	case "-h", "--help":
 		a.printUsage()
@@ -503,36 +503,36 @@ func (a *App) start() error {
 	log.Trace("app:start() Entering")
 	defer log.Trace("app:start() Leaving")
 
-	fmt.Fprintln(a.consoleWriter(), `Forwarding to "systemctl start sgx-host-verification-service"`)
+	fmt.Fprintln(a.consoleWriter(), `Forwarding to "systemctl start shvs"`)
 	systemctl, err := exec.LookPath("systemctl")
 	if err != nil {
 		return err
 	}
-	return syscall.Exec(systemctl, []string{"systemctl", "start", "sgx-host-verification-service"}, os.Environ())
+	return syscall.Exec(systemctl, []string{"systemctl", "start", "shvs"}, os.Environ())
 }
 
 func (a *App) stop() error {
 	log.Trace("app:stop() Entering")
 	defer log.Trace("app:stop() Leaving")
 
-	fmt.Fprintln(a.consoleWriter(), `Forwarding to "systemctl stop sgx-host-verification-service"`)
+	fmt.Fprintln(a.consoleWriter(), `Forwarding to "systemctl stop shvs"`)
 	systemctl, err := exec.LookPath("systemctl")
 	if err != nil {
 		return err
 	}
-	return syscall.Exec(systemctl, []string{"systemctl", "stop", "sgx-host-verification-service"}, os.Environ())
+	return syscall.Exec(systemctl, []string{"systemctl", "stop", "shvs"}, os.Environ())
 }
 
 func (a *App) status() error {
 	log.Trace("app:status() Entering")
 	defer log.Trace("app:status() Leaving")
 
-	fmt.Fprintln(a.consoleWriter(), `Forwarding to "systemctl status sgx-host-verification-service"`)
+	fmt.Fprintln(a.consoleWriter(), `Forwarding to "systemctl status shvs"`)
 	systemctl, err := exec.LookPath("systemctl")
 	if err != nil {
 		return err
 	}
-	return syscall.Exec(systemctl, []string{"systemctl", "status", "sgx-host-verification-service"}, os.Environ())
+	return syscall.Exec(systemctl, []string{"systemctl", "status", "shvs"}, os.Environ())
 }
 
 func (a *App) uninstall(purge bool) {

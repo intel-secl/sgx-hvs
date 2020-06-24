@@ -5,7 +5,7 @@
 package postgres
 
 import (
-	"intel/isecl/sgx-host-verification-service/types"
+	"intel/isecl/shvs/types"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 )

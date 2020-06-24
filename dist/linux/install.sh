@@ -2,12 +2,12 @@
 
 # READ .env file 
 echo PWD IS $(pwd)
-if [ -f ~/sgx-host-verification-service.env ]; then 
-    echo Reading Installation options from `realpath ~/sgx-host-verification-service.env`
-    env_file=~/sgx-host-verification-service.env
-elif [ -f ../sgx-host-verification-service.env ]; then
-    echo Reading Installation options from `realpath ../sgx-host-verification-service.env`
-    env_file=../sgx-host-verification-service.env
+if [ -f ~/shvs.env ]; then
+    echo Reading Installation options from `realpath ~/shvs.env`
+    env_file=~/shvs.env
+elif [ -f ../shvs.env ]; then
+    echo Reading Installation options from `realpath ../shvs.env`
+    env_file=../shvs.env
 fi
 
 if [ -n $env_file ]; then
@@ -32,7 +32,7 @@ id -u $SERVICE_USERNAME 2> /dev/null || useradd $SERVICE_USERNAME
 echo "Installing SGX Host Verification Service..."
 
 
-COMPONENT_NAME=sgx-host-verification-service
+COMPONENT_NAME=shvs
 PRODUCT_HOME=/opt/$COMPONENT_NAME
 BIN_PATH=$PRODUCT_HOME/bin
 DB_SCRIPT_PATH=$PRODUCT_HOME/dbscripts
@@ -65,16 +65,16 @@ ln -sfT $BIN_PATH/$COMPONENT_NAME /usr/bin/$COMPONENT_NAME
 cp db_rotation.sql $DB_SCRIPT_PATH/ && chown $SERVICE_USERNAME:$SERVICE_USERNAME $DB_SCRIPT_PATH/*
 
 # Create logging dir in /var/log
-mkdir -p $LOG_PATH && chown sgx-host-verification-service:sgx-host-verification-service $LOG_PATH
+mkdir -p $LOG_PATH && chown shvs:shvs $LOG_PATH
 chmod 761 $LOG_PATH
 chmod g+s $LOG_PATH
 
 # Install systemd script
-cp sgx-host-verification-service.service $PRODUCT_HOME && chown $SERVICE_USERNAME:$SERVICE_USERNAME $PRODUCT_HOME/sgx-host-verification-service.service && chown $SERVICE_USERNAME:$SERVICE_USERNAME $PRODUCT_HOME
+cp shvs.service $PRODUCT_HOME && chown $SERVICE_USERNAME:$SERVICE_USERNAME $PRODUCT_HOME/shvs.service && chown $SERVICE_USERNAME:$SERVICE_USERNAME $PRODUCT_HOME
 
 # Enable systemd service
-systemctl disable sgx-host-verification-service.service > /dev/null 2>&1
-systemctl enable $PRODUCT_HOME/sgx-host-verification-service.service
+systemctl disable shvs.service > /dev/null 2>&1
+systemctl enable $PRODUCT_HOME/shvs.service
 systemctl daemon-reload
 
 #Install log rotation
@@ -125,8 +125,8 @@ export LOG_OLD=${LOG_OLD:-12}
 
 mkdir -p /etc/logrotate.d
 
-if [ ! -a /etc/logrotate.d/sgx-host-verification-service ]; then
- echo "/var/log/sgx-host-verification-service/* {
+if [ ! -a /etc/logrotate.d/shvs ]; then
+ echo "/var/log/shvs/* {
     missingok
         notifempty
         rotate $LOG_OLD
@@ -136,7 +136,7 @@ if [ ! -a /etc/logrotate.d/sgx-host-verification-service ]; then
         $LOG_COMPRESS
         $LOG_DELAYCOMPRESS
         $LOG_COPYTRUNCATE
-}" > /etc/logrotate.d/sgx-host-verification-service
+}" > /etc/logrotate.d/shvs
 fi
 
 

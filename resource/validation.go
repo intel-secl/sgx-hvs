@@ -5,7 +5,7 @@
 package resource
 
 import (
-	"intel/isecl/sgx-host-verification-service/constants"
+	"intel/isecl/shvs/constants"
 	"regexp"
 )
 

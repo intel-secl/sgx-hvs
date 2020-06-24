@@ -4,7 +4,7 @@
  */
 package repository
 
-import "intel/isecl/sgx-host-verification-service/types"
+import "intel/isecl/shvs/types"
 
 type HostCredentialRepository interface {
 	Create(types.HostCredential) (*types.HostCredential, error)

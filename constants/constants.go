@@ -10,21 +10,21 @@ import (
 )
 
 const (
-	HomeDir                        = "/opt/sgx-host-verification-service/"
-	ConfigDir                      = "/etc/sgx-host-verification-service/"
-	ExecutableDir                  = "/opt/sgx-host-verification-service/bin/"
-	ExecLinkPath                   = "/usr/bin/sgx-host-verification-service"
-	RunDirPath                     = "/run/sgx-host-verification-service"
-	LogDir                         = "/var/log/sgx-host-verification-service/"
-	LogFile                        = LogDir + "sgx-host-verification-service.log"
-	SecurityLogFile                = LogDir + "sgx-host-verification-service-security.log"
+	HomeDir                        = "/opt/shvs/"
+	ConfigDir                      = "/etc/shvs/"
+	ExecutableDir                  = "/opt/shvs/bin/"
+	ExecLinkPath                   = "/usr/bin/shvs"
+	RunDirPath                     = "/run/shvs"
+	LogDir                         = "/var/log/shvs/"
+	LogFile                        = LogDir + "shvs.log"
+	SecurityLogFile                = LogDir + "shvs-security.log"
 	HTTPLogFile                    = LogDir + "http.log"
 	ConfigFile                     = "config.yml"
 	DefaultTLSCertFile             = ConfigDir + "tls-cert.pem"
 	DefaultTLSKeyFile              = ConfigDir + "tls.key"
 	TrustedJWTSigningCertsDir      = ConfigDir + "certs/trustedjwt/"
 	TrustedCAsStoreDir             = ConfigDir + "certs/trustedca/"
-	ServiceRemoveCmd               = "systemctl disable sgx-host-verification-service"
+	ServiceRemoveCmd               = "systemctl disable shvs"
 	HashingAlgorithm               = crypto.SHA384
 	JWTCertsCacheTime              = "60m"
 	DefaultAuthDefendMaxAttempts   = 5
@@ -32,7 +32,7 @@ const (
 	DefaultAuthDefendLockoutMins   = 15
 	DefaultDBRotationMaxRowCnt     = 100000
 	DefaultDBRotationMaxTableCnt   = 10
-	DefaultSSLCertFilePath         = ConfigDir + "sgx-host-verification-service-dbcert.pem"
+	DefaultSSLCertFilePath         = ConfigDir + "shvs-dbcert.pem"
 	ServiceName                    = "SHVS"
 	RegisterHostGroupName          = "HostRegistration"
 	HostListReaderGroupName        = "HostsListReader"
@@ -44,7 +44,7 @@ const (
 	DefaultKeyAlgorithm            = "rsa"
 	DefaultKeyAlgorithmLength      = 3072
 	DefaultSHVSTlsSan              = "127.0.0.1,localhost"
-	DefaultSHVSTlsCn               = "SGX HVS TLS Certificate"
+	DefaultSHVSTlsCn               = "SHVS TLS Certificate"
 	DefaultSHVSSchedulerTimer      = 60
 	DefaultSHVSAutoRefreshTimer    = 120
 	DefaultSHVSHostInfoExpiryTime  = 240

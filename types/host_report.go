@@ -5,7 +5,6 @@
 package types
 import (
         "time"
-//	"intel/isecl/sgx-host-verification-service/resource"
 )
 
 // Report struct is the database schema of a Report table

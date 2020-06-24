@@ -5,10 +5,10 @@
 package main
 
 import (
-	"intel/isecl/sgx-host-verification-service/constants"
+	"intel/isecl/shvs/constants"
 	"os"
-        "os/user"
-        "strconv"
+	"os/user"
+	"strconv"
 )
 
 func openLogFiles() (logFile *os.File, httpLogFile *os.File, secLogFile *os.File, err error) {
