@@ -7,14 +7,13 @@ package resource
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	uuid "github.com/google/uuid"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
-	"strconv"
-
 	"intel/isecl/lib/common/v2/validation"
 	"intel/isecl/sgx-host-verification-service/constants"
 	"intel/isecl/sgx-host-verification-service/repository"
@@ -167,6 +166,7 @@ func getPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 		}
 
 		var platformData types.HostsSgxData
+		response := make([]map[string]interface{}, 0)
 		hostName := r.URL.Query().Get("HostName")
 		if hostName != "" {
 			if !ValidateInputString(constants.HostName, hostName) {
@@ -187,6 +187,29 @@ func getPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 				return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 			}
 
+			hostStatus := types.HostStatus{HostId: hostData.Id}
+			nonExpiredHosts, err := db.HostStatusRepository().RetrieveNonExpiredHost(hostStatus)
+			if err != nil {
+				log.WithError(err).WithField("HostName", hostName).Info("failed to retrieve host status")
+				return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
+			}
+			expiryTimeInString := (nonExpiredHosts.ExpiryTime).Format(time.RFC3339)
+
+			for _, platformDataForOneHost := range platformData {
+				marshalledData, err := json.Marshal(platformDataForOneHost)
+				if err != nil{
+					log.Error("Error marshalling the platform data")
+					continue
+				}
+				var newPlatformData map[string]interface{}
+				err = json.Unmarshal(marshalledData, &newPlatformData)
+				if err != nil{
+					log.Error("Error unmarshalling the platform data")
+					continue
+				}
+				newPlatformData[constants.ExpiryTimeKeyName] = expiryTimeInString
+				response = append(response, newPlatformData)
+			}
 		} else {
 			numberOfMinutes := r.URL.Query().Get("numberOfMinutes")
 			if numberOfMinutes != "" {
@@ -199,7 +222,6 @@ func getPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 			}
 			///Get all the hosts from host_statuses who are updated recently and status="CONNECTED"
 			m, _ := time.ParseDuration(numberOfMinutes + "m")
-
 			updatedTime := time.Now().Add(time.Duration((-m)))
 
 			var err error
@@ -207,6 +229,28 @@ func getPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 			if err != nil {
 				log.WithError(err).WithField("numberOfMinutes", updatedTime).Info("failed to retrieve updated hosts")
 				return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
+			}
+			for _, platformDataForOneHost := range platformData {
+				hostStatus := types.HostStatus{HostId: platformDataForOneHost.HostId}
+				nonExpiredHosts, err := db.HostStatusRepository().RetrieveNonExpiredHost(hostStatus)
+				if err != nil {
+					log.WithError(err).WithField("numberOfMinutes", platformDataForOneHost.HostId).Info("failed to retrieve host status")
+					continue
+				}
+				expiryTimeInString := (nonExpiredHosts.ExpiryTime).Format(time.RFC3339)
+				marshalledData, err := json.Marshal(platformDataForOneHost)
+				if err != nil{
+					log.Error("Error marshalling the platform data")
+					continue
+				}
+				var newPlatformData map[string]interface{}
+				err = json.Unmarshal(marshalledData, &newPlatformData)
+				if err != nil{
+					log.Error("Error unmarshalling the platform data")
+					continue
+				}
+				newPlatformData[constants.ExpiryTimeKeyName] = expiryTimeInString
+				response = append(response, newPlatformData)
 			}
 		}
 		log.Debug("platformData: ", platformData)
@@ -216,13 +260,12 @@ func getPaltformDataCB(db repository.SHVSDatabase) errorHandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK) // HTTP 200
-		js, err := json.Marshal(platformData)
+		js, err := json.Marshal(response)
 		if err != nil {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
 		w.Write(js)
-
-		log.Trace("getPaltformDataCB leaving")
+		log.Trace("getPlatformDataCB leaving")
 		return nil
 	}
 }

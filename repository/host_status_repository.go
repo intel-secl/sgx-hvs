@@ -17,4 +17,5 @@ type HostStatusRepository interface {
 	Delete(types.HostStatus) error
 	GetHostStateInfo() (types.HostsStatus, error)
 	RetrieveExpiredHosts() (types.HostsStatus, error)
+	RetrieveNonExpiredHost(types.HostStatus) (*types.HostStatus, error)
 }

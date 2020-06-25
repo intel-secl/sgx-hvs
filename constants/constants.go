@@ -39,6 +39,7 @@ const (
 	HostDataReaderGroupName        = "HostDataReader"
 	HostListManagerGroupName       = "HostListManager"
 	SHVSUserName                   = "shvs"
+	ExpiryTimeKeyName              = "validTo"
 	DefaultHttpPort                = 13000
 	DefaultKeyAlgorithm            = "rsa"
 	DefaultKeyAlgorithmLength      = 3072

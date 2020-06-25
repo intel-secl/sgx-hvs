@@ -19,7 +19,7 @@ type HostStatus struct {
 	TCBSCSRetryCount int       `json:"-"`
 	CreatedTime      time.Time `json:"-"`
 	UpdatedTime      time.Time `json:"-"`
-	ExpiryTime       time.Time `json:"-"`
+	ExpiryTime       time.Time `json:"validTo"`
 }
 
 type HostsStatus []HostStatus

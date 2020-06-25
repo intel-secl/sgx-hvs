@@ -65,6 +65,19 @@ func (r *PostgresHostStatusRepository) RetrieveAllQueues(status []string) (types
 	return hs, errors.Wrap(err, "RetrieveAll: failed to RetrieveAll HostStatus")
 }
 
+func (r *PostgresHostStatusRepository) RetrieveNonExpiredHost(h types.HostStatus) (*types.HostStatus, error) {
+	log.Trace("repository/postgres/pg_host_status: RetrieveNonExpiredHost() Entering")
+	defer log.Trace("repository/postgres/pg_host_status: RetrieveNonExpiredHost() Leaving")
+
+	var hs types.HostStatus
+	err := r.db.Where("status = 'CONNECTED' and host_id = (?)", h.HostId).First(&hs).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "RetrieveAll: failed to RetrieveNonExpiredHost HostStatus")
+	}
+	slog.WithField("db hs", hs).Trace("RetrieveNonExpiredHost")
+	return &hs, nil
+}
+
 func (r *PostgresHostStatusRepository) RetrieveExpiredHosts() (types.HostsStatus, error) {
 	log.Trace("repository/postgres/pg_host_status: RetrieveExpiredHosts() Entering")
 	defer log.Trace("repository/postgres/pg_host_status: RetrieveExpiredHosts() Leaving")
