@@ -9,12 +9,12 @@ import (
 )
 
 type MockDatabase struct {
-	MockPlatformTcbRepository MockPlatformTcbRepository
-	MockPckCrlRepository MockPckCrlRepository
-        MockPckCertRepository MockPckCertRepository
+	MockPlatformTcbRepository  MockPlatformTcbRepository
+	MockPckCrlRepository       MockPckCrlRepository
+	MockPckCertRepository      MockPckCertRepository
 	MockPckCertChainRepository MockPckCertChainRepository
 	MockFmspcTcbInfoRepository MockFmspcTcbInfoRepository
-	MockQEIdentityRepository MockQEIdentityRepository
+	MockQEIdentityRepository   MockQEIdentityRepository
 }
 
 func (m *MockDatabase) Migrate() error {

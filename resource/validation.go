@@ -18,7 +18,7 @@ var regExMap = map[string]*regexp.Regexp{
 	constants.HostStatus:       regexp.MustCompile(`^[A-Za-z]*$`),
 	constants.UUID:             regexp.MustCompile(`([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}){1}`)}
 
-func ValidateInputString(key string, inString string) bool {
+func validateInputString(key string, inString string) bool {
 
 	regEx := regExMap[key]
 	if len(key) <= 0 || !regEx.MatchString(inString) {

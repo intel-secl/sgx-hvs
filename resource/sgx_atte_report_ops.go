@@ -52,13 +52,13 @@ type SCSGetResponse struct {
 	Message string `json:"Message"`
 }
 
-func RetriveHostAttestationReportCB(db repository.SHVSDatabase) errorHandlerFunc {
+func retrieveHostAttestationReport(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
-		log.Trace("resource/gen_sgx_attestation_report: SGXHostAttestationReportOps() Entering")
-		defer log.Trace("resource/gen_sgx_attestation_report: SGXHostAttestationReportOps() Leaving")
+		log.Trace("resource/sgx_atte_report_ops: retrieveHostAttestationReport() Entering")
+		defer log.Trace("resource/sgx_atte_report_ops: retrieveHostAttestationReport() Leaving")
 
 		if len(r.URL.Query()) == 0 {
-			return &resourceError{Message: "RetriveExistingHostAttestationReportCB: The Request Query Data not provided",
+			return &resourceError{Message: "retrieveHostAttestationReport: The Request Query Data not provided",
 				StatusCode: http.StatusBadRequest}
 		}
 
@@ -70,32 +70,32 @@ func RetriveHostAttestationReportCB(db repository.SHVSDatabase) errorHandlerFunc
 		LatestperHost := r.URL.Query().Get("latestPerHost")
 
 		if Id != "" {
-			if !ValidateInputString(constants.ID, Id) {
-				return &resourceError{Message: "RetriveHostAttestationReportCB: Invalid query Param Data",
+			if !validateInputString(constants.ID, Id) {
+				return &resourceError{Message: "retrieveHostAttestationReport: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
 			}
 		}
 		if HostId != "" {
-			if !ValidateInputString(constants.HostID, HostId) {
-				return &resourceError{Message: "RetriveHostAttestationReportCB: Invalid query Param Data",
+			if !validateInputString(constants.HostID, HostId) {
+				return &resourceError{Message: "retrieveHostAttestationReport: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
 			}
 		}
 		if HostName != "" {
-			if !ValidateInputString(constants.HostName, HostName) {
-				return &resourceError{Message: "RetriveHostAttestationReportCB: Invalid query Param Data",
+			if !validateInputString(constants.HostName, HostName) {
+				return &resourceError{Message: "retrieveHostAttestationReport: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
 			}
 		}
 		if HostHardwareUUID != "" {
-			if !ValidateInputString(constants.UUID, HostHardwareUUID) {
-				return &resourceError{Message: "RetriveHostAttestationReportCB: Invalid query Param Data",
+			if !validateInputString(constants.UUID, HostHardwareUUID) {
+				return &resourceError{Message: "retrieveHostAttestationReport: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
 			}
 		}
 		if HostStatus != "" {
-			if !ValidateInputString(constants.HostStatus, HostStatus) {
-				return &resourceError{Message: "RetriveHostAttestationReportCB: Invalid query Param Data",
+			if !validateInputString(constants.HostStatus, HostStatus) {
+				return &resourceError{Message: "retrieveHostAttestationReport: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
 			}
 		}
@@ -130,20 +130,20 @@ func RetriveHostAttestationReportCB(db repository.SHVSDatabase) errorHandlerFunc
 	}
 }
 
-func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl string) (bool, error) {
-	log.Trace("resource/sgx_atte_report_ops: FetchSGXDataFromAgent() Entering")
-	defer log.Trace("resource/sgx_atte_report_ops: FetchSGXDataFromAgent() Leaving")
+func fetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl string) (bool, error) {
+	log.Trace("resource/sgx_atte_report_ops: fetchSGXDataFromAgent() Entering")
+	defer log.Trace("resource/sgx_atte_report_ops: fetchSGXDataFromAgent() Leaving")
 
 	client, err := clients.HTTPClientWithCADir(constants.TrustedCAsStoreDir)
 	if err != nil {
 		log.WithError(err).WithField("id", hostId).Info("Error in getting client object")
-		return false, errors.Wrap(err, "FetchSGXDataFromAgent: Error in getting client object")
+		return false, errors.Wrap(err, "fetchSGXDataFromAgent: Error in getting client object")
 	}
 
 	req, err := http.NewRequest("GET", AgentUrl, nil)
 	if err != nil {
 		log.WithError(err).Info("Failed to Get New request")
-		return false, errors.Wrap(err, "FetchSGXDataFromAgent: Failed to Get New request")
+		return false, errors.Wrap(err, "fetchSGXDataFromAgent: Failed to Get New request")
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -151,24 +151,24 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 
 	conf := config.Global()
 	if conf == nil {
-		return false, errors.Wrap(errors.New("PushSGXData: Configuration pointer is null"), "Config error")
+		return false, errors.Wrap(errors.New("pushSGXData: Configuration pointer is null"), "Config error")
 	}
 
 	err = addJWTToken(req)
 	if err != nil {
-		return false, errors.Wrap(err, "resource/sgx_atte_report_ops: FetchSGXDataFromAgent() Failed to add JWT token")
+		return false, errors.Wrap(err, "resource/sgx_atte_report_ops: fetchSGXDataFromAgent() Failed to add JWT token")
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
 		err1 := UpdateHostStatus(hostId, db, constants.HostStatusAgentRetry)
 		if err1 != nil {
-			return true, errors.Wrap(err1, "FetchSGXDataFromAgent: Error while caching Host Status Information: "+err.Error())
+			return true, errors.Wrap(err1, "fetchSGXDataFromAgent: Error while caching Host Status Information: "+err.Error())
 		}
-		return true, errors.Wrap(err, "FetchSGXDataFromAgent: client call failed")
+		return true, errors.Wrap(err, "fetchSGXDataFromAgent: client call failed")
 	}
 
-	log.Debug("FetchSGXDataFromAgent: Status: ", resp.StatusCode)
+	log.Debug("fetchSGXDataFromAgent: Status: ", resp.StatusCode)
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		// fetch token and try again
@@ -177,16 +177,16 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 		aasRWLock.Unlock()
 		err = addJWTToken(req)
 		if err != nil {
-			return false, errors.Wrap(err, "FetchSGXDataFromAgent: Failed to add JWT token")
+			return false, errors.Wrap(err, "fetchSGXDataFromAgent: Failed to add JWT token")
 		}
 		resp, err = client.Do(req)
 		if err != nil {
-			return false, errors.Wrap(err, "FetchSGXDataFromAgent: Error from response")
+			return false, errors.Wrap(err, "fetchSGXDataFromAgent: Error from response")
 		}
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return false, errors.Wrapf(err, "FetchSGXDataFromAgent: Invalid status code received:%d", resp.StatusCode)
+		return false, errors.Wrapf(err, "fetchSGXDataFromAgent: Invalid status code received:%d", resp.StatusCode)
 	}
 
 	var agentResponse SgxAgentResponse
@@ -196,10 +196,10 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 
 	err = dec.Decode(&agentResponse)
 	if err != nil {
-		return false, errors.Wrap(err, "FetchSGXDataFromAgent: Read Response failed")
+		return false, errors.Wrap(err, "fetchSGXDataFromAgent: Read Response failed")
 	}
 
-	log.Debug("FetchSGXDataFromAgent: Status: ", agentResponse)
+	log.Debug("fetchSGXDataFromAgent: Status: ", agentResponse)
 	resp.Body.Close()
 
 	hostData := &types.HostSgxData{
@@ -238,7 +238,7 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 	}
 	if err != nil {
 		log.WithError(err).Info("Error in creating host sgx data")
-		return false, errors.Wrap(err, "FetchSGXDataFromAgent: Error in creating host sgx data")
+		return false, errors.Wrap(err, "fetchSGXDataFromAgent: Error in creating host sgx data")
 	}
 
 	if agentResponse.SgxDataValue.SgxSupported == true && agentResponse.SgxDataValue.SgxEnabled == true {
@@ -277,35 +277,35 @@ func FetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 		}
 		if err != nil {
 			log.WithError(err).Info("Error in creating platform tcb data")
-			return false, errors.Wrap(err, "FetchSGXDataFromAgent: Error in creating platform tcb data")
+			return false, errors.Wrap(err, "fetchSGXDataFromAgent: Error in creating platform tcb data")
 		}
 		return true, nil
 	} else {
 		err = UpdateHostStatus(hostId, db, constants.HostStatusConnected)
 		if err != nil {
-			return true, errors.New("UpdateSGXHostInfo: Error while caching Host Status Information: " + err.Error())
+			return true, errors.New("updateSGXHostInfo: Error while caching Host Status Information: " + err.Error())
 		}
 		return false, nil
 	}
 }
 
-func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.PlatformTcb) (bool, error) {
+func fetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.PlatformTcb) (bool, error) {
 
 	client, err := clients.HTTPClientWithCADir(constants.TrustedCAsStoreDir)
 	if err != nil {
-		return false, errors.Wrap(err, "FetchLatestTCBInfoFromSCS : Error in getting client object")
+		return false, errors.Wrap(err, "fetchLatestTCBInfoFromSCS : Error in getting client object")
 	}
 
 	conf := config.Global()
 	if conf == nil {
-		return false, errors.Wrap(errors.New("FetchLatestTCBInfoFromSCS: Configuration pointer is null"), "Config error")
+		return false, errors.Wrap(errors.New("fetchLatestTCBInfoFromSCS: Configuration pointer is null"), "Config error")
 	}
 
 	getTcbInfoUrl := conf.ScsBaseUrl + "platforminfo/tcbstatus?qeid=" + platformData.QeId
 
 	req, err := http.NewRequest("GET", getTcbInfoUrl, nil)
 	if err != nil {
-		return false, errors.Wrap(err, "FetchLatestTCBInfoFromSCS: Failed to Get New request")
+		return false, errors.Wrap(err, "fetchLatestTCBInfoFromSCS: Failed to Get New request")
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -313,19 +313,19 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 
 	err = addJWTToken(req)
 	if err != nil {
-		return false, errors.Wrap(err, "resource/sgx_atte_report_ops: FetchLatestTCBInfoFromSCS() Failed to add JWT token")
+		return false, errors.Wrap(err, "resource/sgx_atte_report_ops: fetchLatestTCBInfoFromSCS() Failed to add JWT token")
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
 		err1 := UpdateHostStatus(platformData.HostId, db, constants.HostStatusTCBSCSRetry)
 		if err1 != nil {
-			return true, errors.Wrap(err, "FetchLatestTCBInfoFromSCS: Error while updating Host Status Information: "+err.Error())
+			return true, errors.Wrap(err, "fetchLatestTCBInfoFromSCS: Error while updating Host Status Information: "+err.Error())
 		}
-		return true, errors.Wrap(err, "FetchLatestTCBInfoFromSCS: client call failed. Retrying")
+		return true, errors.Wrap(err, "fetchLatestTCBInfoFromSCS: client call failed. Retrying")
 	}
 
-	log.Debug("FetchLatestTCBInfoFromSCS: Status: ", resp.StatusCode)
+	log.Debug("fetchLatestTCBInfoFromSCS: Status: ", resp.StatusCode)
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		// fetch token and try again
@@ -334,16 +334,16 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 		aasRWLock.Unlock()
 		err = addJWTToken(req)
 		if err != nil {
-			return false, errors.Wrap(err, "FetchLatestTCBInfoFromSCS: Failed to add JWT token")
+			return false, errors.Wrap(err, "fetchLatestTCBInfoFromSCS: Failed to add JWT token")
 		}
 		resp, err = client.Do(req)
 		if err != nil {
-			return false, errors.Wrap(err, "FetchLatestTCBInfoFromSCS: Error from response")
+			return false, errors.Wrap(err, "fetchLatestTCBInfoFromSCS: Error from response")
 		}
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return false, errors.New("FetchLatestTCBInfoFromSCS: Invalid status code received: " + strconv.Itoa(resp.StatusCode))
+		return false, errors.New("fetchLatestTCBInfoFromSCS: Invalid status code received: " + strconv.Itoa(resp.StatusCode))
 	}
 
 	var scsResponse SCSGetResponse
@@ -352,10 +352,10 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 
 	err = dec.Decode(&scsResponse)
 	if err != nil {
-		return false, errors.Wrap(err, "FetchLatestTCBInfoFromSCS: Read Response failed")
+		return false, errors.Wrap(err, "fetchLatestTCBInfoFromSCS: Read Response failed")
 	}
 
-	log.Debug("FetchLatestTCBInfoFromSCS: Status: ", scsResponse)
+	log.Debug("fetchLatestTCBInfoFromSCS: Status: ", scsResponse)
 	resp.Body.Close()
 
 	///Update the data in database
@@ -367,7 +367,7 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 	existingHostData, err := db.HostSgxDataRepository().Retrieve(*host_sgx_data)
 	if existingHostData == nil || err != nil {
 		log.WithError(err).WithField("id", platformData.HostId).Info("attempt to retrieve invalid host")
-		return false, errors.New("FetchLatestTCBInfoFromSCS: Error in getting HostSgxData")
+		return false, errors.New("fetchLatestTCBInfoFromSCS: Error in getting HostSgxData")
 	}
 
 	status, _ := strconv.ParseBool(scsResponse.Status)
@@ -387,22 +387,22 @@ func FetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 	err = db.HostSgxDataRepository().Update(tcbUpToDate)
 	if err != nil {
 		log.WithError(err).Info("Error in updating tcbUpToDate sgx data")
-		return false, errors.Wrap(err, "FetchLatestTCBInfoFromSCS: Error in updating tcbUpToDate sgx data")
+		return false, errors.Wrap(err, "fetchLatestTCBInfoFromSCS: Error in updating tcbUpToDate sgx data")
 	}
 	return true, nil
 }
 
-func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (bool, error) {
-	log.Trace("resource/sgx_atte_report_ops: PushSGXData() Entering")
-	defer log.Trace("resource/sgx_atte_report_ops: PushSGXData() Leaving")
+func pushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (bool, error) {
+	log.Trace("resource/sgx_atte_report_ops: pushSGXData() Entering")
+	defer log.Trace("resource/sgx_atte_report_ops: pushSGXData() Leaving")
 	client, err := clients.HTTPClientWithCADir(constants.TrustedCAsStoreDir)
 	if err != nil {
-		return false, errors.Wrap(err, "PushSGXData: Error in getting client object")
+		return false, errors.Wrap(err, "pushSGXData: Error in getting client object")
 	}
 
 	conf := config.Global()
 	if conf == nil {
-		return false, errors.Wrap(errors.New("PushSGXData: Configuration pointer is null"), "Config error")
+		return false, errors.Wrap(errors.New("pushSGXData: Configuration pointer is null"), "Config error")
 	}
 
 	pushUrl := conf.ScsBaseUrl + "platforminfo/push"
@@ -417,30 +417,30 @@ func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 
 	reqBytes, err := json.Marshal(requestStr)
 	if err != nil {
-		return false, errors.Wrap(err, "PushSGXData: Marshal error:"+err.Error())
+		return false, errors.Wrap(err, "pushSGXData: Marshal error:"+err.Error())
 	}
 
 	req, err := http.NewRequest("POST", pushUrl, bytes.NewBuffer(reqBytes))
 	if err != nil {
-		return false, errors.Wrap(err, "PushSGXData: Failed to Get New request")
+		return false, errors.Wrap(err, "pushSGXData: Failed to Get New request")
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 	err = addJWTToken(req)
 	if err != nil {
-		return false, errors.Wrap(err, "resource/sgx_atte_report_ops: PushSGXData() Failed to add JWT token")
+		return false, errors.Wrap(err, "resource/sgx_atte_report_ops: pushSGXData() Failed to add JWT token")
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
 		err1 := UpdateHostStatus(platformData.HostId, db, constants.HostStatusSCSRetry)
 		if err1 != nil {
-			return true, errors.Wrap(err, "PushSGXData: Error while caching Host Status Information: "+err.Error())
+			return true, errors.Wrap(err, "pushSGXData: Error while caching Host Status Information: "+err.Error())
 		}
-		return true, errors.Wrap(err, "PushSGXData: client call failed")
+		return true, errors.Wrap(err, "pushSGXData: client call failed")
 	}
 
-	log.Debug("PushSGXData: Status: ", resp.StatusCode)
+	log.Debug("pushSGXData: Status: ", resp.StatusCode)
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		// fetch token and try again
@@ -449,16 +449,16 @@ func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 		aasRWLock.Unlock()
 		err = addJWTToken(req)
 		if err != nil {
-			return false, errors.Wrap(err, "PushSGXData: Failed to add JWT token")
+			return false, errors.Wrap(err, "pushSGXData: Failed to add JWT token")
 		}
 		resp, err = client.Do(req)
 		if err != nil {
-			return false, errors.Wrap(err, "PushSGXData: Error from response")
+			return false, errors.Wrap(err, "pushSGXData: Error from response")
 		}
 	}
 
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
-		return false, errors.New("PushSGXData: Invalid status code received: " + strconv.Itoa(resp.StatusCode))
+		return false, errors.New("pushSGXData: Invalid status code received: " + strconv.Itoa(resp.StatusCode))
 	}
 
 	log.Info("resp.StatusCode: ", resp.StatusCode)
@@ -469,15 +469,15 @@ func PushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 
 	err = dec.Decode(&pushResponse)
 	if err != nil {
-		return false, errors.Wrap(err, "PushSGXData: Read Response failed")
+		return false, errors.Wrap(err, "pushSGXData: Read Response failed")
 	}
 
-	log.Debug("PushSGXData: Status: ", pushResponse)
+	log.Debug("pushSGXData: Status: ", pushResponse)
 	resp.Body.Close()
 	return true, nil
 }
 
-func CreateHostReport(db repository.SHVSDatabase, hostId string, status string) error {
+func createHostReport(db repository.SHVSDatabase, hostId string, status string) error {
 	report := types.HostReport{
 		Id:          uuid.New().String(),
 		HostId:      hostId,
@@ -488,7 +488,7 @@ func CreateHostReport(db repository.SHVSDatabase, hostId string, status string) 
 	_, err := db.HostReportRepository().Create(report)
 	if err != nil {
 		log.WithError(err).Info("Error in creating report")
-		return errors.Wrap(err, "CreateHostReport: Error in Host report: "+err.Error())
+		return errors.Wrap(err, "createHostReport: Error in Host report: "+err.Error())
 	}
 	return nil
 }
@@ -541,7 +541,7 @@ func PushSGXDataToCachingServiceCB(workerId int, jobData interface{}) error {
 		return errors.Wrap(errors.New("PushSGXDataToCachingServiceCB:"), "Error in getting host record")
 	}
 
-	flag, err := PushSGXData(db, hostPlatformData)
+	flag, err := pushSGXData(db, hostPlatformData)
 	if flag == false && err != nil {
 		log.Error("PushSGXDataToCachingServiceCB: Error in SGX Data push: ", err.Error())
 		err := UpdateHostStatus(hostId, db, constants.HostStatusProcessError)
@@ -561,7 +561,7 @@ func PushSGXDataToCachingServiceCB(workerId int, jobData interface{}) error {
 	}
 
 	//TODO Platform Status should be generated by SGX Caching Service and update the result in Status
-	/*err = CreateHostReport(db, hostId, "Platform-Status: Updated")
+	/*err = createHostReport(db, hostId, "Platform-Status: Updated")
 	if err != nil {
 		log.Error("PushSGXDataToCachingServiceCB: Error in Host Report Generation: ", err.Error())
 		err := UpdateHostStatus(hostId, db, constants.HostStatusProcessError)
@@ -617,7 +617,7 @@ func GetSGXDataFromAgentCB(workerId int, jobData interface{}) error {
 		return errors.Wrap(errors.New("GetSGXDataFromAgentCB:"), "Error in getting host record")
 	}
 
-	flag, err := FetchSGXDataFromAgent(hostData.Id, db, hostData.ConnectionString)
+	flag, err := fetchSGXDataFromAgent(hostData.Id, db, hostData.ConnectionString)
 	if flag == false && err != nil {
 		log.WithError(err).Info("Fetch Sgx Data From Agent ends with Error")
 		err := UpdateHostStatus(hostId, db, constants.HostStatusProcessError)
@@ -684,7 +684,7 @@ func GetLatestTCBInfoCB(workerId int, jobData interface{}) error {
 		return errors.Wrap(errors.New("GetLatestTCBInfoCB:"), "Error in getting host record as it is null")
 	}
 
-	flag, err := FetchLatestTCBInfoFromSCS(db, hostPlatformData)
+	flag, err := fetchLatestTCBInfoFromSCS(db, hostPlatformData)
 
 	if flag == false && err != nil {
 		log.WithError(err).Info("Fetch tcbInfo From SCS ends with Error")

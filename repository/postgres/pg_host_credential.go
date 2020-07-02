@@ -5,9 +5,9 @@
 package postgres
 
 import (
-	"intel/isecl/shvs/types"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"intel/isecl/shvs/types"
 )
 
 type PostgresHostCredentialRepository struct {
@@ -69,4 +69,3 @@ func (r *PostgresHostCredentialRepository) Delete(h types.HostCredential) error 
 	}
 	return nil
 }
-

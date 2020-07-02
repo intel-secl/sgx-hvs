@@ -6,10 +6,10 @@ package config
 
 import (
 	"errors"
-	log "github.com/sirupsen/logrus"
-	commLog "intel/isecl/lib/common/v2/log"
 	errorLog "github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
+	commLog "intel/isecl/lib/common/v2/log"
 	"intel/isecl/lib/common/v2/setup"
 	"intel/isecl/shvs/constants"
 	"os"
@@ -26,10 +26,10 @@ var slog = commLog.GetSecurityLogger()
 // Configuration is the global configuration struct that is marshalled/unmarshaled to a persisted yaml file
 // Probably should embed a config generic struct
 type Configuration struct {
-	configFile string
-	Port       int
+	configFile       string
+	Port             int
 	CmsTlsCertDigest string
-	Postgres   struct {
+	Postgres         struct {
 		DBName   string
 		Username string
 		Password string
@@ -38,9 +38,9 @@ type Configuration struct {
 		SSLMode  string
 		SSLCert  string
 	}
-	LogMaxLength	 int
-	LogEnableStdout  bool
-	LogLevel         log.Level
+	LogMaxLength    int
+	LogEnableStdout bool
+	LogLevel        log.Level
 
 	AuthDefender struct {
 		MaxAttempts         int
@@ -61,7 +61,7 @@ type Configuration struct {
 	SchedulerTimer         int
 	SHVSRefreshTimer       int
 	SHVSHostInfoExpiryTime int
-	Subject struct {
+	Subject                struct {
 		TLSCertCommonName string
 	}
 	TLSKeyFile        string

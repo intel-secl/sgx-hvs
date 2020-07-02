@@ -50,4 +50,3 @@ func (m *MockPlatformTcbRepository) Delete(p types.PlatformTcb) error {
 	}
 	return nil
 }
-

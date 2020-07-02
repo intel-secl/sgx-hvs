@@ -5,9 +5,9 @@
 package postgres
 
 import (
-	"intel/isecl/shvs/types"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"intel/isecl/shvs/types"
 )
 
 type PostgresHostReportRepository struct {
@@ -70,11 +70,11 @@ func (r *PostgresHostReportRepository) Delete(hr types.HostReport) error {
 	return nil
 }
 
-func (r *PostgresHostReportRepository) GetHostReportQuary( queryData types.SgxHostReportInputData ) ( types.HostReports, error) {
-        log.Trace("repository/postgres/pg_host: SearchUserIdQuary() Entering")
-        defer log.Trace("repository/postgres/pg_host: SearchUserIdQuary() Leaving")
+func (r *PostgresHostReportRepository) GetHostReportQuary(queryData types.SgxHostReportInputData) (types.HostReports, error) {
+	log.Trace("repository/postgres/pg_host: SearchUserIdQuary() Entering")
+	defer log.Trace("repository/postgres/pg_host: SearchUserIdQuary() Leaving")
 
-        var hrs types.HostReports
+	var hrs types.HostReports
 	var query string
 
 	if queryData.LatestperHost == true {
@@ -89,22 +89,22 @@ func (r *PostgresHostReportRepository) GetHostReportQuary( queryData types.SgxHo
 	}
 
 	if len(queryData.Id) != 0 {
-                query = query +" AND hr.id = '" + queryData.Id + "'"
+		query = query + " AND hr.id = '" + queryData.Id + "'"
 	}
-	if len(queryData.HostId)!= 0 {
-                query = query + " AND h.Id = '" + queryData.HostId + "'"
+	if len(queryData.HostId) != 0 {
+		query = query + " AND h.Id = '" + queryData.HostId + "'"
 	}
-	if len(queryData.HostHardwareId)!= 0 {
-                query = query + " AND h.hardware_uuid = '" + queryData.HostHardwareId + "'"
+	if len(queryData.HostHardwareId) != 0 {
+		query = query + " AND h.hardware_uuid = '" + queryData.HostHardwareId + "'"
 	}
-	if len(queryData.HostName)!= 0 {
-                query = query + " AND h.name = '" + queryData.HostName + "'"
+	if len(queryData.HostName) != 0 {
+		query = query + " AND h.name = '" + queryData.HostName + "'"
 	}
-	if len(queryData.Status)!= 0  {
-                query = query + " AND hs.status = '" + queryData.Status + "'"
+	if len(queryData.Status) != 0 {
+		query = query + " AND hs.status = '" + queryData.Status + "'"
 	}
-	
-	log.Debug("query:",query)
+
+	log.Debug("query:", query)
 
 	r.db.Raw(query).Scan(&hrs)
 	if len(hrs) == 0 {
@@ -112,4 +112,3 @@ func (r *PostgresHostReportRepository) GetHostReportQuary( queryData types.SgxHo
 	}
 	return hrs, nil
 }
-

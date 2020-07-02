@@ -6,9 +6,9 @@ package postgres
 
 import (
 	"fmt"
+	commLog "intel/isecl/lib/common/v2/log"
 	"intel/isecl/shvs/repository"
 	"intel/isecl/shvs/types"
-	 commLog "intel/isecl/lib/common/v2/log"
 	"io/ioutil"
 	"strings"
 	"time"
@@ -96,7 +96,7 @@ func Open(host string, port int, dbname, user, password, sslMode, sslCert string
 	defer log.Trace("repository/postgres/pg_database: Open() Leaving")
 
 	sslMode = strings.TrimSpace(strings.ToLower(sslMode))
-	if  sslMode != "allow" && sslMode != "prefer" && sslMode != "require" && sslMode != "verify-ca" {
+	if sslMode != "allow" && sslMode != "prefer" && sslMode != "require" && sslMode != "verify-ca" {
 		sslMode = "verify-full"
 	}
 

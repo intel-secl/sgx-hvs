@@ -16,16 +16,16 @@ type PostgresPlatformTcbRepository struct {
 }
 
 func (r *PostgresPlatformTcbRepository) Create(p types.PlatformTcb) (*types.PlatformTcb, error) {
-        log.Trace("repository/postgres/pg_platform_tcb: Create() Entering")
-        defer log.Trace("repository/postgres/pg_platform_tcb: Create() Leaving")
+	log.Trace("repository/postgres/pg_platform_tcb: Create() Entering")
+	defer log.Trace("repository/postgres/pg_platform_tcb: Create() Leaving")
 
 	err := r.db.Create(&p).Error
 	return &p, errors.Wrap(err, "create: failed to create PlatformTcb")
 }
 
 func (r *PostgresPlatformTcbRepository) Retrieve(p types.PlatformTcb) (*types.PlatformTcb, error) {
-        log.Trace("repository/postgres/pg_platform_tcb: Retrieve() Entering")
-        defer log.Trace("repository/postgres/pg_platform_tcb: Retrieve() Leaving")
+	log.Trace("repository/postgres/pg_platform_tcb: Retrieve() Entering")
+	defer log.Trace("repository/postgres/pg_platform_tcb: Retrieve() Leaving")
 
 	slog.WithField("PlatformTcb", p).Debug("Retrieve Call")
 	err := r.db.Order("created_time desc").Where(&p).First(&p).Error
@@ -35,10 +35,9 @@ func (r *PostgresPlatformTcbRepository) Retrieve(p types.PlatformTcb) (*types.Pl
 	return &p, nil
 }
 
-
 func (r *PostgresPlatformTcbRepository) RetrieveAll(u types.PlatformTcb) (types.PlatformTcbs, error) {
-        log.Trace("repository/postgres/pg_platform_tcb: RetrieveAll() Entering")
-        defer log.Trace("repository/postgres/pg_platform_tcb: RetrieveAll() Leaving")
+	log.Trace("repository/postgres/pg_platform_tcb: RetrieveAll() Entering")
+	defer log.Trace("repository/postgres/pg_platform_tcb: RetrieveAll() Leaving")
 
 	var platforminfo types.PlatformTcbs
 	err := r.db.Where(&u).Find(&platforminfo).Error
@@ -51,23 +50,22 @@ func (r *PostgresPlatformTcbRepository) RetrieveAll(u types.PlatformTcb) (types.
 }
 
 func (r *PostgresPlatformTcbRepository) RetrieveAllPlatformInfo() (types.PlatformTcbs, error) {
-        log.Trace("repository/postgres/pg_platform_tcb: RetrieveAllPlatformInfo() Entering")
-        defer log.Trace("repository/postgres/pg_platform_tcb: RetrieveAllPlatformInfo() Leaving")
+	log.Trace("repository/postgres/pg_platform_tcb: RetrieveAllPlatformInfo() Entering")
+	defer log.Trace("repository/postgres/pg_platform_tcb: RetrieveAllPlatformInfo() Leaving")
 
-        var p types.PlatformTcbs
-        err := r.db.Find(&p).Error
-        if err != nil {
-                return nil, errors.Wrap(err, "RetrieveAllPlatformInfo: failed to retrieve all PlatformInfo")
-        }
+	var p types.PlatformTcbs
+	err := r.db.Find(&p).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "RetrieveAllPlatformInfo: failed to retrieve all PlatformInfo")
+	}
 
-        slog.WithField("db PlatformInfo", p).Trace("RetrieveAll")
-        return p, nil
+	slog.WithField("db PlatformInfo", p).Trace("RetrieveAll")
+	return p, nil
 }
 
-
 func (r *PostgresPlatformTcbRepository) Update(u types.PlatformTcb) error {
-        log.Trace("repository/postgres/pg_platform_tcb: Update() Entering")
-        defer log.Trace("repository/postgres/pg_platform_tcb: Update() Leaving")
+	log.Trace("repository/postgres/pg_platform_tcb: Update() Entering")
+	defer log.Trace("repository/postgres/pg_platform_tcb: Update() Leaving")
 
 	if err := r.db.Save(&u).Error; err != nil {
 		return errors.Wrap(err, "Update: failed to update Platformtcb")
@@ -76,12 +74,11 @@ func (r *PostgresPlatformTcbRepository) Update(u types.PlatformTcb) error {
 }
 
 func (r *PostgresPlatformTcbRepository) Delete(u types.PlatformTcb) error {
-        log.Trace("repository/postgres/pg_platform_tcb: Delete() Entering")
-        defer log.Trace("repository/postgres/pg_platform_tcb: Delete() Leaving")
+	log.Trace("repository/postgres/pg_platform_tcb: Delete() Entering")
+	defer log.Trace("repository/postgres/pg_platform_tcb: Delete() Leaving")
 
 	if err := r.db.Delete(&u).Error; err != nil {
 		return errors.Wrap(err, "Update: failed to Delete Platformtcb")
 	}
 	return nil
 }
-
