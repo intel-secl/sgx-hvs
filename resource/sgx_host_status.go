@@ -7,11 +7,18 @@ package resource
 
 import (
 	"encoding/json"
-	"fmt"
 	"intel/isecl/shvs/constants"
 	"intel/isecl/shvs/repository"
 	"net/http"
 )
+
+type HostStatusResponse struct {
+	HostId           string    `json:"host_id"`
+	Status           string    `json:"host_status"`
+	AgentRetryCount  int       `json:"agent_retry_count"`
+	SCSRetryCount    int       `json:"scs_retry_count"`
+	TCBSCSRetryCount int       `json:"tcb_scs_retry_count"`
+}
 
 func hostStateInformation(db repository.SHVSDatabase) errorHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
@@ -35,7 +42,19 @@ func hostStateInformation(db repository.SHVSDatabase) errorHandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK) // HTTP 200
-		js, err := json.Marshal(fmt.Sprintf("%s", hostStatusData))
+
+		hostStatusResponses := make([]HostStatusResponse, 0)
+		for _, hostStatus := range hostStatusData {
+			hostStatusResponse := HostStatusResponse {
+				HostId:           hostStatus.HostId,
+				Status:           hostStatus.Status,
+				AgentRetryCount:  hostStatus.AgentRetryCount,
+				SCSRetryCount:    hostStatus.SCSRetryCount,
+				TCBSCSRetryCount: hostStatus.TCBSCSRetryCount,
+			}
+			hostStatusResponses = append(hostStatusResponses, hostStatusResponse)
+		}
+		js, err := json.Marshal(hostStatusResponses)
 		if err != nil {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
