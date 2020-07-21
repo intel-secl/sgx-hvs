@@ -58,10 +58,10 @@ printf "{
 
 elif [ "$op" = "de-reg" ]; then
 
-	if yum list installed "jq" >/dev/null 2>&1; then
+	if dnf list installed "jq" >/dev/null 2>&1; then
         	echo "package already installed"
 	else
-        	yum install jq -y
+		dnf install jq -y
 	fi
 
 	id=`jq '.Id' $out_file | sed 's/"//g'`

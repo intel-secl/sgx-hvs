@@ -5,8 +5,6 @@
 #to customize, export the correct values before running the script
 
 echo "Setting up SHVS Related roles and user in AAS Database"
-unset https_proxy
-unset http_proxy
 
 #Get the value of AAS IP address and port. Default vlue is also provided.
 aas_hostname=${AAS_URL:-"https://10.80.245.104:8444"}
@@ -29,7 +27,6 @@ curl_output=`curl $CURL_OPTS -X POST -H "Content-Type: application/json" -H "Acc
 
 Bearer_token=`echo $curl_output | rev | cut -c 4- | rev`
 response_status=`echo "${curl_output: -3}"`
-#shvs config aasAdmin.bearer.token $Bearer_token >/dev/null
 
 if rpm -q jq; then
 	echo "JQ package installed"
@@ -42,8 +39,8 @@ fi
 create_shvs_user() {
 cat > $tmpdir/user.json << EOF
 {
-		"username":"shvsuser@shvs",
-		"password":"shvspassword"
+	"username":"shvsuser@shvs",
+	"password":"shvspassword"
 }
 EOF
 
@@ -59,7 +56,6 @@ if [ $actual_status -ne 201 ]; then
 fi
 
 if [ -s $tmpdir/user_response.json ]; then
-	#jq < $tmpdir/user_response.json
 	user_id=$(jq -r '.user_id' < $tmpdir/user_response.json)
 	if [ -n "$user_id" ]; then
 		echo "Created user id: $user_id"
@@ -99,20 +95,20 @@ echo "$role_id"
 
 create_roles() {
 
-		local cms_role_id=$( create_user_roles "CMS" "CertApprover" "CN=$CN;SAN=$IPADDR;CERTTYPE=TLS" ) #get roleid
-		local agent_role_id=$( create_user_roles "SGX_AGENT" "HostDataReader" "" )
-		local scs_role_id1=$( create_user_roles "SCS" "HostDataUpdater" "" )
-		local scs_role_id2=$( create_user_roles "SCS" "HostDataReader" "" )
-		local shvs_role_id=$( create_user_roles "SHVS" "HostListManager" "" )
-		ROLE_ID_TO_MAP=`echo \"$cms_role_id\",\"$agent_role_id\",\"$scs_role_id1\",\"$scs_role_id2\",\"$shvs_role_id\"`
-		echo $ROLE_ID_TO_MAP
+	local cms_role_id=$( create_user_roles "CMS" "CertApprover" "CN=$CN;SAN=$IPADDR;CERTTYPE=TLS" ) #get roleid
+	local agent_role_id=$( create_user_roles "SGX_AGENT" "HostDataReader" "" )
+	local scs_role_id1=$( create_user_roles "SCS" "HostDataUpdater" "" )
+	local scs_role_id2=$( create_user_roles "SCS" "HostDataReader" "" )
+	local shvs_role_id=$( create_user_roles "SHVS" "HostListManager" "" )
+	ROLE_ID_TO_MAP=`echo \"$cms_role_id\",\"$agent_role_id\",\"$scs_role_id1\",\"$scs_role_id2\",\"$shvs_role_id\"`
+	echo $ROLE_ID_TO_MAP
 }
 
 #Map shvsUser to Roles
 mapUser_to_role() {
 cat >$tmpdir/mapRoles.json <<EOF
 {
-	"role_ids": [$ROLE_ID_TO_MAP]
+"role_ids": [$ROLE_ID_TO_MAP]
 }
 EOF
 
@@ -133,10 +129,10 @@ do
 	echo $api
 	eval $api
     	status=$?
-    if [ $status -ne 0 ]; then
-        echo "SHVS-AAS User/Roles creation failed.: $api"
-        break;
-    fi
+	if [ $status -ne 0 ]; then
+		echo "SHVS-AAS User/Roles creation failed.: $api"
+		break;
+	fi
 done
 
 if [ $status -eq 0 ]; then
@@ -156,8 +152,7 @@ if [ $status -ne 200 ]; then
 else
 	export BEARER_TOKEN=`cat $tmpdir/shvs_token-response.json`
 	echo $BEARER_TOKEN
-	#shvs config aas.bearer.token $BEARER_TOKEN >/dev/null
 fi
 
 # cleanup
-#rm -rf $tmpdir
+rm -rf $tmpdir
