@@ -66,7 +66,7 @@ cp db_rotation.sql $DB_SCRIPT_PATH/ && chown $SERVICE_USERNAME:$SERVICE_USERNAME
 
 # Create logging dir in /var/log
 mkdir -p $LOG_PATH && chown shvs:shvs $LOG_PATH
-chmod 761 $LOG_PATH
+chmod 755 $LOG_PATH
 chmod g+s $LOG_PATH
 
 # Install systemd script
