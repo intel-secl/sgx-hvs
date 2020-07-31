@@ -7,6 +7,7 @@ package resource
 
 import (
 	"encoding/json"
+	commLogMsg "intel/isecl/lib/common/v2/log/message"
 	"intel/isecl/shvs/constants"
 	"intel/isecl/shvs/repository"
 	"net/http"
@@ -59,6 +60,7 @@ func hostStateInformation(db repository.SHVSDatabase) errorHandlerFunc {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
 		w.Write(js)
+		slog.Infof("%s: Host status retrieved by: %s", commLogMsg.AuthorizedAccess, r.RemoteAddr)
 		return nil
 	}
 }

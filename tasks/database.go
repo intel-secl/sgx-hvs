@@ -9,6 +9,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/pkg/errors"
+	commLog "intel/isecl/lib/common/v2/log"
+	commLogMsg "intel/isecl/lib/common/v2/log/message"
 	cos "intel/isecl/lib/common/v2/os"
 	"intel/isecl/lib/common/v2/setup"
 	"intel/isecl/lib/common/v2/validation"
@@ -19,6 +21,8 @@ import (
 	"os"
 	"strings"
 )
+
+var slog = commLog.GetSecurityLogger()
 
 type Database struct {
 	Flags         []string
@@ -55,22 +59,26 @@ func (db Database) Run(c setup.Context) error {
 
 	valid_err = validation.ValidateHostname(db.Config.Postgres.Hostname)
 	if valid_err != nil {
-		return errors.Wrap(valid_err, "setup database: Validation fail")
+		slog.Errorf("%s: Failed to connect to db, Input validation failed for database hostname", commLogMsg.BadConnection)
+		return valid_err
 	}
 	valid_err = validation.ValidateAccount(db.Config.Postgres.Username, db.Config.Postgres.Password)
 	if valid_err != nil {
-		return errors.Wrap(valid_err, "setup database: Validation fail")
+		slog.Errorf("%s: Failed to connect to db, Input validation failed for database credentials", commLogMsg.BadConnection)
+		return valid_err
 	}
 	valid_err = validation.ValidateIdentifier(db.Config.Postgres.DBName)
 	if valid_err != nil {
-		return errors.Wrap(valid_err, "setup database: Validation fail")
+		slog.Errorf("%s: Failed to connect to db, Input validation failed for database name", commLogMsg.BadConnection)
+		return valid_err
 	}
 
 	db.Config.Postgres.SSLMode, db.Config.Postgres.SSLCert, valid_err = configureDBSSLParams(
 		db.Config.Postgres.SSLMode, envDBSSLCertSrc,
 		db.Config.Postgres.SSLCert)
 	if valid_err != nil {
-		return errors.Wrap(valid_err, "setup database: Validation fail")
+		slog.Errorf("%s: Failed to connect to db, Input validation failed for database SSL parameters", commLogMsg.BadConnection)
+		return valid_err
 	}
 
 	pg := db.Config.Postgres

@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	commLogMsg "intel/isecl/lib/common/v2/log/message"
 	"intel/isecl/lib/common/v2/validation"
 	"intel/isecl/shvs/constants"
 	"intel/isecl/shvs/repository"
@@ -71,6 +72,7 @@ func getHosts(db repository.SHVSDatabase) errorHandlerFunc {
 		id := mux.Vars(r)["id"]
 		validation_err := validation.ValidateUUIDv4(id)
 		if validation_err != nil {
+			slog.Errorf("resource/sgx_host_ops: getHosts() Input validation failed for host Id")
 			return &resourceError{Message: validation_err.Error(), StatusCode: http.StatusBadRequest}
 		}
 
@@ -97,7 +99,7 @@ func getHosts(db repository.SHVSDatabase) errorHandlerFunc {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
 		w.Write(js)
-		log.Trace("getHosts leaving")
+		slog.Infof("%s: Host retrieved by: %s", commLogMsg.AuthorizedAccess, r.RemoteAddr)
 		return nil
 	}
 }
@@ -116,12 +118,14 @@ func queryHosts(db repository.SHVSDatabase) errorHandlerFunc {
 
 		if hostName != "" {
 			if !validateInputString(constants.HostName, hostName) {
+				slog.Errorf("resource/sgx_host_ops: queryHosts() Input validation failed for host name query param")
 				return &resourceError{Message: "queryHosts: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
 			}
 		}
 
 		if hardwareUUID != "" {
+			slog.Errorf("resource/sgx_host_ops: queryHosts() Input validation failed for hardware UUID query param")
 			if !validateInputString(constants.UUID, hardwareUUID) {
 				return &resourceError{Message: "queryHosts: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
@@ -151,7 +155,7 @@ func queryHosts(db repository.SHVSDatabase) errorHandlerFunc {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
 		w.Write(js)
-		log.Trace("queryHosts leaving")
+		slog.Infof("%s: Host searched by: %s", commLogMsg.AuthorizedAccess, r.RemoteAddr)
 		return nil
 	}
 }
@@ -170,6 +174,7 @@ func getPlatformData(db repository.SHVSDatabase) errorHandlerFunc {
 		hostName := r.URL.Query().Get("HostName")
 		if hostName != "" {
 			if !validateInputString(constants.HostName, hostName) {
+				slog.Errorf("resource/sgx_host_ops: getPlatformData() Input validation failed for host name")
 				return &resourceError{Message: "getPlatformData: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
 			}
@@ -265,7 +270,7 @@ func getPlatformData(db repository.SHVSDatabase) errorHandlerFunc {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
 		w.Write(js)
-		log.Trace("getPlatformDataCB leaving")
+		slog.Infof("%s: Host platform data retrieved by: %s", commLogMsg.AuthorizedAccess, r.RemoteAddr)
 		return nil
 	}
 }
@@ -281,6 +286,7 @@ func deleteHost(db repository.SHVSDatabase) errorHandlerFunc {
 		id := mux.Vars(r)["id"]
 		validation_err := validation.ValidateUUIDv4(id)
 		if validation_err != nil {
+			slog.Errorf("resource/sgx_host_ops: deleteHost() Input validation failed for host Id")
 			return &resourceError{Message: validation_err.Error(), StatusCode: http.StatusBadRequest}
 		}
 
@@ -401,6 +407,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 		var res RegisterResponse
 		var data RegisterHostInfo
 		if r.ContentLength == 0 {
+			slog.Error("resource/sgx_host_ops: registerHost() The request body was not provided")
 			res = RegisterResponse{HttpStatus: http.StatusBadRequest,
 				Response: ResponseJson{Status: "Failed",
 					Message: "registerHost: No request data"}}
@@ -411,6 +418,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 		dec.DisallowUnknownFields()
 		err = dec.Decode(&data)
 		if err != nil {
+			slog.WithError(err).Errorf("resource/sgx_host_ops: registerHost() %s :  Failed to decode request body", commLogMsg.InvalidInputBadEncoding)
 			res = RegisterResponse{HttpStatus: http.StatusBadRequest,
 				Response: ResponseJson{Status: "Failed",
 					Message: "registerHost: Invalid Json Post Data"}}
@@ -423,7 +431,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 			!validateInputString(constants.ConnectionString, data.ConnectionString) ||
 			!validateInputString(constants.UUID, data.UUID) ||
 			!validateInputString(constants.Description, data.Description) {
-
+			slog.Error("resource/sgx_host_ops: registerHost() Input validation failed")
 			res = RegisterResponse{HttpStatus: http.StatusBadRequest,
 				Response: ResponseJson{Status: "Failed",
 					Message: "registerHost: Invalid query Param Data"}}
