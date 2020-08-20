@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Intel Corporation
+ * Copyright (C) 2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause
  */
 package resource
@@ -7,7 +7,7 @@ package resource
 import (
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
-	"intel/isecl/lib/common/v2/middleware"
+	"intel/isecl/lib/common/v3/middleware"
 	"intel/isecl/shvs/constants"
 	"intel/isecl/shvs/repository"
 	"net/http/httptest"

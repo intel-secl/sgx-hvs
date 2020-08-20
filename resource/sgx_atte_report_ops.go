@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Intel Corporation
+ * Copyright (C) 2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause
  */
 package resource
@@ -10,7 +10,7 @@ import (
 	"fmt"
 	uuid "github.com/google/uuid"
 	"github.com/pkg/errors"
-	"intel/isecl/lib/clients/v2"
+	"intel/isecl/lib/clients/v3"
 	"net/http"
 	"strconv"
 	"time"

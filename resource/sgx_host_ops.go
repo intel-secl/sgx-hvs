@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Intel Corporation
+ * Copyright (C) 2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause
  */
 package resource
@@ -14,8 +14,8 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
-	commLogMsg "intel/isecl/lib/common/v2/log/message"
-	"intel/isecl/lib/common/v2/validation"
+	commLogMsg "intel/isecl/lib/common/v3/log/message"
+	"intel/isecl/lib/common/v3/validation"
 	"intel/isecl/shvs/constants"
 	"intel/isecl/shvs/repository"
 	"intel/isecl/shvs/types"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Intel Corporation
+ * Copyright (C) 2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -7,18 +7,18 @@ package resource
 
 import (
 	"encoding/json"
-	commLogMsg "intel/isecl/lib/common/v2/log/message"
+	commLogMsg "intel/isecl/lib/common/v3/log/message"
 	"intel/isecl/shvs/constants"
 	"intel/isecl/shvs/repository"
 	"net/http"
 )
 
 type HostStatusResponse struct {
-	HostId           string    `json:"host_id"`
-	Status           string    `json:"host_status"`
-	AgentRetryCount  int       `json:"agent_retry_count"`
-	SCSRetryCount    int       `json:"scs_retry_count"`
-	TCBSCSRetryCount int       `json:"tcb_scs_retry_count"`
+	HostId           string `json:"host_id"`
+	Status           string `json:"host_status"`
+	AgentRetryCount  int    `json:"agent_retry_count"`
+	SCSRetryCount    int    `json:"scs_retry_count"`
+	TCBSCSRetryCount int    `json:"tcb_scs_retry_count"`
 }
 
 func hostStateInformation(db repository.SHVSDatabase) errorHandlerFunc {
@@ -46,7 +46,7 @@ func hostStateInformation(db repository.SHVSDatabase) errorHandlerFunc {
 
 		hostStatusResponses := make([]HostStatusResponse, 0)
 		for _, hostStatus := range hostStatusData {
-			hostStatusResponse := HostStatusResponse {
+			hostStatusResponse := HostStatusResponse{
 				HostId:           hostStatus.HostId,
 				Status:           hostStatus.Status,
 				AgentRetryCount:  hostStatus.AgentRetryCount,

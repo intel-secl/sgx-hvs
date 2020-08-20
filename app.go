@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Intel Corporation
+ * Copyright (C) 2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause
  */
 package main
@@ -24,7 +24,7 @@ import (
 	"syscall"
 	"time"
 
-	"intel/isecl/lib/common/v2/middleware"
+	"intel/isecl/lib/common/v3/middleware"
 	"intel/isecl/shvs/config"
 	"intel/isecl/shvs/constants"
 	"intel/isecl/shvs/repository"
@@ -34,14 +34,14 @@ import (
 	"intel/isecl/shvs/tasks"
 	"intel/isecl/shvs/version"
 
-	"intel/isecl/lib/common/v2/crypt"
-	e "intel/isecl/lib/common/v2/exec"
-	commLog "intel/isecl/lib/common/v2/log"
-	commLogMsg "intel/isecl/lib/common/v2/log/message"
-	commLogInt "intel/isecl/lib/common/v2/log/setup"
-	cos "intel/isecl/lib/common/v2/os"
-	"intel/isecl/lib/common/v2/setup"
-	"intel/isecl/lib/common/v2/validation"
+	"intel/isecl/lib/common/v3/crypt"
+	e "intel/isecl/lib/common/v3/exec"
+	commLog "intel/isecl/lib/common/v3/log"
+	commLogMsg "intel/isecl/lib/common/v3/log/message"
+	commLogInt "intel/isecl/lib/common/v3/log/setup"
+	cos "intel/isecl/lib/common/v3/os"
+	"intel/isecl/lib/common/v3/setup"
+	"intel/isecl/lib/common/v3/validation"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -595,7 +595,7 @@ func validateCmdAndEnv(env_names_cmd_opts map[string]string, flags *flag.FlagSet
 	defer log.Trace("app:validateCmdAndEnv() Leaving")
 
 	env_names := make([]string, 0)
-	for k, _ := range env_names_cmd_opts {
+	for k := range env_names_cmd_opts {
 		env_names = append(env_names, k)
 	}
 

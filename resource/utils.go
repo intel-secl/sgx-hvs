@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Intel Corporation
+ * Copyright (C) 2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause
  */
 package resource
@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"intel/isecl/lib/clients/v2"
-	"intel/isecl/lib/clients/v2/aas"
+	"intel/isecl/lib/clients/v3"
+	"intel/isecl/lib/clients/v3/aas"
 	"intel/isecl/shvs/config"
 	"intel/isecl/shvs/constants"
 	"intel/isecl/shvs/repository"
