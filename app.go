@@ -163,12 +163,12 @@ func (a *App) executablePath() string {
 	if a.ExecutablePath != "" {
 		return a.ExecutablePath
 	}
-	exec, err := os.Executable()
+	executable, err := os.Executable()
 	if err != nil {
 		// if we can't find self-executable path, we're probably in a state that is panic() worthy
 		panic(err)
 	}
-	return exec
+	return executable
 }
 
 func (a *App) homeDir() string {
@@ -390,7 +390,6 @@ func (a *App) Run(args []string) error {
 		}
 
 		//Change the file ownership to shvs user
-
 		err = cos.ChownR(constants.ConfigDir, uid, gid)
 		if err != nil {
 			return errors.Wrap(err, "Error while changing file ownership")

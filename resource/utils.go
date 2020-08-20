@@ -79,6 +79,8 @@ func addJWTToken(req *http.Request) error {
 }
 
 func UpdateHostStatus(hostId string, db repository.SHVSDatabase, status string) error {
+	log.Trace("resource/utils: UpdateHostStatus() Entering")
+	defer log.Trace("resource/utils: UpdateHostStatus() Leaving")
 
 	if statusUpdateLock == nil {
 		statusUpdateLock = new(sync.Mutex)
@@ -98,7 +100,6 @@ func UpdateHostStatus(hostId string, db repository.SHVSDatabase, status string) 
 	var vstatus string
 
 	if status == constants.HostStatusAgentRetry {
-
 		if existingHostStatusRec.AgentRetryCount >= constants.MaxRetryConnection {
 			vstatus = constants.HostStatusAgentConnFailure
 		} else {
@@ -114,9 +115,7 @@ func UpdateHostStatus(hostId string, db repository.SHVSDatabase, status string) 
 			CreatedTime:      existingHostStatusRec.CreatedTime,
 			UpdatedTime:      time.Now(),
 		}
-
 	} else if status == constants.HostStatusSCSRetry {
-
 		if existingHostStatusRec.SCSRetryCount >= constants.MaxRetryConnection {
 			vstatus = constants.HostStatusSCSConnFailure
 		} else {
@@ -132,9 +131,7 @@ func UpdateHostStatus(hostId string, db repository.SHVSDatabase, status string) 
 			CreatedTime:      existingHostStatusRec.CreatedTime,
 			UpdatedTime:      time.Now(),
 		}
-
 	} else if status == constants.HostStatusTCBSCSRetry {
-
 		if existingHostStatusRec.TCBSCSRetryCount >= constants.MaxRetryConnection {
 			vstatus = constants.HostStatusTCBSCSConnFailure
 		} else {
@@ -150,10 +147,8 @@ func UpdateHostStatus(hostId string, db repository.SHVSDatabase, status string) 
 			CreatedTime:      existingHostStatusRec.CreatedTime,
 			UpdatedTime:      time.Now(),
 		}
-
 	} else {
 		if status == constants.HostStatusConnected {
-
 			conf := config.Global()
 			if conf == nil {
 				return errors.Wrap(errors.New("UpdateHostStatus: Configuration pointer is null"), "Config error")
@@ -200,7 +195,6 @@ func UpdateHostStatus(hostId string, db repository.SHVSDatabase, status string) 
 
 	err = db.HostStatusRepository().Update(hostStatus)
 	if err != nil {
-		log.WithError(err).Info("Error while caching Host Status Information")
 		statusUpdateLock.Unlock()
 		return errors.New("UpdateHostStatus: Error while caching Host Status Information: " + err.Error())
 	}

@@ -19,12 +19,13 @@ var regExMap = map[string]*regexp.Regexp{
 	constants.UUID:             regexp.MustCompile(`([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}){1}`)}
 
 func validateInputString(key string, inString string) bool {
+	log.Trace("resource/validation: validateInputString() Entering")
+	defer log.Trace("resource/validation: validateInputString() Leaving")
 
 	regEx := regExMap[key]
 	if len(key) <= 0 || !regEx.MatchString(inString) {
-		log.WithField(key, inString).Error("Input Validation failing")
+		log.WithField(key, inString).Error("Input Validation failed")
 		return false
 	}
-	log.WithField(key, inString).Debug("Input Validation")
 	return true
 }

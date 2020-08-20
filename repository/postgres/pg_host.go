@@ -59,14 +59,14 @@ func (r *PostgresHostRepository) GetHostQuery(queryData *types.Host) (types.Host
 		return hrs, errors.New("Unexpected Error. Could not build a gorm query object in Hosts RetrieveAll function.")
 	}
 	if err := tx.Find(&hrs).Error; err != nil {
-		return hrs, errors.Wrap(err, "hosts retrieve all: failed")
+		return hrs, errors.Wrap(err, "GetHostQuery: failed to retrieve hosts based on query parameters")
 	}
 	return hrs, nil
 }
 
 func buildHostSearchQuery(tx *gorm.DB, rs *types.Host) *gorm.DB {
-	log.Trace("host buildHostSearchQuery")
-	defer log.Trace("host buildHostSearchQuery done")
+	log.Trace("repository/postgres/pg_host: buildHostSearchQuery() Entering")
+	defer log.Trace("repository/postgres/pg_host: buildHostSearchQuery() Leaving")
 
 	if tx == nil {
 		return nil

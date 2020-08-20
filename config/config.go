@@ -21,10 +21,7 @@ import (
 
 var slog = commLog.GetSecurityLogger()
 
-// should move this into lib common, as its duplicated across SHVS and SHVS
-
 // Configuration is the global configuration struct that is marshalled/unmarshaled to a persisted yaml file
-// Probably should embed a config generic struct
 type Configuration struct {
 	configFile       string
 	Port             int
@@ -101,14 +98,14 @@ func (c *Configuration) Save() error {
 	if err != nil {
 		// we have an error
 		if os.IsNotExist(err) {
-			// error is that the config doesnt yet exist, create it
+			// error is that the config doesn't yet exist, create it
 			file, err = os.Create(c.configFile)
 			os.Chmod(c.configFile, 0660)
 			if err != nil {
 				return err
 			}
 		} else {
-			// someother I/O related error
+			// some other I/O related error
 			return err
 		}
 	}
@@ -122,7 +119,7 @@ func (conf *Configuration) SaveConfiguration(c setup.Context) error {
 
 	var err error = nil
 
-	tlsCertDigest, err := c.GetenvString(constants.CmsTlsCertDigestEnv, "TLS certificate digest")
+	tlsCertDigest, err := c.GetenvString("CMS_TLS_CERT_SHA384", "TLS certificate digest")
 	if err == nil && tlsCertDigest != "" {
 		conf.CmsTlsCertDigest = tlsCertDigest
 	} else if conf.CmsTlsCertDigest == "" {
@@ -153,7 +150,7 @@ func (conf *Configuration) SaveConfiguration(c setup.Context) error {
 		log.Error("SCS_BASE_URL is not defined in environment")
 	}
 
-	shvsAASUser, err := c.GetenvString(constants.SHVS_USER, "SHVS Service Username")
+	shvsAASUser, err := c.GetenvString("SHVS_ADMIN_USERNAME", "SHVS Service Username")
 	if err == nil && shvsAASUser != "" {
 		conf.SHVS.User = shvsAASUser
 	} else if conf.SHVS.User == "" {
@@ -161,7 +158,7 @@ func (conf *Configuration) SaveConfiguration(c setup.Context) error {
 		return errorLog.Wrap(err, "SHVS_ADMIN_USERNAME is not defined in environment or configuration file")
 	}
 
-	shvsAASPassword, err := c.GetenvSecret(constants.SHVS_PASSWORD, "SHVS Service Password")
+	shvsAASPassword, err := c.GetenvSecret("SHVS_ADMIN_PASSWORD", "SHVS Service Password")
 	if err == nil && shvsAASPassword != "" {
 		conf.SHVS.Password = shvsAASPassword
 	} else if strings.TrimSpace(conf.SHVS.Password) == "" {
@@ -176,21 +173,21 @@ func (conf *Configuration) SaveConfiguration(c setup.Context) error {
 		conf.Subject.TLSCertCommonName = constants.DefaultSHVSTlsCn
 	}
 
-	tlsKeyPath, err := c.GetenvString("KEY_PATH", "Path of file where TLS key needs to be stored")
+	tlsKeyPath, err := c.GetenvString("KEY_PATH", "Filepath where TLS key needs to be stored")
 	if err == nil && tlsKeyPath != "" {
 		conf.TLSKeyFile = tlsKeyPath
 	} else if conf.TLSKeyFile == "" {
 		conf.TLSKeyFile = constants.DefaultTLSKeyFile
 	}
 
-	tlsCertPath, err := c.GetenvString("CERT_PATH", "Path of file/directory where TLS certificate needs to be stored")
+	tlsCertPath, err := c.GetenvString("CERT_PATH", "Filepath where TLS certificate needs to be stored")
 	if err == nil && tlsCertPath != "" {
 		conf.TLSCertFile = tlsCertPath
 	} else if conf.TLSCertFile == "" {
 		conf.TLSCertFile = constants.DefaultTLSCertFile
 	}
 
-	logLevel, err := c.GetenvString("SHVS_LOGLEVEL", "SHVS Log Level")
+	logLevel, err := c.GetenvString(constants.SHVSLogLevel, "SHVS Log Level")
 	if err != nil {
 		slog.Infof("config/config:SaveConfiguration() %s not defined, using default log level: Info", constants.SHVSLogLevel)
 		conf.LogLevel = log.InfoLevel
@@ -246,10 +243,9 @@ func Load(path string) *Configuration {
 		defer file.Close()
 		yaml.NewDecoder(file).Decode(&c)
 	} else {
-		// file doesnt exist, create a new blank one
+		// file doesn't exist, create a new blank one
 		c.LogLevel = log.InfoLevel
 	}
-
 	c.configFile = path
 	return &c
 }

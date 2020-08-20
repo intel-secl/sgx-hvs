@@ -73,6 +73,7 @@ func (db Database) Run(c setup.Context) error {
 		return valid_err
 	}
 
+	// Configure database SSL parameters such as SSL Mode and SSL Certificate filepath
 	db.Config.Postgres.SSLMode, db.Config.Postgres.SSLCert, valid_err = configureDBSSLParams(
 		db.Config.Postgres.SSLMode, envDBSSLCertSrc,
 		db.Config.Postgres.SSLCert)
@@ -81,6 +82,7 @@ func (db Database) Run(c setup.Context) error {
 		return valid_err
 	}
 
+	// Open connection to the postgres database
 	pg := db.Config.Postgres
 	p, err := postgres.Open(pg.Hostname, pg.Port, pg.DBName, pg.Username, pg.Password, pg.SSLMode, pg.SSLCert)
 	if err != nil {

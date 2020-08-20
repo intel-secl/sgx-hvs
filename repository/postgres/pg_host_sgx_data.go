@@ -20,7 +20,7 @@ func (r *PostgresHostSgxDataRepository) Create(h types.HostSgxData) (*types.Host
 	defer log.Trace("repository/postgres/pg_host_sgx_data: Create() Leaving")
 
 	err := r.db.Create(&h).Error
-	return &h, errors.Wrap(err, "Create: failed to create HostSgxData")
+	return &h, errors.Wrap(err, "Create(): failed to create HostSgxData")
 }
 
 func (r *PostgresHostSgxDataRepository) Retrieve(h types.HostSgxData) (*types.HostSgxData, error) {
@@ -32,7 +32,7 @@ func (r *PostgresHostSgxDataRepository) Retrieve(h types.HostSgxData) (*types.Ho
 	err := r.db.Where(&h).First(&p).Error
 	if err != nil {
 		log.Trace("Error in fetch records Entering")
-		return nil, errors.Wrap(err, "Retrieve: failed to Retrieve HostSgxData")
+		return nil, errors.Wrap(err, "Retrieve(): failed to Retrieve HostSgxData")
 	}
 	return &p, nil
 }
@@ -48,15 +48,15 @@ func (r *PostgresHostSgxDataRepository) RetrieveAll(h types.HostSgxData) (types.
 	tx = tx.Select(cols)
 	err := tx.Find(&hs).Error
 	if err != nil {
-		return nil, errors.Wrap(err, "RetrieveAll: failed to RetrieveAll HostSgxData")
+		return nil, errors.Wrap(err, "RetrieveAll(): failed to RetrieveAll HostSgxData")
 	}
 	slog.WithField("db hs", hs).Trace("RetrieveAll")
-	return hs, errors.Wrap(err, "RetrieveAll: failed to RetrieveAll HostSgxData")
+	return hs, errors.Wrap(err, "RetrieveAll(): failed to RetrieveAll HostSgxData")
 }
 
 func (r *PostgresHostSgxDataRepository) GetPlatformData(timeIntervalFilter time.Time) (types.HostsSgxData, error) {
-	log.Trace("repository/postgres/pg_host_sgx_data: RetrieveByHostId() Entering")
-	defer log.Trace("repository/postgres/pg_host_sgx_data: RetrieveByHostId() Leaving")
+	log.Trace("repository/postgres/pg_host_sgx_data: GetPlatformData() Entering")
+	defer log.Trace("repository/postgres/pg_host_sgx_data: GetPlatformData() Leaving")
 
 	var hs types.HostsSgxData
 	cols := "host_sgx_data.host_id, host_sgx_data.sgx_supported, host_sgx_data.sgx_enabled, host_sgx_data.flc_enabled, host_sgx_data.epc_size, host_sgx_data.tcb_uptodate"
@@ -65,7 +65,7 @@ func (r *PostgresHostSgxDataRepository) GetPlatformData(timeIntervalFilter time.
 	tx = tx.Select(cols)
 	err := tx.Find(&hs).Error
 	if err != nil {
-		return nil, errors.Wrap(err, "RetrieveByHostId: failed to RetrieveByHostId HostSgxData")
+		return nil, errors.Wrap(err, "GetPlatformData(): failed to RetrieveByHostId HostSgxData")
 	}
 
 	slog.WithField("db hs", hs).Info("getPlatformData")
@@ -77,7 +77,7 @@ func (r *PostgresHostSgxDataRepository) Update(h types.HostSgxData) error {
 	defer log.Trace("repository/postgres/pg_host_sgx_data: Update() Leaving")
 
 	if err := r.db.Save(&h).Error; err != nil {
-		return errors.Wrap(err, "Update: failed to update HostSgxData")
+		return errors.Wrap(err, "Update(): failed to update HostSgxData")
 	}
 	return nil
 }
@@ -87,7 +87,7 @@ func (r *PostgresHostSgxDataRepository) Delete(h types.HostSgxData) error {
 	defer log.Trace("repository/postgres/pg_host_sgx_data: Delete() Leaving")
 
 	if err := r.db.Delete(&h).Error; err != nil {
-		return errors.Wrap(err, "Delete: failed to delete HostSgxData")
+		return errors.Wrap(err, "Delete(): failed to delete HostSgxData")
 	}
 	return nil
 }

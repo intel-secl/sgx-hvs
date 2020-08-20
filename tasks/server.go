@@ -30,13 +30,13 @@ func (s Server) Run(c setup.Context) error {
 	defer log.Trace("tasks/server:Run() Leaving")
 
 	fmt.Fprintln(s.ConsoleWriter, "Running server setup...")
-	defaultPort, err := c.GetenvInt("SHVS_PORT", "SGX Host Verification http port")
+	defaultPort, err := c.GetenvInt("SHVS_PORT", "SGX Host Verification secure port")
 	if err != nil {
-		defaultPort = constants.DefaultHttpPort
+		defaultPort = constants.DefaultHttpsPort
 	}
 	fs := flag.NewFlagSet("server", flag.ContinueOnError)
 
-	fs.IntVar(&s.Config.Port, "port", defaultPort, "SGX Host Verification http port")
+	fs.IntVar(&s.Config.Port, "port", defaultPort, "SGX Host Verification secure port")
 	err = fs.Parse(s.Flags)
 	if err != nil {
 		return errors.Wrap(err, "tasks/server:Run() Could not parse input flags")

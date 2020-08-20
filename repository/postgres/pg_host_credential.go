@@ -30,7 +30,6 @@ func (r *PostgresHostCredentialRepository) Retrieve(h types.HostCredential) (*ty
 	slog.WithField("HostCredential", h).Debug("Retrieve Call")
 	err := r.db.Where(&h).First(&p).Error
 	if err != nil {
-		log.Trace("Error in fetch records Entering")
 		return nil, errors.Wrap(err, "Retrieve: failed to Retrieve HostCredential")
 	}
 	return &p, nil

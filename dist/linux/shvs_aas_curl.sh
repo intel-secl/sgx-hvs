@@ -65,7 +65,6 @@ fi
 }
 
 #Add SHVS roles
-#cms role(shvs will create these roles where CN=SHVS), getroles(api in aas that is to be map with), keyTransfer, keyCrud
 create_user_roles() {
 
 cat > $tmpdir/roles.json << EOF
@@ -104,7 +103,7 @@ create_roles() {
 	echo $ROLE_ID_TO_MAP
 }
 
-#Map shvsUser to Roles
+#Map SHVS User to Roles
 mapUser_to_role() {
 cat >$tmpdir/mapRoles.json <<EOF
 {
@@ -121,7 +120,6 @@ fi
 }
 
 SHVS_SETUP_API="create_shvs_user create_roles mapUser_to_role"
-#SHVS_SETUP_API="mapUser_to_role"
 
 status=
 for api in $SHVS_SETUP_API
@@ -139,7 +137,7 @@ if [ $status -eq 0 ]; then
     echo "SHVS Setup for AAS-CMS complete: No errors"
 fi
 if [ $status -eq 2 ]; then
-    echo "SHVS Setup for AAS-CMS already exists in AAS Database: No action will be done"
+    echo "SHVS Setup for AAS-CMS already exists in AAS Database: No action will be taken"
 fi
 
 #Get Token for SHVS USER and configure it in shvs config.
@@ -147,7 +145,6 @@ curl $CURL_OPTS -X POST -H "Content-Type: application/json" -H "Accept: applicat
 
 status=$(cat $tmpdir/getshvsusertoken-response.status)
 if [ $status -ne 200 ]; then
-	#shvs config aas.bearer.token $tmpdir/shvs_token-response.json 
 	echo "Couldn't get bearer token"
 else
 	export BEARER_TOKEN=`cat $tmpdir/shvs_token-response.json`

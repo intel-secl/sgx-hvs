@@ -27,7 +27,7 @@ ISECL_PGDB_DBNAME="${ISECL_PGDB_DBNAME:-pgshvsdb}"                # database nam
 ISECL_PGDB_USERNAME="${ISECL_PGDB_USERNAME:-dbuser}"          # name of user used to connect to database
 ISECL_PGDB_USERPASSWORD="${1:-$ISECL_PGDB_USERPASSWORD}"      # password for database user
 
-ISECL_PGDB_SERVICEHOST="${ISECL_PGDB_SERVICEHOST:-localhost}" # host name or ip address of service whic connects to this database
+ISECL_PGDB_SERVICEHOST="${ISECL_PGDB_SERVICEHOST:-localhost}" # host name or ip address of service which connects to this database
 ISECL_PGDB_ALLOW_NONSSL="${ISECL_PGDB_ALLOW_NONSSL:-false}"
 ISECL_PGDB_CERT_VALIDITY_DAYS="${ISECL_PGDB_CERT_VALIDITY_DAYS:-3652}"
 

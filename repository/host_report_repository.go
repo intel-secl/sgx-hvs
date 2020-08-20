@@ -14,5 +14,5 @@ type HostReportRepository interface {
 	RetrieveAll(user types.HostReport) (types.HostReports, error)
 	Update(types.HostReport) error
 	Delete(types.HostReport) error
-	GetHostReportQuary(types.SgxHostReportInputData) (types.HostReports, error)
+	GetHostReportQuery(types.SgxHostReportInputData) (types.HostReports, error)
 }

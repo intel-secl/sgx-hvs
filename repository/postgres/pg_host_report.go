@@ -31,7 +31,7 @@ func (r *PostgresHostReportRepository) Retrieve(hr types.HostReport) (*types.Hos
 	err := r.db.Where(&hr).First(&p).Error
 	if err != nil {
 		log.Trace("Error in fetch records Entering")
-		return nil, errors.Wrap(err, "Retrieve: failed to Retrieve HostReport")
+		return nil, errors.Wrap(err, "Retrieve: failed to retrieve HostReport")
 	}
 	return &p, nil
 }
@@ -70,9 +70,9 @@ func (r *PostgresHostReportRepository) Delete(hr types.HostReport) error {
 	return nil
 }
 
-func (r *PostgresHostReportRepository) GetHostReportQuary(queryData types.SgxHostReportInputData) (types.HostReports, error) {
-	log.Trace("repository/postgres/pg_host: SearchUserIdQuary() Entering")
-	defer log.Trace("repository/postgres/pg_host: SearchUserIdQuary() Leaving")
+func (r *PostgresHostReportRepository) GetHostReportQuery(queryData types.SgxHostReportInputData) (types.HostReports, error) {
+	log.Trace("repository/postgres/pg_host: GetHostReportQuery() Entering")
+	defer log.Trace("repository/postgres/pg_host: GetHostReportQuery() Leaving")
 
 	var hrs types.HostReports
 	var query string
@@ -108,7 +108,7 @@ func (r *PostgresHostReportRepository) GetHostReportQuary(queryData types.SgxHos
 
 	r.db.Raw(query).Scan(&hrs)
 	if len(hrs) == 0 {
-		return nil, errors.New("Could not find reports in Database")
+		return nil, errors.New("GetHostReportQuery(): Could not find reports in Database")
 	}
 	return hrs, nil
 }

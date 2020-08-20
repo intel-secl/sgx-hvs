@@ -44,7 +44,7 @@ CERTDIR_TRUSTEDJWTCAS=$CERTS_PATH/trustedca
 CERTDIR_CMSROOTCAS=$CERTS_PATH/cms-root-ca
 
 for directory in $BIN_PATH $DB_SCRIPT_PATH $LOG_PATH $CONFIG_PATH $CERTS_PATH $CERTDIR_TOKENSIGN $CERTDIR_TRUSTEDJWTCERTS $CERTDIR_TRUSTEDJWTCAS $CERTDIR_CMSROOTCAS; do
-  # mkdir -p will return 0 if directory exists or is a symlink to an existing directory or directory and parents can be created
+  # mkdir -p will return 0 if directory exists or is a symlink to an existing directory else directory and parent directory will be created
   mkdir -p $directory
   if [ $? -ne 0 ]; then
     echo_failure "Cannot create directory: $directory"

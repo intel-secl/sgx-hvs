@@ -20,7 +20,7 @@ func (r *PostgresHostStatusRepository) Create(h types.HostStatus) (*types.HostSt
 	defer log.Trace("repository/postgres/pg_host_status: Create() Leaving")
 
 	err := r.db.Create(&h).Error
-	return &h, errors.Wrap(err, "Create: failed to create HostStatus")
+	return &h, errors.Wrap(err, "Create(): failed to create HostStatus")
 }
 
 func (r *PostgresHostStatusRepository) Retrieve(h types.HostStatus) (*types.HostStatus, error) {
@@ -32,7 +32,7 @@ func (r *PostgresHostStatusRepository) Retrieve(h types.HostStatus) (*types.Host
 	err := r.db.Where(&h).First(&p).Error
 	if err != nil {
 		log.Trace("Error in fetch records Entering")
-		return nil, errors.Wrap(err, "Retrieve: failed to Retrieve HostStatus")
+		return nil, errors.Wrap(err, "Retrieve(): failed to Retrieve HostStatus")
 	}
 	return &p, nil
 }
@@ -44,25 +44,25 @@ func (r *PostgresHostStatusRepository) RetrieveAll(h types.HostStatus) (types.Ho
 	var hs types.HostsStatus
 	err := r.db.Where(&h).Find(&hs).Error
 	if err != nil {
-		return nil, errors.Wrap(err, "RetrieveAll: failed to RetrieveAll HostStatus")
+		return nil, errors.Wrap(err, "RetrieveAll(): failed to RetrieveAll HostStatus")
 	}
 
 	slog.WithField("db hs", hs).Trace("RetrieveAll")
-	return hs, errors.Wrap(err, "RetrieveAll: failed to RetrieveAll HostStatus")
+	return hs, errors.Wrap(err, "RetrieveAll(): failed to RetrieveAll HostStatus")
 }
 
 func (r *PostgresHostStatusRepository) RetrieveAllQueues(status []string) (types.HostsStatus, error) {
-	log.Trace("repository/postgres/pg_host_status: RetrieveAll() Entering")
-	defer log.Trace("repository/postgres/pg_host_status: RetrieveAll() Leaving")
+	log.Trace("repository/postgres/pg_host_status: RetrieveAllQueues() Entering")
+	defer log.Trace("repository/postgres/pg_host_status: RetrieveAllQueues() Leaving")
 
 	var hs types.HostsStatus
 	err := r.db.Where("status IN (?)", status).Find(&hs).Error
 	if err != nil {
-		return nil, errors.Wrap(err, "RetrieveAll: failed to RetrieveAll HostStatus")
+		return nil, errors.Wrap(err, "RetrieveAllQueues(): failed to RetrieveAll HostStatus")
 	}
 
-	slog.WithField("db hs", hs).Trace("RetrieveAll")
-	return hs, errors.Wrap(err, "RetrieveAll: failed to RetrieveAll HostStatus")
+	slog.WithField("db hs", hs).Trace("RetrieveAllQueues")
+	return hs, errors.Wrap(err, "RetrieveAllQueues(): failed to RetrieveAll HostStatus")
 }
 
 func (r *PostgresHostStatusRepository) RetrieveNonExpiredHost(h types.HostStatus) (*types.HostStatus, error) {
@@ -72,7 +72,7 @@ func (r *PostgresHostStatusRepository) RetrieveNonExpiredHost(h types.HostStatus
 	var hs types.HostStatus
 	err := r.db.Where("status = 'CONNECTED' and host_id = (?)", h.HostId).First(&hs).Error
 	if err != nil {
-		return nil, errors.Wrap(err, "RetrieveAll: failed to RetrieveNonExpiredHost HostStatus")
+		return nil, errors.Wrap(err, "RetrieveNonExpiredHost(): failed to RetrieveNonExpiredHost HostStatus")
 	}
 	slog.WithField("db hs", hs).Trace("RetrieveNonExpiredHost")
 	return &hs, nil
@@ -90,7 +90,7 @@ func (r *PostgresHostStatusRepository) RetrieveExpiredHosts() (types.HostsStatus
 	}
 
 	slog.WithField("db hs", hs).Debug("RetrieveExpiredHosts")
-	return hs, errors.Wrap(err, "RetrieveExpiredHosts: failed to Retrieve ExpiredHosts id")
+	return hs, errors.Wrap(err, "RetrieveExpiredHosts(): failed to Retrieve ExpiredHosts id")
 }
 
 func (r *PostgresHostStatusRepository) Update(h types.HostStatus) error {
@@ -98,7 +98,7 @@ func (r *PostgresHostStatusRepository) Update(h types.HostStatus) error {
 	defer log.Trace("repository/postgres/pg_host_status: Update() Leaving")
 
 	if err := r.db.Save(&h).Error; err != nil {
-		return errors.Wrap(err, "Update: failed to update HostStatus")
+		return errors.Wrap(err, "Update(): failed to update HostStatus")
 	}
 	return nil
 }
@@ -108,7 +108,7 @@ func (r *PostgresHostStatusRepository) Delete(h types.HostStatus) error {
 	defer log.Trace("repository/postgres/pg_host_status: Delete() Leaving")
 
 	if err := r.db.Delete(&h).Error; err != nil {
-		return errors.Wrap(err, "Delete: failed to delete HostStatus")
+		return errors.Wrap(err, "Delete(): failed to delete HostStatus")
 	}
 	return nil
 }
@@ -125,7 +125,7 @@ func (r *PostgresHostStatusRepository) GetHostStateInfo() (types.HostsStatus, er
 
 	r.db.Raw(query).Scan(&hs)
 	if len(hs) == 0 {
-		return nil, errors.New("Could not find reports in Database")
+		return nil, errors.New("GetHostStateInfo(): Could not retrieve host status")
 	}
 	return hs, nil
 }

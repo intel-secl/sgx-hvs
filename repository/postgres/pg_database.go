@@ -10,12 +10,10 @@ import (
 	commLogMsg "intel/isecl/lib/common/v3/log/message"
 	"intel/isecl/shvs/repository"
 	"intel/isecl/shvs/types"
-	"io/ioutil"
 	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
-	"github.com/pkg/errors"
 )
 
 var log = commLog.GetDefaultLogger()
@@ -23,32 +21,6 @@ var slog = commLog.GetSecurityLogger()
 
 type PostgresDatabase struct {
 	DB *gorm.DB
-}
-
-func (pd *PostgresDatabase) ExecuteSql(sql *string) error {
-	log.Trace("repository/postgres/pg_database: ExecuteSql() Entering")
-	defer log.Trace("repository/postgres/pg_database: ExecuteSql() Leaving")
-
-	err := pd.DB.Exec(*sql).Error
-	if err != nil {
-		return errors.Wrap(err, "ExecuteSql: failed to execute sql")
-	}
-	return nil
-}
-
-func (pd *PostgresDatabase) ExecuteSqlFile(file string) error {
-	log.Trace("repository/postgres/pg_database: ExecuteSqlFile() Entering")
-	defer log.Trace("repository/postgres/pg_database: ExecuteSqlFile() Leaving")
-
-	c, err := ioutil.ReadFile(file)
-	if err != nil {
-		return errors.Wrapf(err, "could not read sql file - %s", file)
-	}
-	sql := string(c)
-	if err := pd.ExecuteSql(&sql); err != nil {
-		return errors.Wrapf(err, "could not execute contents of sql file %s", file)
-	}
-	return nil
 }
 
 func (pd *PostgresDatabase) Migrate() error {
@@ -97,11 +69,13 @@ func Open(host string, port int, dbname, user, password, sslMode, sslCert string
 	defer log.Trace("repository/postgres/pg_database: Open() Leaving")
 
 	sslMode = strings.TrimSpace(strings.ToLower(sslMode))
+	// Set default SSL Mode to verify-full, this mode provides protection from eavesdropping and MITM attack.
 	if sslMode != "allow" && sslMode != "prefer" && sslMode != "require" && sslMode != "verify-ca" {
 		sslMode = "verify-full"
 	}
 
 	var sslCertParams string
+	// In case of verify-ca and verify-full, SSL server certificate needs to be specified as client validates the chain of trust.
 	if sslMode == "verify-ca" || sslMode == "verify-full" {
 		sslCertParams = " sslrootcert=" + sslCert
 	}
@@ -132,8 +106,9 @@ func VerifyConnection(host string, port int, dbname, user, password, sslMode, ss
 	defer log.Trace("repository/postgres/pg_database: VerifyConnection() Leaving")
 
 	sslMode = strings.TrimSpace(strings.ToLower(sslMode))
-	if sslMode != "disable" && sslMode != "require" && sslMode != "allow" && sslMode != "prefer" && sslMode != "verify-ca" && sslMode != "verify-full" {
-		sslMode = "require"
+	// Set default SSL Mode to verify-full, this mode provides protection from eavesdropping and MITM attack.
+	if sslMode != "allow" && sslMode != "prefer" && sslMode != "require" && sslMode != "verify-ca" {
+		sslMode = "verify-full"
 	}
 
 	var sslCertParams string
