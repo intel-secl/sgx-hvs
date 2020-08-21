@@ -24,9 +24,6 @@ const (
 	TrustedCAsStoreDir             = ConfigDir + "certs/trustedca/"
 	ServiceRemoveCmd               = "systemctl disable shvs"
 	JWTCertsCacheTime              = "60m"
-	DefaultAuthDefendMaxAttempts   = 5
-	DefaultAuthDefendIntervalMins  = 5
-	DefaultAuthDefendLockoutMins   = 15
 	DefaultSSLCertFilePath         = ConfigDir + "shvs-dbcert.pem"
 	ServiceName                    = "SHVS"
 	RegisterHostGroupName          = "HostRegistration"

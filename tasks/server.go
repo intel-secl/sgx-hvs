@@ -46,10 +46,6 @@ func (s Server) Run(c setup.Context) error {
 	}
 	fmt.Fprintf(s.ConsoleWriter, "Using HTTPS port: %d\n", s.Config.Port)
 
-	s.Config.AuthDefender.MaxAttempts = constants.DefaultAuthDefendMaxAttempts
-	s.Config.AuthDefender.IntervalMins = constants.DefaultAuthDefendIntervalMins
-	s.Config.AuthDefender.LockoutDurationMins = constants.DefaultAuthDefendLockoutMins
-
 	readTimeout, err := c.GetenvInt("SHVS_SERVER_READ_TIMEOUT", "SGX Host Verification Service Read Timeout")
 	if err != nil {
 		s.Config.ReadTimeout = constants.DefaultReadTimeout

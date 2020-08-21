@@ -39,11 +39,6 @@ type Configuration struct {
 	LogEnableStdout bool
 	LogLevel        log.Level
 
-	AuthDefender struct {
-		MaxAttempts         int
-		IntervalMins        int
-		LockoutDurationMins int
-	}
 	SHVS struct {
 		User     string
 		Password string
