@@ -198,10 +198,9 @@ func getPlatformData(db repository.SHVSDatabase) errorHandlerFunc {
 			hostStatus := types.HostStatus{HostId: hostData.Id}
 			nonExpiredHosts, err := db.HostStatusRepository().RetrieveNonExpiredHost(hostStatus)
 			if err != nil {
-				log.WithError(err).WithField("HostName", hostName).Info("failed to retrieve host status")
+				log.WithError(err).WithField("HostName", hostName).Info("failed to retrieve host status.")
 				return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 			}
-			expiryTimeInString := (nonExpiredHosts.ExpiryTime).Format(time.RFC3339)
 
 			for _, platformDataForOneHost := range platformData {
 				marshalledData, err := json.Marshal(platformDataForOneHost)
@@ -215,7 +214,7 @@ func getPlatformData(db repository.SHVSDatabase) errorHandlerFunc {
 					log.Error("getPlatformData: Error unmarshalling the platform data")
 					continue
 				}
-				newPlatformData[constants.ExpiryTimeKeyName] = expiryTimeInString
+				newPlatformData[constants.ExpiryTimeKeyName] = nonExpiredHosts.ExpiryTime
 				response = append(response, newPlatformData)
 			}
 		} else {
