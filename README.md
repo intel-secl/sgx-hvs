@@ -7,12 +7,12 @@ SGX Agent and collecting SGX Data from the host.
 Key features
 ------------
 
+-   SGX-HVS extracts platform specific values from SGX Agent and pushes
+    them to SGX caching service
 -   SHVS communicates with SCS to determine if the platform is up to
     date on hardware and security patches (TCB)
 -   SHVS saves platform specific information in its own database which
-    will be pulled by SGX integration hub
--   SGX-HVS extracts platform specific values from SGX Agent and pushes
-    them to SGX caching service
+    will be pulled by integration hub
 
 System Requirements
 -------------------
