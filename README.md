@@ -10,9 +10,9 @@ Key features
 -   SHVS communicates with SCS to determine if the platform is up to
     date on hardware and security patches (TCB)
 -   SHVS saves platform specific information in its own database which
-    will be pulled by SGX attestation Hub
--   SGX-HVS pushes platform specific values to SGX caching service every
-    24 hours
+    will be pulled by SGX integration hub
+-   SGX-HVS extracts platform specific values from SGX Agent and pushes
+    them to SGX caching service
 
 System Requirements
 -------------------
@@ -42,7 +42,7 @@ sudo dnf install -y git wget makeself
 
 ### Install `go 1.14.1` or newer
 
-The `Certificate Management Service` requires Go version 1.14 that has
+The `Host Verification Service` requires Go version 1.14 that has
 support for `go modules`. The build was validated with version 1.14.1
 version of `go`. It is recommended that you use a newer version of `go`
 - but please keep in mind that the product has been validated with
@@ -50,8 +50,8 @@ version of `go`. It is recommended that you use a newer version of `go`
 You can use the following to install `go`.
 
 ``` {.shell}
-wget https://dl.google.com/go/go1.14.2.linux-amd64.tar.gz
-tar -xzf go1.14.2.linux-amd64.tar.gz
+wget https://dl.google.com/go/go1.14.1.linux-amd64.tar.gz
+tar -xzf go1.14.1.linux-amd64.tar.gz
 sudo mv go /usr/local
 export GOROOT=/usr/local/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
