@@ -104,8 +104,8 @@ Authentication and Authorization Service
   crypto     golang.org/x/crypto            v0.0.0-20190325154230-a5d413f7728c
   time       golang.org/x/time              v0.0.0-20190308202827-9d24e82272b4
   yaml.v2    gopkg.in/yaml.v2                             v2.2.2
-  client     intel/isecl/lib/clients                      v3.0.0
-  common     intel/isecl/lib/common                    v3.0/develop
+  client     intel/isecl/lib/clients                      v3.1.0
+  common     intel/isecl/lib/common                   	  v3.1.0
 
 ### Indirect Dependencies
 
