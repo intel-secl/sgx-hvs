@@ -5,6 +5,8 @@ BUILDDATE := $(shell TZ=UTC date +%Y-%m-%dT%H:%M:%S%z)
 
 .PHONY: shvs installer test clean
 
+all: clean installer
+
 shvs:
 	env GOOS=linux GOSUMDB=off GOPROXY=direct go build -ldflags "-X intel/isecl/shvs/version.BuildDate=$(BUILDDATE) -X intel/isecl/shvs/version.Version=$(VERSION) -X intel/isecl/shvs/version.GitHash=$(GITCOMMIT)" -o out/shvs
 
@@ -33,8 +35,6 @@ installer: shvs
 	cp out/shvs out/installer/shvs
 	makeself out/installer out/shvs-$(VERSION).bin "SGX Host Verification Service $(VERSION)" ./install.sh
 	cp dist/linux/install_pgshvsdb.sh out/install_pgshvsdb.sh && chmod +x out/install_pgshvsdb.sh
-
-all: clean installer
 
 clean:
 	rm -f cover.*
