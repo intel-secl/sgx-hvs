@@ -53,7 +53,6 @@ for directory in $BIN_PATH $DB_SCRIPT_PATH $LOG_PATH $CONFIG_PATH $CERTS_PATH $C
   chown -R $SERVICE_USERNAME:$SERVICE_USERNAME $directory
   chmod 700 $directory
   chmod g+s $directory
-
 done
 
 cp $COMPONENT_NAME $BIN_PATH/ && chown $SERVICE_USERNAME:$SERVICE_USERNAME $BIN_PATH/*
@@ -113,11 +112,11 @@ logRotate_install() {
 
 logRotate_install
 
-export LOG_ROTATION_PERIOD=${LOG_ROTATION_PERIOD:-hourly}
+export LOG_ROTATION_PERIOD=${LOG_ROTATION_PERIOD:-weekly}
 export LOG_COMPRESS=${LOG_COMPRESS:-compress}
 export LOG_DELAYCOMPRESS=${LOG_DELAYCOMPRESS:-delaycompress}
 export LOG_COPYTRUNCATE=${LOG_COPYTRUNCATE:-copytruncate}
-export LOG_SIZE=${LOG_SIZE:-1K}
+export LOG_SIZE=${LOG_SIZE:-100M}
 export LOG_OLD=${LOG_OLD:-12}
 
 mkdir -p /etc/logrotate.d
@@ -135,7 +134,6 @@ if [ ! -a /etc/logrotate.d/shvs ]; then
         $LOG_COPYTRUNCATE
 }" > /etc/logrotate.d/shvs
 fi
-
 
 # check if SHVS_NOSETUP is defined
 if [ "${SHVS_NOSETUP,,}" == "true" ]; then
