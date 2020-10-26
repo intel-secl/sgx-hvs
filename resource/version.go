@@ -5,11 +5,11 @@
 package resource
 
 import (
-"fmt"
-"intel/isecl/shvs/version"
-"net/http"
+	"fmt"
+	"intel/isecl/shvs/version"
+	"net/http"
 
-"github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 )
 
 func SetVersionRoutes(r *mux.Router) {
@@ -23,4 +23,3 @@ func getVersion() http.HandlerFunc {
 		w.Write([]byte(verStr))
 	})
 }
-
