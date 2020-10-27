@@ -1,15 +1,12 @@
 #!/bin/bash
-#set -x
-#Steps:
-#Get token from AAS
-#to customize, export the correct values before running the script
 
 echo "Setting up SHVS Related roles and user in AAS Database"
 
+source ~/shvs.env
+
 #Get the value of AAS IP address and port.
-aas_hostname=${AAS_URL:-"https://<aas.server.com>:8444"}
+aas_hostname=${AAS_API_URL:-"https://<aas.server.com>:8444"}
 CURL_OPTS="-s -k"
-IPADDR="<comma-separated list of IPs and hostnames for SHVS>"
 CN="SHVS TLS Certificate"
 
 mkdir -p /tmp/setup/shvs
@@ -17,34 +14,29 @@ tmpdir=$(mktemp -d -p /tmp/setup/shvs)
 
 cat >$tmpdir/aasAdmin.json <<EOF
 {
-"username": "admin",
-"password": "password"
+"username": "admin@aas",
+"password": "aasAdminPass"
 }
 EOF
 
 #Get the JWT Token
-curl_output=`curl $CURL_OPTS -X POST -H "Content-Type: application/json" -H "Accept: application/jwt" --data @$tmpdir/aasAdmin.json -w "%{http_code}" $aas_hostname/aas/token`
+curl_output=`curl $CURL_OPTS -X POST -H "Content-Type: application/json" -H "Accept: application/jwt" --data @$tmpdir/aasAdmin.json -w "%{http_code}" $aas_hostname/token`
 
 Bearer_token=`echo $curl_output | rev | cut -c 4- | rev`
 response_status=`echo "${curl_output: -3}"`
 
-if rpm -q jq; then
-	echo "JQ package installed"
-else
-	echo "JQ package not installed, please install jq package and try"
-	exit 2
-fi
+dnf install -y jq
 
 #Create shvsUser also get user id
 create_shvs_user() {
 cat > $tmpdir/user.json << EOF
 {
-	"username":"shvsuser@shvs",
-	"password":"shvspassword"
+	"username":"$SHVS_ADMIN_USERNAME",
+	"password":"$SHVS_ADMIN_PASSWORD"
 }
 EOF
 
-curl $CURL_OPTS -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${Bearer_token}" --data @$tmpdir/user.json -o $tmpdir/user_response.json -w "%{http_code}" $aas_hostname/aas/users > $tmpdir/createshvsuser-response.status
+curl $CURL_OPTS -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${Bearer_token}" --data @$tmpdir/user.json -o $tmpdir/user_response.json -w "%{http_code}" $aas_hostname/users > $tmpdir/createshvsuser-response.status
 
 local actual_status=$(cat $tmpdir/createshvsuser-response.status)
 if [ $actual_status -ne 201 ]; then
@@ -75,7 +67,7 @@ cat > $tmpdir/roles.json << EOF
 }
 EOF
 
-curl $CURL_OPTS -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${Bearer_token}" --data @$tmpdir/roles.json -o $tmpdir/role_response.json -w "%{http_code}" $aas_hostname/aas/roles > $tmpdir/role_response-status.json
+curl $CURL_OPTS -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${Bearer_token}" --data @$tmpdir/roles.json -o $tmpdir/role_response.json -w "%{http_code}" $aas_hostname/roles > $tmpdir/role_response-status.json
 
 local actual_status=$(cat $tmpdir/role_response-status.json)
 if [ $actual_status -ne 201 ]; then
@@ -94,7 +86,7 @@ echo "$role_id"
 
 create_roles() {
 
-	local cms_role_id=$( create_user_roles "CMS" "CertApprover" "CN=$CN;SAN=$IPADDR;CERTTYPE=TLS" ) #get roleid
+	local cms_role_id=$( create_user_roles "CMS" "CertApprover" "CN=$CN;SAN=$SAN_LIST;CERTTYPE=TLS" ) #get roleid
 	local agent_role_id=$( create_user_roles "SGX_AGENT" "HostDataReader" "" )
 	local scs_role_id1=$( create_user_roles "SCS" "HostDataUpdater" "" )
 	local scs_role_id2=$( create_user_roles "SCS" "HostDataReader" "" )
@@ -111,7 +103,7 @@ cat >$tmpdir/mapRoles.json <<EOF
 }
 EOF
 
-curl $CURL_OPTS -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${Bearer_token}" --data @$tmpdir/mapRoles.json -o $tmpdir/mapRoles_response.json -w "%{http_code}" $aas_hostname/aas/users/$user_id/roles > $tmpdir/mapRoles_response-status.json
+curl $CURL_OPTS -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${Bearer_token}" --data @$tmpdir/mapRoles.json -o $tmpdir/mapRoles_response.json -w "%{http_code}" $aas_hostname/users/$user_id/roles > $tmpdir/mapRoles_response-status.json
 
 local actual_status=$(cat $tmpdir/mapRoles_response-status.json)
 if [ $actual_status -ne 201 ]; then
@@ -141,7 +133,7 @@ if [ $status -eq 2 ]; then
 fi
 
 #Get Token for SHVS USER and configure it in shvs config.
-curl $CURL_OPTS -X POST -H "Content-Type: application/json" -H "Accept: application/jwt" --data @$tmpdir/user.json -o $tmpdir/shvs_token-response.json -w "%{http_code}" $aas_hostname/aas/token > $tmpdir/getshvsusertoken-response.status
+curl $CURL_OPTS -X POST -H "Content-Type: application/json" -H "Accept: application/jwt" --data @$tmpdir/user.json -o $tmpdir/shvs_token-response.json -w "%{http_code}" $aas_hostname/token > $tmpdir/getshvsusertoken-response.status
 
 status=$(cat $tmpdir/getshvsusertoken-response.status)
 if [ $status -ne 200 ]; then
@@ -149,6 +141,7 @@ if [ $status -ne 200 ]; then
 else
 	export BEARER_TOKEN=`cat $tmpdir/shvs_token-response.json`
 	echo $BEARER_TOKEN
+	echo "copy the above token and paste it against BEARER_TOKEN in shvs.env"
 fi
 
 # cleanup
