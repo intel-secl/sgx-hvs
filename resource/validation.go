@@ -5,7 +5,7 @@
 package resource
 
 import (
-	"intel/isecl/shvs/constants"
+	"intel/isecl/shvs/v3/constants"
 	"regexp"
 )
 

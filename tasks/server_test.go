@@ -6,7 +6,7 @@ package tasks
 
 import (
 	"intel/isecl/lib/common/v3/setup"
-	"intel/isecl/shvs/config"
+	"intel/isecl/shvs/v3/config"
 	"os"
 
 	"testing"

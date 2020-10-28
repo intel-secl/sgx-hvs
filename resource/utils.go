@@ -13,10 +13,10 @@ import (
 
 	"intel/isecl/lib/clients/v3"
 	"intel/isecl/lib/clients/v3/aas"
-	"intel/isecl/shvs/config"
-	"intel/isecl/shvs/constants"
-	"intel/isecl/shvs/repository"
-	"intel/isecl/shvs/types"
+	"intel/isecl/shvs/v3/config"
+	"intel/isecl/shvs/v3/constants"
+	"intel/isecl/shvs/v3/repository"
+	"intel/isecl/shvs/v3/types"
 )
 
 var statusUpdateLock *sync.Mutex

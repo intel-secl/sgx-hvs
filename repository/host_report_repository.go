@@ -5,7 +5,7 @@
 package repository
 
 import (
-	"intel/isecl/shvs/types"
+	"intel/isecl/shvs/v3/types"
 )
 
 type HostReportRepository interface {

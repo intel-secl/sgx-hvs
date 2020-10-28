@@ -12,9 +12,9 @@ import (
 	"syscall"
 	"time"
 
-	"intel/isecl/shvs/constants"
-	"intel/isecl/shvs/repository"
-	"intel/isecl/shvs/resource"
+	"intel/isecl/shvs/v3/constants"
+	"intel/isecl/shvs/v3/repository"
+	"intel/isecl/shvs/v3/resource"
 )
 
 func StartAutoRefreshSchedular(db repository.SHVSDatabase, timer int) {

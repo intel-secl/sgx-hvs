@@ -7,7 +7,7 @@ package postgres
 import (
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
-	"intel/isecl/shvs/types"
+	"intel/isecl/shvs/v3/types"
 )
 
 type PostgresHostCredentialRepository struct {

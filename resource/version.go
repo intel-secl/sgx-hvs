@@ -6,7 +6,7 @@ package resource
 
 import (
 	"fmt"
-	"intel/isecl/shvs/version"
+	"intel/isecl/shvs/v3/version"
 	"net/http"
 
 	"github.com/gorilla/mux"

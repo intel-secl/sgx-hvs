@@ -4,7 +4,7 @@
  */
 package repository
 
-import "intel/isecl/shvs/types"
+import "intel/isecl/shvs/v3/types"
 
 type PlatformTcbRepository interface {
 	Create(types.PlatformTcb) (*types.PlatformTcb, error)

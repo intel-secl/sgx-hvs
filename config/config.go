@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 	commLog "intel/isecl/lib/common/v3/log"
 	"intel/isecl/lib/common/v3/setup"
-	"intel/isecl/shvs/constants"
+	"intel/isecl/shvs/v3/constants"
 	"os"
 	"path"
 	"strings"

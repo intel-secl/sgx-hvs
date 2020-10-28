@@ -6,8 +6,8 @@
 package docs
 
 import (
-	"intel/isecl/shvs/resource"
-	"intel/isecl/shvs/types"
+	"intel/isecl/shvs/v3/resource"
+	"intel/isecl/shvs/v3/types"
 	"time"
 )
 

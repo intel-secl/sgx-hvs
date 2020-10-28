@@ -16,9 +16,9 @@ import (
 	"github.com/pkg/errors"
 	commLogMsg "intel/isecl/lib/common/v3/log/message"
 	"intel/isecl/lib/common/v3/validation"
-	"intel/isecl/shvs/constants"
-	"intel/isecl/shvs/repository"
-	"intel/isecl/shvs/types"
+	"intel/isecl/shvs/v3/constants"
+	"intel/isecl/shvs/v3/repository"
+	"intel/isecl/shvs/v3/types"
 )
 
 type ResponseJson struct {

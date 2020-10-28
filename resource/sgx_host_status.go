@@ -8,8 +8,8 @@ package resource
 import (
 	"encoding/json"
 	commLogMsg "intel/isecl/lib/common/v3/log/message"
-	"intel/isecl/shvs/constants"
-	"intel/isecl/shvs/repository"
+	"intel/isecl/shvs/v3/constants"
+	"intel/isecl/shvs/v3/repository"
 	"net/http"
 )
 
