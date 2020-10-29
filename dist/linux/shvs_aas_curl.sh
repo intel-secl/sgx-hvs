@@ -85,13 +85,15 @@ echo "$role_id"
 }
 
 create_roles() {
-
 	local cms_role_id=$( create_user_roles "CMS" "CertApprover" "CN=$CN;SAN=$SAN_LIST;CERTTYPE=TLS" ) #get roleid
 	local agent_role_id=$( create_user_roles "SGX_AGENT" "HostDataReader" "" )
 	local scs_role_id1=$( create_user_roles "SCS" "HostDataUpdater" "" )
 	local scs_role_id2=$( create_user_roles "SCS" "HostDataReader" "" )
-	local shvs_role_id=$( create_user_roles "SHVS" "HostListManager" "" )
-	ROLE_ID_TO_MAP=`echo \"$cms_role_id\",\"$agent_role_id\",\"$scs_role_id1\",\"$scs_role_id2\",\"$shvs_role_id\"`
+	local shvs_role_id1=$( create_user_roles "SHVS" "HostListManager" "" )
+	local shvs_role_id2=$( create_user_roles "SHVS" "HostListReader" "" )
+	local shvs_role_id3=$( create_user_roles "SHVS" "HostDataReader" "" )
+	local shvs_role_id4=$( create_user_roles "SHVS" "HostRegistration" "" )
+	ROLE_ID_TO_MAP=`echo \"$cms_role_id\",\"$agent_role_id\",\"$scs_role_id1\",\"$scs_role_id2\",\"$shvs_role_id1\",\"$shvs_role_id2\",\"$shvs_role_id3\",\"$shvs_role_id4\"`
 	echo $ROLE_ID_TO_MAP
 }
 
