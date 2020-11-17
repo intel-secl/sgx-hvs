@@ -119,7 +119,7 @@ type SwaggNewHostsSgxDataInfo struct {
 // x-sample-call-input: |
 //  {
 //      "host_name": "kbshostname",
-//      "connection_string": "https://10.219.138.66:11001/sgx_agent/v1/host",
+//      "connection_string": "https://127.0.0.1:11001/sgx_agent/v1/host",
 //      "description": "Rhel test host",
 //      "uuid": "88888888-8887-1214-0516-3707a5a5a5a5",
 //      "overwrite": true
@@ -166,7 +166,7 @@ type SwaggNewHostsSgxDataInfo struct {
 //    {
 //        "host_ID": "d60c9d18-a272-49b9-bf45-872f28407775",
 //        "host_name": "kbshostname",
-//        "connection_string": "https://10.219.138.66:11001/sgx_agent/v1/host",
+//        "connection_string": "https://127.0.0.1:11001/sgx_agent/v1/host",
 //        "uuid": "88888888-8887-1214-0516-3707a5a5a5a5"
 //    }
 //  ]
@@ -226,7 +226,7 @@ type SwaggNewHostsSgxDataInfo struct {
 //  {
 //    "host_ID": "d60c9d18-a272-49b9-bf45-872f28407775",
 //    "host_name": "kbshostname",
-//    "connection_string": "https://10.219.138.66:11001/sgx_agent/v1/host",
+//    "connection_string": "https://127.0.0.1:11001/sgx_agent/v1/host",
 //    "description": "",
 //    "uuid": "88888888-8887-1214-0516-3707a5a5a5a5",
 //    "overwrite": false
