@@ -66,6 +66,7 @@ Build SGX-Host Verification Service
 ``` {.shell}
 git clone https://github.com/intel-secl/sgx-hvs.git
 cd sgx-hvs
+git checkout v3.2.0
 make all
 ```
 
@@ -98,14 +99,12 @@ Authentication and Authorization Service
   handlers   github.com/gorilla/handlers                  v1.4.0
   mux        github.com/gorilla/mux                       v1.7.3
   jwt-go     github.com/dgrijalva/jwt-go           v3.2.0+incompatible
-  gorm       github.com/jinzhu/gorm                      v1.9.10
+  gorm       github.com/jinzhu/gorm                       v1.9.10
   logrus     github.com/sirupsen/logrus                   v1.4.0
   testify    github.com/stretchr/testify                  v1.3.0
-  crypto     golang.org/x/crypto            v0.0.0-20190325154230-a5d413f7728c
-  time       golang.org/x/time              v0.0.0-20190308202827-9d24e82272b4
   yaml.v2    gopkg.in/yaml.v2                             v2.2.2
-  client     intel/isecl/lib/clients                      v3.1.0
-  common     intel/isecl/lib/common                   	  v3.1.0
+  client     github.com/intel-secl/clients                v3.2.0
+  common     github.com/intel-secl/common                 v3.2.0
 
 ### Indirect Dependencies
 
