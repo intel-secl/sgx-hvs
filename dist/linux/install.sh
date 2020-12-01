@@ -88,7 +88,7 @@ auto_install() {
   # detect available package management tools. start with the less likely ones to differentiate.
 if [ "$OS" == "rhel" ]
 then
-  dnf -y install $dnf_packages
+  dnf -y install $packages
 elif [ "$OS" == "ubuntu" ]
 then
   apt -y install $packages
