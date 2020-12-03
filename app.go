@@ -72,14 +72,13 @@ func (a *App) printUsage() {
 	fmt.Fprintln(w, "    shvs <command> [arguments]")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "Avaliable Commands:")
-	fmt.Fprintln(w, "    help|-h|-help    Show this help message")
-	fmt.Fprintln(w, "    setup [task]     Run setup task")
-	fmt.Fprintln(w, "    start            Start SGX Host Verification Service")
-	fmt.Fprintln(w, "    status           Show the status of SGX Host Verification Service")
-	fmt.Fprintln(w, "    stop             Stop SGX Host Verification Service")
-	fmt.Fprintln(w, "    tlscertsha384    Show the SHA384 of the certificate used for TLS")
-	fmt.Fprintln(w, "    uninstall        Uninstall SGX Host Verification Service")
-	fmt.Fprintln(w, "    version          Show the version of SGX Host Verification Service")
+	fmt.Fprintln(w, "    help|-h|--help        Show this help message")
+	fmt.Fprintln(w, "    setup [task]          Run setup task")
+	fmt.Fprintln(w, "    start                 Start SGX Host Verification Service")
+	fmt.Fprintln(w, "    status                Show the status of SGX Host Verification Service")
+	fmt.Fprintln(w, "    stop                  Stop SGX Host Verification Service")
+	fmt.Fprintln(w, "    uninstall             Uninstall SGX Host Verification Service")
+	fmt.Fprintln(w, "    version|--version|-v  Show the version of SGX Host Verification Service")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "Available Tasks for setup:")
 	fmt.Fprintln(w, "    all                       Runs all setup tasks")
@@ -244,30 +243,15 @@ func (a *App) Run(args []string) error {
 		a.printUsage()
 		fmt.Fprintf(os.Stderr, "Unrecognized command: %s\n", args[1])
 		os.Exit(1)
-	case "list":
-		if len(args) < 3 {
-			a.printUsage()
-			os.Exit(1)
-		}
-		return a.PrintDirFileContents(args[2])
-	case "tlscertsha384":
-		a.configureLogs(a.configuration().LogEnableStdout, true)
-		hash, err := crypt.GetCertHexSha384(config.Global().TLSCertFile)
-		if err != nil {
-			fmt.Println(err.Error())
-			return errors.Wrap(err, "app:Run() Could not derive tls certificate digest")
-		}
-		fmt.Println(hash)
-		return nil
 	case "run":
 		a.configureLogs(a.configuration().LogEnableStdout, true)
 		if err := a.startServer(); err != nil {
 			fmt.Fprintln(os.Stderr, "Error: daemon did not start - ", err.Error())
 			// wait some time for logs to flush - otherwise, there will be no entry in syslog
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(5 * time.Millisecond)
 			return errors.Wrap(err, "app:Run() Error starting SGX Host Verification Service")
 		}
-	case "-h", "--help":
+	case "help", "-h", "--help":
 		a.printUsage()
 		return nil
 	case "start":
@@ -285,7 +269,7 @@ func (a *App) Run(args []string) error {
 		flag.CommandLine.Parse(args[2:])
 		a.uninstall(purge)
 		os.Exit(0)
-	case "version":
+	case "version", "--version", "-v":
 		fmt.Fprintf(a.consoleWriter(), "SGX Host Verification Service %s-%s\nBuilt %s\n", version.Version, version.GitHash, version.BuildDate)
 		return nil
 	case "setup":
