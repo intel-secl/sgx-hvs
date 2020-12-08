@@ -266,8 +266,12 @@ func (a *App) Run(args []string) error {
 	case "uninstall":
 		var purge bool
 		flag.CommandLine.BoolVar(&purge, "purge", false, "purge config when uninstalling")
-		flag.CommandLine.Parse(args[2:])
+		err := flag.CommandLine.Parse(args[2:])
+		if err != nil {
+			return err
+		}
 		a.uninstall(purge)
+		log.Info("app:Run() Uninstalled SGX Host Verification Service")
 		os.Exit(0)
 	case "version", "--version", "-v":
 		fmt.Fprintf(a.consoleWriter(), "SGX Host Verification Service %s-%s\nBuilt %s\n", version.Version, version.GitHash, version.BuildDate)
@@ -409,7 +413,10 @@ func (a *App) startServer() error {
 	}
 	defer shvsDB.Close()
 	log.Trace("Migrating Database")
-	shvsDB.Migrate()
+	err = shvsDB.Migrate()
+	if err != nil {
+		log.WithError(err).Error("Failed to migrate database")
+	}
 
 	// Create Router, set routes
 	r := mux.NewRouter()
@@ -439,7 +446,11 @@ func (a *App) startServer() error {
 			tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
 			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256},
 	}
-	scheduler.StartWorkqueueScheduler(c.SchedulerTimer + 60)
+	err = scheduler.StartWorkqueueScheduler(c.SchedulerTimer + 60)
+	if err != nil {
+		log.WithError(err).Error("failed to start workqueue scheduler")
+		return err
+	}
 	scheduler.StartAutoRefreshSchedular(shvsDB, c.SHVSRefreshTimer)
 	scheduler.StartSHVSScheduler(shvsDB, c.SchedulerTimer)
 
@@ -559,8 +570,11 @@ func (a *App) uninstall(purge bool) {
 	if err != nil {
 		log.WithError(err).Error("error removing home dir")
 	}
-	fmt.Fprintln(a.consoleWriter(), "SGX Host Verification uninstalled")
-	a.stop()
+	fmt.Fprintln(a.consoleWriter(), "SGX Host Verification Service uninstalled")
+	err = a.stop()
+	if err != nil {
+		log.WithError(err).Error("error stopping service")
+	}
 }
 
 func removeService() {

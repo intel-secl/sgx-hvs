@@ -67,6 +67,9 @@ func addJWTToken(req *http.Request) error {
 		if err != nil {
 			aasClient.AddUser(c.SHVS.User, c.SHVS.Password)
 			err = aasClient.FetchAllTokens()
+			if err != nil {
+				return errors.Wrap(err, "resource/utils:addJWTToken() FetchAllTokens Could not fetch token")
+			}
 			jwtToken, err = aasClient.GetUserToken(c.SHVS.User)
 			if err != nil {
 				return errors.Wrap(err, "resource/utils:addJWTToken() Could not fetch token")

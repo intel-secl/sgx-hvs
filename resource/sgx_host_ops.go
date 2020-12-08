@@ -99,7 +99,10 @@ func getHosts(db repository.SHVSDatabase) errorHandlerFunc {
 			log.WithError(err).Info("resource/sgx_host_ops: getHosts() Marshalling unsuccessful")
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
-		w.Write(js)
+		_, err = w.Write(js)
+		if err != nil {
+			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
+		}
 		slog.Infof("%s: Host retrieved by: %s", commLogMsg.AuthorizedAccess, r.RemoteAddr)
 		return nil
 	}
@@ -156,7 +159,10 @@ func queryHosts(db repository.SHVSDatabase) errorHandlerFunc {
 		if err != nil {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
-		w.Write(js)
+		_, err = w.Write(js)
+		if err != nil {
+			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
+		}
 		slog.Infof("%s: Host searched by: %s", commLogMsg.AuthorizedAccess, r.RemoteAddr)
 		return nil
 	}
@@ -271,7 +277,10 @@ func getPlatformData(db repository.SHVSDatabase) errorHandlerFunc {
 		if err != nil {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
-		w.Write(js)
+		_, err = w.Write(js)
+		if err != nil {
+			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
+		}
 		slog.Infof("%s: Host platform data retrieved by: %s", commLogMsg.AuthorizedAccess, r.RemoteAddr)
 		return nil
 	}
@@ -397,7 +406,10 @@ func sendHostRegisterResponse(w http.ResponseWriter, res RegisterResponse) error
 	if err != nil {
 		return errors.New("SendHostRegisterResponse: " + err.Error())
 	}
-	w.Write(js)
+	_, err = w.Write(js)
+	if err != nil {
+		return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
+	}
 	return nil
 }
 
