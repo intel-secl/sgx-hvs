@@ -58,7 +58,7 @@ type WorkerQueue struct {
 var wq *WorkerQueue
 
 const (
-	WorkerCount = 5
+	WorkerCount = 50
 )
 
 func (wq *WorkerQueue) getJobFromWQList() *Job {
