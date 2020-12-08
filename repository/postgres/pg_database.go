@@ -60,7 +60,10 @@ func (pd *PostgresDatabase) HostSgxDataRepository() repository.HostSgxDataReposi
 
 func (pd *PostgresDatabase) Close() {
 	if pd.DB != nil {
-		pd.DB.Close()
+		err := pd.DB.Close()
+		if err != nil {
+			log.WithError(err).Error("failed to close the shvs db")
+		}
 	}
 }
 

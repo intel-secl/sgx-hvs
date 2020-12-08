@@ -83,7 +83,10 @@ func shvsSchedulerJobCB(db repository.SHVSDatabase) (bool, error) {
 		job.JobFuncData = jobData
 		job.UpdateJobStatus(JobStatusInit)
 
-		wq.AddJobAndSendSignalToWorkQueue(job)
+		err, _ = wq.AddJobAndSendSignalToWorkQueue(job)
+		if err != nil {
+			return false, errors.New("Failed to add job to workqueue")
+		}
 		log.Trace("SHVSSchedulerJobCB: Job ended")
 	}
 	return true, nil

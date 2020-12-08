@@ -125,7 +125,10 @@ func retrieveHostAttestationReport(db repository.SHVSDatabase) errorHandlerFunc 
 		if err != nil {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
-		w.Write(js)
+		_, err = w.Write(js)
+		if err != nil {
+			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
+		}
 		return nil
 	}
 }
@@ -160,6 +163,15 @@ func fetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 	}
 
 	resp, err := client.Do(req)
+	if resp != nil {
+		defer func() {
+			derr := resp.Body.Close()
+			if derr != nil {
+				log.WithError(derr).Error("Error closing response")
+			}
+		}()
+
+	}
 	if err != nil {
 		err1 := UpdateHostStatus(hostId, db, constants.HostStatusAgentRetry)
 		if err1 != nil {
@@ -173,7 +185,10 @@ func fetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 	if resp.StatusCode == http.StatusUnauthorized {
 		// fetch token and try again
 		aasRWLock.Lock()
-		aasClient.FetchAllTokens()
+		err = aasClient.FetchAllTokens()
+		if err != nil {
+			return false, errors.Wrap(err, "fetchSGXDataFromAgent: FetchAllTokens() Could not fetch token")
+		}
 		aasRWLock.Unlock()
 		err = addJWTToken(req)
 		if err != nil {
@@ -200,7 +215,6 @@ func fetchSGXDataFromAgent(hostId string, db repository.SHVSDatabase, AgentUrl s
 	}
 
 	log.Debug("fetchSGXDataFromAgent: Status: ", agentResponse)
-	resp.Body.Close()
 
 	hostData := &types.HostSgxData{
 		HostId: hostId,
@@ -315,6 +329,15 @@ func fetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 	}
 
 	resp, err := client.Do(req)
+	if resp != nil {
+		defer func() {
+			derr := resp.Body.Close()
+			if derr != nil {
+				log.WithError(derr).Error("Error closing response")
+			}
+		}()
+	}
+
 	if err != nil {
 		err1 := UpdateHostStatus(platformData.HostId, db, constants.HostStatusTCBSCSRetry)
 		if err1 != nil {
@@ -328,7 +351,10 @@ func fetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 	if resp.StatusCode == http.StatusUnauthorized {
 		// fetch token and try again
 		aasRWLock.Lock()
-		aasClient.FetchAllTokens()
+		err = aasClient.FetchAllTokens()
+		if err != nil {
+			return false, errors.Wrap(err, "fetchLatestTCBInfoFromSCS: FetchAllTokens() Could not fetch token")
+		}
 		aasRWLock.Unlock()
 		err = addJWTToken(req)
 		if err != nil {
@@ -354,7 +380,6 @@ func fetchLatestTCBInfoFromSCS(db repository.SHVSDatabase, platformData *types.P
 	}
 
 	log.Debug("fetchLatestTCBInfoFromSCS: Status: ", scsResponse)
-	resp.Body.Close()
 
 	///Update the data in database
 	///Get existing data
@@ -429,6 +454,15 @@ func pushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 	}
 
 	resp, err := client.Do(req)
+	if resp != nil {
+		defer func() {
+			derr := resp.Body.Close()
+			if derr != nil {
+				log.WithError(derr).Error("Error closing response")
+			}
+		}()
+	}
+
 	if err != nil {
 		err1 := UpdateHostStatus(platformData.HostId, db, constants.HostStatusSCSRetry)
 		if err1 != nil {
@@ -442,7 +476,10 @@ func pushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 	if resp.StatusCode == http.StatusUnauthorized {
 		// fetch token and try again
 		aasRWLock.Lock()
-		aasClient.FetchAllTokens()
+		err = aasClient.FetchAllTokens()
+		if err != nil {
+			return false, errors.Wrap(err, "PushSGXData: FetchAllTokens() Could not fetch token")
+		}
 		aasRWLock.Unlock()
 		err = addJWTToken(req)
 		if err != nil {
@@ -470,7 +507,6 @@ func pushSGXData(db repository.SHVSDatabase, platformData *types.PlatformTcb) (b
 	}
 
 	log.Debug("pushSGXData: Status: ", pushResponse)
-	resp.Body.Close()
 	return true, nil
 }
 

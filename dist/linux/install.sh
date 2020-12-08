@@ -58,7 +58,6 @@ for directory in $BIN_PATH $DB_SCRIPT_PATH $LOG_PATH $CONFIG_PATH $CERTS_PATH $C
   fi
   chown -R $SERVICE_USERNAME:$SERVICE_USERNAME $directory
   chmod 700 $directory
-  chmod g+s $directory
 done
 
 cp $COMPONENT_NAME $BIN_PATH/ && chown $SERVICE_USERNAME:$SERVICE_USERNAME $BIN_PATH/*
@@ -70,7 +69,6 @@ cp db_rotation.sql $DB_SCRIPT_PATH/ && chown $SERVICE_USERNAME:$SERVICE_USERNAME
 # Create logging dir in /var/log
 mkdir -p $LOG_PATH && chown shvs:shvs $LOG_PATH
 chmod 700 $LOG_PATH
-chmod g+s $LOG_PATH
 
 # Install systemd script
 cp shvs.service $PRODUCT_HOME && chown $SERVICE_USERNAME:$SERVICE_USERNAME $PRODUCT_HOME/shvs.service && chown $SERVICE_USERNAME:$SERVICE_USERNAME $PRODUCT_HOME

@@ -38,5 +38,4 @@ installer: shvs
 
 clean:
 	rm -f cover.*
-	rm -f shvs
 	rm -rf out/

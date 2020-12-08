@@ -88,7 +88,10 @@ func (db Database) Run(c setup.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "setup database: failed to open database")
 	}
-	p.Migrate()
+	err = p.Migrate()
+	if err != nil {
+		log.WithError(err).Error("Failed to migrate database")
+	}
 
 	err = db.Config.Save()
 	if err != nil {

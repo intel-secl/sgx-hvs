@@ -20,6 +20,9 @@ func getVersion() http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		verStr := fmt.Sprintf("%s-%s", version.Version, version.GitHash)
 		w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
-		w.Write([]byte(verStr))
+		_, err := w.Write([]byte(verStr))
+		if err != nil {
+			log.WithError(err).Error("Could not write version to response")
+		}
 	})
 }

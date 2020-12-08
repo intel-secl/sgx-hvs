@@ -59,7 +59,10 @@ func hostStateInformation(db repository.SHVSDatabase) errorHandlerFunc {
 		if err != nil {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
-		w.Write(js)
+		_, err = w.Write(js)
+		if err != nil {
+			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
+		}
 		slog.Infof("%s: Host status retrieved by: %s", commLogMsg.AuthorizedAccess, r.RemoteAddr)
 		return nil
 	}
