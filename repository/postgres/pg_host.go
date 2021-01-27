@@ -78,6 +78,7 @@ func buildHostSearchQuery(tx *gorm.DB, rs *types.Host) *gorm.DB {
 	if len(rs.Name) != 0 {
 		tx = tx.Where("Name = (?)", rs.Name)
 	}
+	tx = tx.Where("deleted='f'")
 	return tx
 }
 
