@@ -38,15 +38,12 @@ type SwaggHostStatusResponse struct {
 //     schema:
 //       "$ref": "#/definitions/HostStatusResponse"
 //
-// x-sample-call-endpoint: https://sgx-hvs.com:13000/sgx-hvs/v1/host-status?hostId=58cee2f3-d694-48ba-b8d2-e541544f5e22
+// x-sample-call-endpoint: https://sgx-hvs.com:13000/sgx-hvs/v2/host-status?hostId=58cee2f3-d694-48ba-b8d2-e541544f5e22
 // x-sample-call-output: |
 //  [
 //      {
 //          "host_id": "58cee2f3-d694-48ba-b8d2-e541544f5e22",
-//          "host_status": "CONNECTED",
-//          "agent_retry_count": 0,
-//          "scs_retry_count": 0,
-//          "tcb_scs_retry_count": 0
+//          "host_status": "CONNECTED"
 //      }
 //  ]
 // ---

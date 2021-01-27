@@ -73,7 +73,7 @@ type SwaggNewHostsSgxDataInfo struct {
 //     schema:
 //       "$ref": "#/definitions/NewHostsSgxData"
 //
-// x-sample-call-endpoint: https://sgx-hvs.com:13000/sgx-hvs/v1/platform-data?HostName=kbshostname
+// x-sample-call-endpoint: https://sgx-hvs.com:13000/sgx-hvs/v2/platform-data?HostName=kbshostname
 // x-sample-call-output: |
 //  [
 //      {
@@ -92,9 +92,7 @@ type SwaggNewHostsSgxDataInfo struct {
 // ---
 //
 // description: |
-//   Registers a new host in the SHVS database. SGX Agent sends the registration request to SHVS along
-//   with the overwritten flag (In this release the overwrite flag is set to true) and registers the SGX agent’s information to DB.
-//   If the host is already registered, SHVS will re-register the host if the overwrite flag is true.
+//   Agent pushes the platform enablement info and TCB status to SHVS at regular Interval
 //   A valid bearer token is required to authorize this REST call.
 //
 // security:
@@ -115,14 +113,17 @@ type SwaggNewHostsSgxDataInfo struct {
 //      schema:
 //        "$ref": "#/definitions/ResponseJson"
 //
-// x-sample-call-endpoint: https://sgx-hvs.com:13000/sgx-hvs/v1/hosts
+// x-sample-call-endpoint: https://sgx-hvs.com:13000/sgx-hvs/v2/hosts
 // x-sample-call-input: |
 //  {
 //      "host_name": "kbshostname",
-//      "connection_string": "https://127.0.0.1:11001/sgx_agent/v1/host",
 //      "description": "Rhel test host",
 //      "uuid": "88888888-8887-1214-0516-3707a5a5a5a5",
-//      "overwrite": true
+//      "sgx_supported": true,
+//		"flc_enabled": true,
+//		"epc_offset": "0x40000000",
+//		"epc_size": "3.0 GB",
+//		"tcb_upToDate": true
 //  }
 // x-sample-call-output: |
 //  {
@@ -160,13 +161,12 @@ type SwaggNewHostsSgxDataInfo struct {
 //     schema:
 //       "$ref": "#/definitions/Hosts"
 //
-// x-sample-call-endpoint: https://sgx-hvs.com:13000/sgx-hvs/v1/hosts?HostName=kbshostname
+// x-sample-call-endpoint: https://sgx-hvs.com:13000/sgx-hvs/v2/hosts?HostName=kbshostname
 // x-sample-call-output: |
 //  [
 //    {
 //        "host_ID": "d60c9d18-a272-49b9-bf45-872f28407775",
 //        "host_name": "kbshostname",
-//        "connection_string": "https://127.0.0.1:11001/sgx_agent/v1/host",
 //        "uuid": "88888888-8887-1214-0516-3707a5a5a5a5"
 //    }
 //  ]
@@ -192,7 +192,7 @@ type SwaggNewHostsSgxDataInfo struct {
 //     description: Successfully deleted the host associated with the specified host id.
 //
 // x-sample-call-endpoint: |
-//    https://sgx-hvs.com:13000/sgx-hvs/v1/hosts/d60c9d18-a272-49b9-bf45-872f28407775
+//    https://sgx-hvs.com:13000/sgx-hvs/v2/hosts/d60c9d18-a272-49b9-bf45-872f28407775
 // x-sample-call-output: |
 //    204 No content
 // ---
@@ -221,14 +221,12 @@ type SwaggNewHostsSgxDataInfo struct {
 //       "$ref": "#/definitions/RegisterHostInfo"
 //
 // x-sample-call-endpoint: |
-//    https://sgx-hvs.com:13000/sgx-hvs/v1/hosts/d60c9d18-a272-49b9-bf45-872f28407775
+//    https://sgx-hvs.com:13000/sgx-hvs/v2/hosts/d60c9d18-a272-49b9-bf45-872f28407775
 // x-sample-call-output: |
 //  {
 //    "host_ID": "d60c9d18-a272-49b9-bf45-872f28407775",
 //    "host_name": "kbshostname",
-//    "connection_string": "https://127.0.0.1:11001/sgx_agent/v1/host",
 //    "description": "",
 //    "uuid": "88888888-8887-1214-0516-3707a5a5a5a5",
-//    "overwrite": false
 //  }
 // ---

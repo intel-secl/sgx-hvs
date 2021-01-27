@@ -1,7 +1,6 @@
 // SGX-Host-Verification-Service
 //
-// SGX Host Verification Service (SHVS) retrieves platform-specific details from the registered SGX Agent
-// and pushes the data to SGX Caching Service (SCS).
+//Agent pushes the platform enablement info and TCB status to SHVS at regular Interval
 // SGX HVS also exposes API for SGX HUB to get platform-specific values.
 // SGX HVS listening port is user-configurable.
 //
@@ -9,7 +8,7 @@
 //
 //  Version: 1.0
 //  Host: sgx-hvs.com:13000
-//  BasePath: /sgx-hvs/v1
+//  BasePath: /sgx-hvs/v2
 //
 //  Schemes: https
 //
