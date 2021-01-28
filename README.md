@@ -1,16 +1,12 @@
 SGX HVS
 =======
 
-`SGX-Host Verification Service (SHVS)` is responsible for registering
-SGX Agent and collecting SGX Data from the host.
+SGX Agent pushes the platform enablement info to `SGX-Host Verification Service (SHVS)` at regular interval.
 
 Key features
 ------------
 
--   SGX-HVS extracts platform specific values from SGX Agent and pushes
-    them to SGX caching service
--   SHVS communicates with SCS to determine if the platform is up to
-    date on hardware and security patches (TCB)
+-   If SGX Host Verification Service API URL is specified in SGX Agent env file, then SGX Agent will push the platform enablement info and TCB status to SHVS at regular interval, else, Agent pushes the platform enablement info and TCB status to SHVS once and terminates.  
 -   SHVS saves platform specific information in its own database which
     will be pulled by integration hub
 
