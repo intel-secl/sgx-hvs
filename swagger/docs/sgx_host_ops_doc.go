@@ -120,10 +120,10 @@ type SwaggNewHostsSgxDataInfo struct {
 //      "description": "Rhel test host",
 //      "uuid": "88888888-8887-1214-0516-3707a5a5a5a5",
 //      "sgx_supported": true,
-//		"flc_enabled": true,
-//		"epc_offset": "0x40000000",
-//		"epc_size": "3.0 GB",
-//		"tcb_upToDate": true
+//      "flc_enabled": true,
+//      "epc_offset": "0x40000000",
+//      "epc_size": "3.0 GB",
+//      "tcb_upToDate": true
 //  }
 // x-sample-call-output: |
 //  {
