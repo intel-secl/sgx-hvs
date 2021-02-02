@@ -33,12 +33,22 @@ type RegisterResponse struct {
 }
 
 type RegisterHostInfo struct {
-	HostId           string `json:"host_ID"`
-	HostName         string `json:"host_name"`
-	ConnectionString string `json:"connection_string"`
-	Description      string `json:"description, omitempty"`
-	UUID             string `json:"uuid"`
-	Overwrite        bool   `json:"overwrite"`
+	HostId      string `json:"host_ID"`
+	HostName    string `json:"host_name"`
+	Description string `json:"description, omitempty"`
+	UUID        string `json:"uuid"`
+}
+
+type SGXHostInfo struct {
+	HostName     string `json:"host_name"`
+	Description  string `json:"description, omitempty"`
+	UUID         string `json:"uuid"`
+	SgxSupported bool   `json:"sgx_supported"`
+	SgxEnabled   bool   `json:"sgx_enabled"`
+	FlcEnabled   bool   `json:"flc_enabled"`
+	EpcOffset    string `json:"epc_offset"`
+	EpcSize      string `json:"epc_size"`
+	TcbUptodate  bool   `json:"tcb_upToDate"`
 }
 
 type AttReportThreadData struct {
@@ -85,10 +95,9 @@ func getHosts(db repository.SHVSDatabase) errorHandlerFunc {
 		}
 
 		host_Info := RegisterHostInfo{
-			HostId:           ext_host.Id,
-			HostName:         ext_host.Name,
-			ConnectionString: ext_host.ConnectionString,
-			UUID:             ext_host.HardwareUUID,
+			HostId:   ext_host.Id,
+			HostName: ext_host.Name,
+			UUID:     ext_host.HardwareUUID,
 		}
 
 		///Write the output here.
@@ -311,14 +320,13 @@ func deleteHost(db repository.SHVSDatabase) errorHandlerFunc {
 		}
 
 		host := types.Host{
-			Id:               ext_host.Id,
-			Name:             ext_host.Name,
-			Description:      ext_host.Description,
-			ConnectionString: ext_host.ConnectionString,
-			HardwareUUID:     ext_host.HardwareUUID,
-			CreatedTime:      ext_host.CreatedTime,
-			UpdatedTime:      time.Now(),
-			Deleted:          true,
+			Id:           ext_host.Id,
+			Name:         ext_host.Name,
+			Description:  ext_host.Description,
+			HardwareUUID: ext_host.HardwareUUID,
+			CreatedTime:  ext_host.CreatedTime,
+			UpdatedTime:  time.Now(),
+			Deleted:      true,
 		}
 		err = db.HostRepository().Update(host)
 		if err != nil {
@@ -339,13 +347,12 @@ func updateSGXHostInfo(db repository.SHVSDatabase, existingHostData *types.Host,
 	defer log.Trace("resource/sgx_host_ops: updateSGXHostInfo() Leaving")
 
 	host := types.Host{
-		Id:               existingHostData.Id,
-		Name:             hostInfo.HostName,
-		Description:      hostInfo.Description,
-		ConnectionString: hostInfo.ConnectionString,
-		HardwareUUID:     hostInfo.UUID,
-		CreatedTime:      existingHostData.CreatedTime,
-		UpdatedTime:      time.Now(),
+		Id:           existingHostData.Id,
+		Name:         hostInfo.HostName,
+		Description:  hostInfo.Description,
+		HardwareUUID: hostInfo.UUID,
+		CreatedTime:  existingHostData.CreatedTime,
+		UpdatedTime:  time.Now(),
 
 		Deleted: false,
 	}
@@ -354,7 +361,7 @@ func updateSGXHostInfo(db repository.SHVSDatabase, existingHostData *types.Host,
 		return errors.New("updateSGXHostInfo: Error while Updating Host Information: " + err.Error())
 	}
 
-	err = UpdateHostStatus(existingHostData.Id, db, constants.HostStatusAgentQueued)
+	err = UpdateHostStatus(existingHostData.Id, db, constants.HostStatusConnected)
 	if err != nil {
 		log.WithError(err).Info("updateSGXHostInfo failed")
 		return errors.New("updateSGXHostInfo: Error while Updating Host Status Information: " + err.Error())
@@ -368,13 +375,12 @@ func createSGXHostInfo(db repository.SHVSDatabase, hostInfo RegisterHostInfo) (s
 
 	hostId := uuid.New().String()
 	host := types.Host{
-		Id:               hostId,
-		Name:             hostInfo.HostName,
-		Description:      hostInfo.Description,
-		ConnectionString: hostInfo.ConnectionString,
-		HardwareUUID:     hostInfo.UUID,
-		CreatedTime:      time.Now(),
-		UpdatedTime:      time.Now(),
+		Id:           hostId,
+		Name:         hostInfo.HostName,
+		Description:  hostInfo.Description,
+		HardwareUUID: hostInfo.UUID,
+		CreatedTime:  time.Now(),
+		UpdatedTime:  time.Now(),
 	}
 	_, err := db.HostRepository().Create(host)
 	if err != nil {
@@ -384,7 +390,7 @@ func createSGXHostInfo(db repository.SHVSDatabase, hostInfo RegisterHostInfo) (s
 	hostStatus := types.HostStatus{
 		Id:          uuid.New().String(),
 		HostId:      hostId,
-		Status:      constants.HostStatusAgentQueued,
+		Status:      constants.HostStatusConnected,
 		CreatedTime: time.Now(),
 		UpdatedTime: time.Now(),
 	}
@@ -424,7 +430,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 		}
 
 		var res RegisterResponse
-		var data RegisterHostInfo
+		var data SGXHostInfo
 		if r.ContentLength == 0 {
 			slog.Error("resource/sgx_host_ops: registerHost() The request body was not provided")
 			res = RegisterResponse{HttpStatus: http.StatusBadRequest,
@@ -447,7 +453,6 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 		log.Debug("Calling registerHost.................", data)
 
 		if !validateInputString(constants.HostName, data.HostName) ||
-			!validateInputString(constants.ConnectionString, data.ConnectionString) ||
 			!validateInputString(constants.UUID, data.UUID) ||
 			!validateInputString(constants.Description, data.Description) {
 			slog.Error("resource/sgx_host_ops: registerHost() Input validation failed")
@@ -461,41 +466,48 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 			HardwareUUID: data.UUID,
 		}
 
+		var hostInfo RegisterHostInfo
+		hostInfo = RegisterHostInfo{
+			Description: data.Description,
+			HostName:    data.HostName,
+			UUID:        data.UUID,
+		}
+
 		existingHostData, err := db.HostRepository().Retrieve(*host)
-		if existingHostData != nil && data.Overwrite == false {
-			res = RegisterResponse{HttpStatus: http.StatusOK,
-				Response: ResponseJson{Status: "Success",
-					Id:      existingHostData.Id,
-					Message: "Host already registered in SGX HVS"}}
-			return sendHostRegisterResponse(w, res)
-		} else if existingHostData != nil && data.Overwrite == true {
-			err = updateSGXHostInfo(db, existingHostData, data)
+		if existingHostData != nil {
+			err = updateSGXHostInfo(db, existingHostData, hostInfo)
 			if err != nil {
 				res = RegisterResponse{HttpStatus: http.StatusInternalServerError,
 					Response: ResponseJson{Status: "Failed",
 						Message: "registerHost: " + err.Error()}}
 				return sendHostRegisterResponse(w, res)
 			}
-
+			err = pushSGXEnablementInfoToDB(existingHostData.Id, db, data)
+			if err != nil {
+				errors.New("resource/sgx_host_ops/registerHost : pushSGXEnablementInfoToDB failed ")
+			}
 			res = RegisterResponse{HttpStatus: http.StatusCreated,
 				Response: ResponseJson{Status: "Created",
 					Id:      existingHostData.Id,
-					Message: "SGX Host Re-registered Successfully"}}
+					Message: "SGX Host Data updated Successfully"}}
 			return sendHostRegisterResponse(w, res)
 
 		} else if existingHostData == nil {
-			hostId, err := createSGXHostInfo(db, data)
+			hostId, err := createSGXHostInfo(db, hostInfo)
 			if err != nil {
 				res = RegisterResponse{HttpStatus: http.StatusInternalServerError,
 					Response: ResponseJson{Status: "Failed",
 						Message: "registerHost: " + err.Error()}}
 				return sendHostRegisterResponse(w, res)
 			}
-
+			err = pushSGXEnablementInfoToDB(hostId, db, data)
+			if err != nil {
+				errors.New("resource/sgx_host_ops/registerHost : pushSGXEnablementInfoToDB failed ")
+			}
 			res = RegisterResponse{HttpStatus: http.StatusCreated,
 				Response: ResponseJson{Status: "Success",
 					Id:      hostId,
-					Message: "SGX Host Registered Successfully"}}
+					Message: "SGX Host Data Created Successfully"}}
 			return sendHostRegisterResponse(w, res)
 		} else {
 
@@ -505,4 +517,50 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 			return sendHostRegisterResponse(w, res)
 		}
 	}
+}
+
+func pushSGXEnablementInfoToDB(hostId string, db repository.SHVSDatabase, hostInfo SGXHostInfo) error {
+	log.Trace("resource/sgx_atte_report_ops: pushSGXEnablementInfo() Entering")
+	defer log.Trace("resource/sgx_atte_report_ops: pushSGXEnablementInfo() Leaving")
+
+	hostData := &types.HostSgxData{
+		HostId: hostId,
+	}
+
+	hostSGXData, err := db.HostSgxDataRepository().Retrieve(*hostData)
+
+	if hostSGXData == nil || err != nil {
+		log.Debug("resource/sgx_atte_report_ops: No host record found will create new one")
+
+		sgxData := types.HostSgxData{
+			Id:           uuid.New().String(),
+			HostId:       hostId,
+			SgxSupported: hostInfo.SgxSupported,
+			SgxEnabled:   hostInfo.SgxEnabled,
+			FlcEnabled:   hostInfo.FlcEnabled,
+			EpcAddr:      hostInfo.EpcOffset,
+			EpcSize:      hostInfo.EpcSize,
+			TcbUptodate:  hostInfo.TcbUptodate,
+			CreatedTime:  time.Now(),
+		}
+		_, err = db.HostSgxDataRepository().Create(sgxData)
+	} else {
+		log.Debug("resource/sgx_atte_report_ops: Host record found will update existing one")
+		sgxData := types.HostSgxData{
+			Id:           hostSGXData.Id,
+			HostId:       hostId,
+			SgxSupported: hostInfo.SgxSupported,
+			SgxEnabled:   hostInfo.SgxEnabled,
+			FlcEnabled:   hostInfo.FlcEnabled,
+			EpcAddr:      hostInfo.EpcOffset,
+			EpcSize:      hostInfo.EpcSize,
+			TcbUptodate:  hostInfo.TcbUptodate,
+			CreatedTime:  time.Now(),
+		}
+		err = db.HostSgxDataRepository().Update(sgxData)
+	}
+	if err != nil {
+		return errors.Wrap(err, "resource/sgx_atte_report_ops: Error in creating host sgx data")
+	}
+	return nil
 }

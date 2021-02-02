@@ -129,7 +129,7 @@ type SwaggNewHostsSgxDataInfo struct {
 //  {
 //      "Id": "d60c9d18-a272-49b9-bf45-872f28407775",
 //      "Status": "Created",
-//      "Message": "SGX Host Registered Successfully"
+//      "Message": "SGX Host Data Created Successfully"
 //  }
 // ---
 

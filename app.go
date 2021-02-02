@@ -423,14 +423,14 @@ func (a *App) startServer() error {
 	r.SkipClean(true)
 
 	// Create Router, set routes
-	sr := r.PathPrefix("/sgx-hvs/v1/noauth").Subrouter()
+	sr := r.PathPrefix("/sgx-hvs/v2/noauth").Subrouter()
 	func(setters ...func(*mux.Router)) {
 		for _, setter := range setters {
 			setter(sr)
 		}
 	}(resource.SetVersionRoutes)
 
-	sr = r.PathPrefix("/sgx-hvs/v1/").Subrouter()
+	sr = r.PathPrefix("/sgx-hvs/v2/").Subrouter()
 	var cacheTime, _ = time.ParseDuration(constants.JWTCertsCacheTime)
 	sr.Use(middleware.NewTokenAuth(constants.TrustedJWTSigningCertsDir, constants.TrustedCAsStoreDir, fnGetJwtCerts, cacheTime))
 	func(setters ...func(*mux.Router, repository.SHVSDatabase)) {
@@ -452,7 +452,6 @@ func (a *App) startServer() error {
 		return err
 	}
 	scheduler.StartAutoRefreshSchedular(shvsDB, c.SHVSRefreshTimer)
-	scheduler.StartSHVSScheduler(shvsDB, c.SchedulerTimer)
 
 	// Setup signal handlers to gracefully handle termination
 	stop := make(chan os.Signal)

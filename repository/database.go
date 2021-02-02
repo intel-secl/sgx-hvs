@@ -8,9 +8,7 @@ type SHVSDatabase interface {
 	Migrate() error
 	HostRepository() HostRepository
 	HostStatusRepository() HostStatusRepository
-	HostCredentialRepository() HostCredentialRepository
 	HostReportRepository() HostReportRepository
 	HostSgxDataRepository() HostSgxDataRepository
-	PlatformTcbRepository() PlatformTcbRepository
 	Close()
 }

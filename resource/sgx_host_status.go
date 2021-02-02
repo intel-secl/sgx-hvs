@@ -14,11 +14,8 @@ import (
 )
 
 type HostStatusResponse struct {
-	HostId           string `json:"host_id"`
-	Status           string `json:"host_status"`
-	AgentRetryCount  int    `json:"agent_retry_count"`
-	SCSRetryCount    int    `json:"scs_retry_count"`
-	TCBSCSRetryCount int    `json:"tcb_scs_retry_count"`
+	HostId string `json:"host_id"`
+	Status string `json:"host_status"`
 }
 
 func hostStateInformation(db repository.SHVSDatabase) errorHandlerFunc {
@@ -47,11 +44,8 @@ func hostStateInformation(db repository.SHVSDatabase) errorHandlerFunc {
 		hostStatusResponses := make([]HostStatusResponse, 0)
 		for _, hostStatus := range hostStatusData {
 			hostStatusResponse := HostStatusResponse{
-				HostId:           hostStatus.HostId,
-				Status:           hostStatus.Status,
-				AgentRetryCount:  hostStatus.AgentRetryCount,
-				SCSRetryCount:    hostStatus.SCSRetryCount,
-				TCBSCSRetryCount: hostStatus.TCBSCSRetryCount,
+				HostId: hostStatus.HostId,
+				Status: hostStatus.Status,
 			}
 			hostStatusResponses = append(hostStatusResponses, hostStatusResponse)
 		}

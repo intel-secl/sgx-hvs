@@ -39,7 +39,7 @@ const (
 	DefaultSHVSTlsCn               = "SHVS TLS Certificate"
 	DefaultSHVSSchedulerTimer      = 60
 	DefaultSHVSAutoRefreshTimer    = 120
-	DefaultSHVSHostInfoExpiryTime  = 240
+	DefaultSHVSHostInfoExpiryTime  = 4 * 60 * 60
 	DefaultJwtValidateCacheKeyMins = 60
 	SHVSLogLevel                   = "SHVS_LOGLEVEL"
 	DefaultReadTimeout             = 30 * time.Second
@@ -51,24 +51,10 @@ const (
 	UUID                           = "uuid"
 	Description                    = "description"
 	HostName                       = "host-name"
-	ConnectionString               = "connection-string"
 	ID                             = "id"
 	HostID                         = "host-id"
 	HostStatus                     = "host-status"
-	HostStatusAgentQueued          = "AGENT-QUEUE"
-	HostStatusAgentRetry           = "AGENT-RETRY"
-	HostStatusAgentProcessing      = "AGENT-PROCESSING"
-	HostStatusSCSQueued            = "SCS-QUEUE"
-	HostStatusSCSRetry             = "SCS-RETRY"
-	HostStatusSCSProcessing        = "SCS-PROCESSING"
-	HostStatusTCBSCSStatusQueued   = "TCBStatus-SCS-QUEUED"
-	HostStatusSCSTCBProcessing     = "SCS_TCB-PROCESSING"
-	HostStatusTCBSCSRetry          = "SCS_TCB-RETRY"
-	HostStatusAgentConnFailure     = "AGENT-CONNECTION-FAILURE"
-	HostStatusSCSConnFailure       = "SCS-CONNECTION-FAILURE"
-	HostStatusTCBSCSConnFailure    = "TCBStatus-SCS-CONNECTION-FAILURE"
-	HostStatusProcessError         = "PROCESSING-ERROR"
+	HostStatusInactive             = "IN-ACTIVE"
 	HostStatusConnected            = "CONNECTED"
 	HostStatusRemoved              = "REMOVED"
-	MaxRetryConnection             = 5
 )

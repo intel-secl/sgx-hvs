@@ -84,7 +84,7 @@ func (r *PostgresHostStatusRepository) RetrieveExpiredHosts() (types.HostsStatus
 
 	var hs types.HostsStatus
 	var current_time = time.Now()
-	err := r.db.Where("(expiry_time < (?) and STATUS in ('CONNECTED')) OR (STATUS in ('AGENT-CONNECTION-FAILURE','SCS-CONNECTION-FAILURE', 'TCBStatus-SCS-CONNECTION-FAILURE', 'PROCESSING-ERROR', 'UNKNOWN'))", current_time).Find(&hs).Error
+	err := r.db.Where("(expiry_time < (?) and STATUS in ('CONNECTED')) OR (STATUS in ('IN-ACTIVE'))", current_time).Find(&hs).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "RetrieveExpiredHosts: failed to RetrieveAll HostStatus")
 	}
