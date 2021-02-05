@@ -424,7 +424,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 		log.Trace("resource/sgx_host_ops: registerHost() Entering")
 		defer log.Trace("resource/sgx_host_ops: registerHost() Leaving")
 
-		err := authorizeEndpoint(r, constants.RegisterHostGroupName, true)
+		err := authorizeEndpoint(r, constants.UpdateHostGroupName, true)
 		if err != nil {
 			return err
 		}
@@ -489,7 +489,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 			res = RegisterResponse{HttpStatus: http.StatusCreated,
 				Response: ResponseJson{Status: "Created",
 					Id:      existingHostData.Id,
-					Message: "SGX Host Data updated Successfully"}}
+					Message: "SGX Host Data Updated Successfully"}}
 			return sendHostRegisterResponse(w, res)
 
 		} else if existingHostData == nil {
