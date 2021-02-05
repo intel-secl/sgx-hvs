@@ -26,7 +26,7 @@ const (
 	JWTCertsCacheTime              = "60m"
 	DefaultSSLCertFilePath         = ConfigDir + "shvs-dbcert.pem"
 	ServiceName                    = "SHVS"
-	UpdateHostGroupName            = "HostDataUpdater"
+	HostDataUpdaterGroupName       = "HostDataUpdater"
 	HostListReaderGroupName        = "HostsListReader"
 	HostDataReaderGroupName        = "HostDataReader"
 	HostListManagerGroupName       = "HostListManager"

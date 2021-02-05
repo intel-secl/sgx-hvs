@@ -424,7 +424,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 		log.Trace("resource/sgx_host_ops: registerHost() Entering")
 		defer log.Trace("resource/sgx_host_ops: registerHost() Leaving")
 
-		err := authorizeEndpoint(r, constants.UpdateHostGroupName, true)
+		err := authorizeEndpoint(r, constants.HostDataUpdaterGroupName, true)
 		if err != nil {
 			return err
 		}
