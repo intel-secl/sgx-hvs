@@ -19,7 +19,6 @@ if [ ! -f $CONFIG_PATH/.setup_done ]; then
     fi
     chown -R $USER_ID:$USER_ID $directory
     chmod 700 $directory
-    chmod g+s $directory
   done
   shvs setup all
   if [ $? -ne 0 ]; then
