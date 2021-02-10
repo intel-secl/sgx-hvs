@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2021 Intel Corporation
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #!/bin/bash
 
 USER_ID=$(id -u)
@@ -6,9 +11,8 @@ CONFIG_PATH=/etc/shvs
 CERTS_DIR=${CONFIG_PATH}/certs
 TRUSTED_CERTS=${CERTS_DIR}/trustedca
 CERTDIR_TRUSTEDJWTCERTS=${CERTS_DIR}/trustedjwt
-TOKEN_SIGN_DIR=${CERTS_DIR}/tokensign
 DB_SCRIPT_PATH=/opt/shvs/dbscripts
-CERTSDIR_CMS_ROOTCA=$CERTS_DIR/cms-root-ca
+
 
 if [ ! -f $CONFIG_PATH/.setup_done ]; then
   for directory in $LOG_PATH $CONFIG_PATH $CERTS_DIR $TRUSTED_CERTS $CERTDIR_TRUSTEDJWTCERTS $TOKEN_SIGN_DIR $CERTSDIR_CMS_ROOTCA; do
