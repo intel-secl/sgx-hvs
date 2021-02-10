@@ -15,7 +15,7 @@ DB_SCRIPT_PATH=/opt/shvs/dbscripts
 
 
 if [ ! -f $CONFIG_PATH/.setup_done ]; then
-  for directory in $LOG_PATH $CONFIG_PATH $CERTS_DIR $TRUSTED_CERTS $CERTDIR_TRUSTEDJWTCERTS $TOKEN_SIGN_DIR $CERTSDIR_CMS_ROOTCA; do
+  for directory in $LOG_PATH $CONFIG_PATH $CERTS_DIR $TRUSTED_CERTS $CERTDIR_TRUSTEDJWTCERTS; do
     mkdir -p $directory
     if [ $? -ne 0 ]; then
       echo "Cannot create directory: $directory"
