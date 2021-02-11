@@ -42,7 +42,7 @@ installer: shvs
 	makeself out/installer out/shvs-$(VERSION).bin "SGX Host Verification Service $(VERSION)" ./install.sh
 	cp dist/linux/install_pgshvsdb.sh out/install_pgshvsdb.sh && chmod +x out/install_pgshvsdb.sh
 
-docker: shvs
+docker: installer
 ifeq ($(PROXY_EXISTS),1)
 	docker build ${DOCKER_PROXY_FLAGS} -f dist/image/Dockerfile -t isecl/shvs:$(VERSION) .
 else
