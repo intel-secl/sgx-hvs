@@ -16,6 +16,7 @@ import (
 	"github.com/pkg/errors"
 	commLogMsg "intel/isecl/lib/common/v3/log/message"
 	"intel/isecl/lib/common/v3/validation"
+	"intel/isecl/shvs/v3/config"
 	"intel/isecl/shvs/v3/constants"
 	"intel/isecl/shvs/v3/repository"
 	"intel/isecl/shvs/v3/types"
@@ -387,12 +388,21 @@ func createSGXHostInfo(db repository.SHVSDatabase, hostInfo RegisterHostInfo) (s
 		return "", errors.New("createSGXHostInfo: Error while caching Host Information: " + err.Error())
 	}
 
+	conf := config.Global()
+	if conf == nil {
+		return "", errors.Wrap(errors.New("createSGXHostInfo: Configuration pointer is null"), "Config error")
+	}
+
+	expiryTimeInt := conf.SHVSHostInfoExpiryTime
+	expiryTimeDuration, _ := time.ParseDuration(strconv.Itoa(expiryTimeInt) + "m")
+
 	hostStatus := types.HostStatus{
 		Id:          uuid.New().String(),
 		HostId:      hostId,
 		Status:      constants.HostStatusConnected,
 		CreatedTime: time.Now(),
 		UpdatedTime: time.Now(),
+		ExpiryTime:  time.Now().Add(time.Duration((expiryTimeDuration))),
 	}
 	_, err = db.HostStatusRepository().Create(hostStatus)
 	if err != nil {
@@ -486,8 +496,8 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 			if err != nil {
 				errors.New("resource/sgx_host_ops/registerHost : pushSGXEnablementInfoToDB failed ")
 			}
-			res = RegisterResponse{HttpStatus: http.StatusCreated,
-				Response: ResponseJson{Status: "Created",
+			res = RegisterResponse{HttpStatus: http.StatusOK,
+				Response: ResponseJson{Status: "Success",
 					Id:      existingHostData.Id,
 					Message: "SGX Host Data Updated Successfully"}}
 			return sendHostRegisterResponse(w, res)
