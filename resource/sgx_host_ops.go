@@ -16,6 +16,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	"intel/isecl/lib/common/v3/context"
 	commLogMsg "intel/isecl/lib/common/v3/log/message"
 	"intel/isecl/shvs/v3/config"
 	"intel/isecl/shvs/v3/constants"
@@ -491,8 +492,17 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 			return sendHostRegisterResponse(w, res)
 		}
 
+		tokenSubject, err := context.GetTokenSubject(r)
+		if err != nil || tokenSubject != data.UUID {
+			slog.Errorf("resource/sgx_host_ops: registerHost() %s : Failed to match host identity from token", commLogMsg.AuthenticationFailed)
+			res = RegisterResponse{HTTPStatus: http.StatusUnauthorized,
+				Response:   ResponseJSON{Status: "Failed",
+					Message: "registerHost: Invalid Token"}}
+			return sendHostRegisterResponse(w, res)
+		}
+
 		host := &types.Host{
-			HardwareUUID: hardwareUuid,
+			Name: data.HostName,
 		}
 
 		hostInfo := RegisterHostInfo{
@@ -504,12 +514,20 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 		existingHostData, err := db.HostRepository().Retrieve(host, nil)
 		if err != nil && !strings.Contains(err.Error(), RowsNotFound){
 			slog.Error("resource/sgx_host_ops: registerHost() Error retrieving data from database")
-			res = RegisterResponse{HTTPStatus: http.StatusBadRequest,
+			res = RegisterResponse{HTTPStatus: http.StatusInternalServerError,
 				Response: ResponseJSON{Status: "Failed",
 					Message: "registerHost: Error retrieving data from database"}}
 			return sendHostRegisterResponse(w, res)
 		}
 		if existingHostData != nil {
+			if existingHostData.HardwareUUID.String() != tokenSubject {
+				slog.Errorf("resource/sgx_host_ops: registerHost() %s : Failed to match host identity from database", commLogMsg.AuthenticationFailed)
+				res = RegisterResponse{HTTPStatus: http.StatusUnauthorized,
+					Response:   ResponseJSON{Status: "Failed",
+						Message: "registerHost: Invalid Token"}}
+				return sendHostRegisterResponse(w, res)
+			}
+
 			err = updateSGXHostInfo(db, existingHostData, hostInfo)
 			if err != nil {
 				res = RegisterResponse{HTTPStatus: http.StatusInternalServerError,
@@ -520,7 +538,10 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 
 			err = pushSGXEnablementInfoToDB(existingHostData.ID, db, &data)
 			if err != nil {
-				errors.New("resource/sgx_host_ops/registerHost : pushSGXEnablementInfoToDB failed ")
+				res = RegisterResponse{HTTPStatus: http.StatusInternalServerError,
+					Response: ResponseJSON{Status: "Failed",
+						Message: "registerHost: " + err.Error()}}
+				return sendHostRegisterResponse(w, res)
 			}
 			res = RegisterResponse{HTTPStatus: http.StatusOK,
 				Response: ResponseJSON{Status: "Success",
@@ -537,7 +558,10 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 			}
 			err = pushSGXEnablementInfoToDB(hostID, db, &data)
 			if err != nil {
-				errors.New("resource/sgx_host_ops/registerHost : pushSGXEnablementInfoToDB failed ")
+				res = RegisterResponse{HTTPStatus: http.StatusInternalServerError,
+					Response: ResponseJSON{Status: "Failed",
+						Message: "registerHost: " + err.Error()}}
+				return sendHostRegisterResponse(w, res)
 			}
 			res = RegisterResponse{HTTPStatus: http.StatusCreated,
 				Response: ResponseJSON{Status: "Success",
