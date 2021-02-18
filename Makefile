@@ -2,8 +2,14 @@ GITTAG := $(shell git describe --tags --abbrev=0 2> /dev/null)
 GITCOMMIT := $(shell git describe --always)
 VERSION := $(or ${GITTAG}, v0.0.0)
 BUILDDATE := $(shell TZ=UTC date +%Y-%m-%dT%H:%M:%S%z)
+PROXY_EXISTS := $(shell if [[ "${https_proxy}" || "${http_proxy}" ]]; then echo 1; else echo 0; fi)
+DOCKER_PROXY_FLAGS := ""
+ifeq ($(PROXY_EXISTS),1)
+	DOCKER_PROXY_FLAGS = --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy}
+endif
 
-.PHONY: shvs installer test clean
+
+.PHONY: docker shvs installer test clean
 
 all: clean installer
 
@@ -35,6 +41,17 @@ installer: shvs
 	cp out/shvs out/installer/shvs
 	makeself out/installer out/shvs-$(VERSION).bin "SGX Host Verification Service $(VERSION)" ./install.sh
 	cp dist/linux/install_pgshvsdb.sh out/install_pgshvsdb.sh && chmod +x out/install_pgshvsdb.sh
+
+docker: installer
+ifeq ($(PROXY_EXISTS),1)
+	docker build ${DOCKER_PROXY_FLAGS} -f dist/image/Dockerfile -t isecl/shvs:$(VERSION) .
+else
+	docker build -f dist/image/Dockerfile -t isecl/shvs:$(VERSION) .
+endif
+
+shvs-oci-archive: docker
+	skopeo copy docker-daemon:isecl/shvs:$(VERSION) oci-archive:out/shvs-$(VERSION)-$(GITCOMMIT).tar
+
 
 clean:
 	rm -f cover.*

@@ -362,6 +362,11 @@ func (a *App) Run(args []string) error {
 			return errors.Wrap(err, "app:Run() Error running setup")
 		}
 
+		// Containers are always run as non root users, does not require changing ownership of config directories
+		if _, err := os.Stat("/.container-env"); err == nil {
+			return nil
+		}
+
 		shvsUser, err := user.Lookup(constants.SHVSUserName)
 		if err != nil {
 			return errors.Wrapf(err, "Could not find user '%s'", constants.SHVSUserName)
