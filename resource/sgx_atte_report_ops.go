@@ -7,24 +7,19 @@ package resource
 import (
 	"encoding/json"
 	"fmt"
-	uuid "github.com/google/uuid"
-	"github.com/pkg/errors"
-
-	"net/http"
-	"strconv"
-	"time"
-
 	"intel/isecl/shvs/v3/constants"
 	"intel/isecl/shvs/v3/repository"
 	"intel/isecl/shvs/v3/types"
+	"net/http"
+	"strconv"
 )
 
 type PlatformSgxData struct {
 	EncryptedPPID string `json:"enc-ppid"`
-	CpuSvn        string `json:"cpusvn"`
+	CPUSvn        string `json:"cpusvn"`
 	PceSvn        string `json:"pcesvn"`
-	PceId         string `json:"pceid"`
-	QeId          string `json:"qeid"`
+	PceID         string `json:"pceid"`
+	QeID          string `json:"qeid"`
 	Manifest      string `json:"Manifest"`
 }
 type SgxData struct {
@@ -60,21 +55,21 @@ func retrieveHostAttestationReport(db repository.SHVSDatabase) errorHandlerFunc 
 				StatusCode: http.StatusBadRequest}
 		}
 
-		Id := r.URL.Query().Get("id")
-		HostId := r.URL.Query().Get("hostId")
+		ID := r.URL.Query().Get("id")
+		HostID := r.URL.Query().Get("hostID")
 		HostName := r.URL.Query().Get("hostName")
-		HostHardwareUUID := r.URL.Query().Get("hostHardwareId")
+		HostHardwareUUID := r.URL.Query().Get("hostHardwareID")
 		HostStatus := r.URL.Query().Get("hostStatus")
 		LatestperHost := r.URL.Query().Get("latestPerHost")
 
-		if Id != "" {
-			if !validateInputString(constants.ID, Id) {
+		if ID != "" {
+			if !validateInputString(constants.ID, ID) {
 				return &resourceError{Message: "retrieveHostAttestationReport: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
 			}
 		}
-		if HostId != "" {
-			if !validateInputString(constants.HostID, HostId) {
+		if HostID != "" {
+			if !validateInputString(constants.HostID, HostID) {
 				return &resourceError{Message: "retrieveHostAttestationReport: Invalid query Param Data",
 					StatusCode: http.StatusBadRequest}
 			}
@@ -102,16 +97,16 @@ func retrieveHostAttestationReport(db repository.SHVSDatabase) errorHandlerFunc 
 		log.WithField("LatestperHost", LatestperHost).Debug("Value")
 
 		rs := types.SgxHostReportInputData{
-			Id:             Id,
-			HostId:         HostId,
-			HostHardwareId: HostHardwareUUID,
+			ID:             ID,
+			HostID:         HostID,
+			HostHardwareID: HostHardwareUUID,
 			HostName:       HostName,
 			Status:         HostStatus,
 			LatestperHost:  perHost,
 		}
 		log.Debug("SgxHostReportInputData:", rs)
 
-		existingReportData, err := db.HostReportRepository().GetHostReportQuery(rs)
+		existingReportData, err := db.HostReportRepository().GetHostReportQuery(&rs)
 		if err != nil {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
@@ -129,19 +124,4 @@ func retrieveHostAttestationReport(db repository.SHVSDatabase) errorHandlerFunc 
 		}
 		return nil
 	}
-}
-
-func createHostReport(db repository.SHVSDatabase, hostId string, status string) error {
-	report := types.HostReport{
-		Id:          uuid.New().String(),
-		HostId:      hostId,
-		TrustReport: status,
-		CreatedTime: time.Now(),
-	}
-
-	_, err := db.HostReportRepository().Create(report)
-	if err != nil {
-		return errors.Wrap(err, "createHostReport: Error in creating Host report: "+err.Error())
-	}
-	return nil
 }

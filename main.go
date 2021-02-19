@@ -9,10 +9,11 @@ import (
 	_ "intel/isecl/shvs/v3/swagger/docs"
 	"os"
 	"os/user"
+	"runtime"
 	"strconv"
 )
 
-func openLogFiles() (logFile *os.File, httpLogFile *os.File, secLogFile *os.File, err error) {
+func openLogFiles() (logFile, httpLogFile, secLogFile *os.File, err error) {
 	logFile, err = os.OpenFile(constants.LogFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		return nil, nil, nil, err
@@ -40,11 +41,10 @@ func openLogFiles() (logFile *os.File, httpLogFile *os.File, secLogFile *os.File
 		return nil, nil, nil, err
 	}
 
-        // Containers are always run as non root users, does not require changing ownership of config directories
-        if _, err := os.Stat("/.container-env"); err == nil {
-                return logFile, httpLogFile, secLogFile, nil
-        }
-
+	// Containers are always run as non root users, does not require changing ownership of config directories
+	if _, err := os.Stat("/.container-env"); err == nil {
+		return logFile, httpLogFile, secLogFile, nil
+	}
 
 	shvsUser, err := user.Lookup(constants.SHVSUserName)
 	if err != nil {
@@ -119,6 +119,6 @@ func main() {
 	err = app.Run(os.Args)
 	if err != nil {
 		log.Error("Application returned with error: ", err)
-		os.Exit(1)
+		runtime.Goexit()
 	}
 }

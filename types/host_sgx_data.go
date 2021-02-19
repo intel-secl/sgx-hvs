@@ -10,8 +10,8 @@ import (
 
 // HostSgxData struct is the database schema of a HostSgxData table
 type HostSgxData struct {
-	Id           string    `json:"-" gorm:"primary_key;"`
-	HostId       string    `json:"host_id" gorm:"type:uuid;not null"`
+	ID           string    `json:"-" gorm:"primary_key;"`
+	HostID       string    `json:"host_id" gorm:"type:uuid;not null"`
 	SgxSupported bool      `json:"sgx_supported"`
 	SgxEnabled   bool      `json:"sgx_enabled"`
 	FlcEnabled   bool      `json:"flc_enabled"`

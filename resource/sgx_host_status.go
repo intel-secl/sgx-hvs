@@ -14,7 +14,7 @@ import (
 )
 
 type HostStatusResponse struct {
-	HostId string `json:"host_id"`
+	HostID string `json:"host_id"`
 	Status string `json:"host_status"`
 }
 
@@ -42,9 +42,9 @@ func hostStateInformation(db repository.SHVSDatabase) errorHandlerFunc {
 		w.WriteHeader(http.StatusOK) // HTTP 200
 
 		hostStatusResponses := make([]HostStatusResponse, 0)
-		for _, hostStatus := range hostStatusData {
+		for _, hostStatus := range *hostStatusData {
 			hostStatusResponse := HostStatusResponse{
-				HostId: hostStatus.HostId,
+				HostID: hostStatus.HostID,
 				Status: hostStatus.Status,
 			}
 			hostStatusResponses = append(hostStatusResponses, hostStatusResponse)

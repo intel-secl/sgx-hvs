@@ -10,10 +10,10 @@ import (
 )
 
 type HostSgxDataRepository interface {
-	Create(types.HostSgxData) (*types.HostSgxData, error)
-	Retrieve(types.HostSgxData) (*types.HostSgxData, error)
-	RetrieveAll(user types.HostSgxData) (types.HostsSgxData, error)
-	Update(types.HostSgxData) error
-	Delete(types.HostSgxData) error
-	GetPlatformData(updatedTime time.Time) (types.HostsSgxData, error)
+	Create(*types.HostSgxData) (*types.HostSgxData, error)
+	Retrieve(*types.HostSgxData) (*types.HostSgxData, error)
+	RetrieveAll(*types.HostSgxData) (*types.HostsSgxData, error)
+	Update(*types.HostSgxData) error
+	Delete(*types.HostSgxData) error
+	GetPlatformData(updatedTime time.Time) (*types.HostsSgxData, error)
 }
