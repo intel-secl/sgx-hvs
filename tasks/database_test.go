@@ -14,7 +14,7 @@ import (
 )
 
 func TestDatabaseSetup(t *testing.T) {
-	assert := assert.New(t)
+	testAssert := assert.New(t)
 	c := config.Configuration{}
 	s := Database{
 		Flags:         []string{"-db-host=hostname", "-db-port=5432", "-db-user=user", "-db-pass=password", "-db-name=scs_db"},
@@ -23,16 +23,16 @@ func TestDatabaseSetup(t *testing.T) {
 	}
 	ctx := setup.Context{}
 	err := s.Run(ctx)
-	assert.Error(err)
-	assert.Equal("hostname", c.Postgres.Hostname)
-	assert.Equal(5432, c.Postgres.Port)
-	assert.Equal("user", c.Postgres.Username)
-	assert.Equal("password", c.Postgres.Password)
-	assert.Equal("scs_db", c.Postgres.DBName)
+	testAssert.Error(err)
+	testAssert.Equal("hostname", c.Postgres.Hostname)
+	testAssert.Equal(5432, c.Postgres.Port)
+	testAssert.Equal("user", c.Postgres.Username)
+	testAssert.Equal("password", c.Postgres.Password)
+	testAssert.Equal("scs_db", c.Postgres.DBName)
 }
 
 func TestDatabaseSetupEnv(t *testing.T) {
-	assert := assert.New(t)
+	testAssert := assert.New(t)
 	os.Setenv("SHVS_DB_HOSTNAME", "hostname")
 	os.Setenv("SHVS_DB_PORT", "5432")
 	os.Setenv("SHVS_DB_USERNAME", "user")
@@ -46,10 +46,10 @@ func TestDatabaseSetupEnv(t *testing.T) {
 	}
 	ctx := setup.Context{}
 	err := s.Run(ctx)
-	assert.Error(err)
-	assert.Equal("hostname", c.Postgres.Hostname)
-	assert.Equal(5432, c.Postgres.Port)
-	assert.Equal("user", c.Postgres.Username)
-	assert.Equal("password", c.Postgres.Password)
-	assert.Equal("scs_db", c.Postgres.DBName)
+	testAssert.Error(err)
+	testAssert.Equal("hostname", c.Postgres.Hostname)
+	testAssert.Equal(5432, c.Postgres.Port)
+	testAssert.Equal("user", c.Postgres.Username)
+	testAssert.Equal("password", c.Postgres.Password)
+	testAssert.Equal("scs_db", c.Postgres.DBName)
 }

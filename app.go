@@ -144,6 +144,13 @@ func (a *App) logWriter() io.Writer {
 	return os.Stderr
 }
 
+func (a *App) secLogWriter() io.Writer {
+	if a.SecLogWriter != nil {
+		return a.SecLogWriter
+	}
+	return os.Stdout
+}
+
 func (a *App) httpLogWriter() io.Writer {
 	if a.HTTPLogWriter != nil {
 		return a.HTTPLogWriter
@@ -215,13 +222,13 @@ func (a *App) configureLogs(stdOut, logFile bool) {
 
 	if stdOut {
 		if logFile {
-			ioWriterDefault = io.MultiWriter(os.Stdout, a.LogWriter)
+			ioWriterDefault = io.MultiWriter(os.Stdout, a.logWriter())
 		} else {
 			ioWriterDefault = os.Stdout
 		}
 	}
 
-	ioWriterSecurity := io.MultiWriter(ioWriterDefault, a.SecLogWriter)
+	ioWriterSecurity := io.MultiWriter(ioWriterDefault, a.secLogWriter())
 	f := commLog.LogFormatter{MaxLength: a.configuration().LogMaxLength}
 	commLogInt.SetLogger(commLog.DefaultLoggerName, a.configuration().LogLevel, &f, ioWriterDefault, false)
 	commLogInt.SetLogger(commLog.SecurityLoggerName, a.configuration().LogLevel, &f, ioWriterSecurity, false)
@@ -278,7 +285,7 @@ func (a *App) Run(args []string) error {
 		return nil
 	case "setup":
 		a.configureLogs(a.configuration().LogEnableStdout, true)
-		var context setup.Context
+		var setupContext setup.Context
 		if len(args) <= 2 {
 			a.printUsage()
 			os.Exit(1)
@@ -299,7 +306,7 @@ func (a *App) Run(args []string) error {
 		}
 
 		a.Config = config.Global()
-		err = a.Config.SaveConfiguration(context)
+		err = a.Config.SaveConfiguration(setupContext)
 		if err != nil {
 			fmt.Println("Error saving configuration: " + err.Error())
 			os.Exit(1)
@@ -317,9 +324,9 @@ func (a *App) Run(args []string) error {
 			Tasks: []setup.Task{
 				setup.Download_Ca_Cert{
 					Flags:                flags,
-					CmsBaseURL:           a.Config.CMSBaseUrl,
+					CmsBaseURL:           a.Config.CMSBaseURL,
 					CaCertDirPath:        constants.TrustedCAsStoreDir,
-					TrustedTlsCertDigest: a.Config.CmsTlsCertDigest,
+					TrustedTlsCertDigest: a.Config.CmsTLSCertDigest,
 					ConsoleWriter:        os.Stdout,
 				},
 				setup.Download_Cert{
@@ -328,7 +335,7 @@ func (a *App) Run(args []string) error {
 					CertFile:           a.Config.TLSCertFile,
 					KeyAlgorithm:       constants.DefaultKeyAlgorithm,
 					KeyAlgorithmLength: constants.DefaultKeyAlgorithmLength,
-					CmsBaseURL:         a.Config.CMSBaseUrl,
+					CmsBaseURL:         a.Config.CMSBaseURL,
 					Subject: pkix.Name{
 						CommonName: a.Config.Subject.TLSCertCommonName,
 					},
@@ -382,7 +389,7 @@ func (a *App) Run(args []string) error {
 			return errors.Wrapf(err, "Could not parse shvs user gid '%s'", shvsUser.Gid)
 		}
 
-		//Change the file ownership to shvs user
+		// Change the file ownership to shvs user
 		err = cos.ChownR(constants.ConfigDir, uid, gid)
 		if err != nil {
 			return errors.Wrap(err, "Error while changing file ownership")
@@ -592,19 +599,19 @@ func removeService() {
 	}
 }
 
-func validateCmdAndEnv(env_names_cmd_opts map[string]string, flags *flag.FlagSet) error {
+func validateCmdAndEnv(envNamesCmdOpts map[string]string, flags *flag.FlagSet) error {
 	log.Trace("app:validateCmdAndEnv() Entering")
 	defer log.Trace("app:validateCmdAndEnv() Leaving")
 
-	env_names := make([]string, 0)
-	for k := range env_names_cmd_opts {
-		env_names = append(env_names, k)
+	envNames := make([]string, 0)
+	for k := range envNamesCmdOpts {
+		envNames = append(envNames, k)
 	}
 
-	missing, valid_err := validation.ValidateEnvList(env_names)
-	if valid_err != nil && missing != nil {
+	missing, validErr := validation.ValidateEnvList(envNames)
+	if validErr != nil && missing != nil {
 		for _, m := range missing {
-			if cmd_f := flags.Lookup(env_names_cmd_opts[m]); cmd_f == nil {
+			if cmdF := flags.Lookup(envNamesCmdOpts[m]); cmdF == nil {
 				return errors.New("Insufficient arguments")
 			}
 		}
@@ -629,7 +636,7 @@ func validateSetupArgs(cmd string, args []string) error {
 		return nil
 
 	case "database":
-		env_names_cmd_opts := map[string]string{
+		envNamesCmdOpts := map[string]string{
 			"SHVS_DB_HOSTNAME":   "db-host",
 			"SHVS_DB_PORT":       "db-port",
 			"SHVS_DB_USERNAME":   "db-user",
@@ -652,9 +659,9 @@ func validateSetupArgs(cmd string, args []string) error {
 
 		err := fs.Parse(args)
 		if err != nil {
-			return fmt.Errorf("Fail to parse arguments: %s", err.Error())
+			return fmt.Errorf("failed to parse arguments: %s", err.Error())
 		}
-		return validateCmdAndEnv(env_names_cmd_opts, fs)
+		return validateCmdAndEnv(envNamesCmdOpts, fs)
 
 	case "server":
 		return nil
@@ -704,10 +711,10 @@ func fnGetJwtCerts() error {
 
 	conf := config.Global()
 
-	if !strings.HasSuffix(conf.AuthServiceUrl, "/") {
-		conf.AuthServiceUrl = conf.AuthServiceUrl + "/"
+	if !strings.HasSuffix(conf.AuthServiceURL, "/") {
+		conf.AuthServiceURL += "/"
 	}
-	url := conf.AuthServiceUrl + "jwt-certificates"
+	url := conf.AuthServiceURL + "jwt-certificates"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return errors.Wrap(err, "Could not create http request")

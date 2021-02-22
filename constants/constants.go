@@ -32,7 +32,7 @@ const (
 	HostListManagerGroupName       = "HostListManager"
 	SHVSUserName                   = "shvs"
 	ExpiryTimeKeyName              = "validTo"
-	DefaultHttpsPort               = 13000
+	DefaultHTTPSPort               = 13000
 	DefaultKeyAlgorithm            = "rsa"
 	DefaultKeyAlgorithmLength      = 3072
 	DefaultSHVSTlsSan              = "127.0.0.1,localhost"

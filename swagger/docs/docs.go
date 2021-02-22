@@ -1,6 +1,6 @@
 // SGX-Host-Verification-Service
 //
-//Agent pushes the platform enablement info and TCB status to SHVS at regular Interval
+// Agent pushes the platform enablement info and TCB status to SHVS at regular Interval
 // SGX HVS also exposes API for SGX HUB to get platform-specific values.
 // SGX HVS listening port is user-configurable.
 //

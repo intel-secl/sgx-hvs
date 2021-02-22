@@ -19,10 +19,10 @@ type RegisterHostInfoResponse struct {
 }
 
 // ResponseJson response payload
-// swagger:response ResponseJson
-type JsonResponse struct {
+// swagger:response ResponseJSON
+type JSONResponse struct {
 	// in:body
-	Body resource.ResponseJson
+	Body resource.ResponseJSON
 }
 
 // Hosts response payload

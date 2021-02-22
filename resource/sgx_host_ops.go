@@ -6,10 +6,6 @@ package resource
 
 import (
 	"encoding/json"
-	"net/http"
-	"strconv"
-	"time"
-
 	uuid "github.com/google/uuid"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -20,29 +16,32 @@ import (
 	"intel/isecl/shvs/v3/constants"
 	"intel/isecl/shvs/v3/repository"
 	"intel/isecl/shvs/v3/types"
+	"net/http"
+	"strconv"
+	"time"
 )
 
-type ResponseJson struct {
-	Id      string
+type ResponseJSON struct {
+	ID      string
 	Status  string
 	Message string
 }
 
 type RegisterResponse struct {
-	Response   ResponseJson
-	HttpStatus int
+	Response   ResponseJSON
+	HTTPStatus int
 }
 
 type RegisterHostInfo struct {
-	HostId      string `json:"host_ID"`
+	HostID      string `json:"host_ID"`
 	HostName    string `json:"host_name"`
-	Description string `json:"description, omitempty"`
+	Description string `json:"description,omitempty"`
 	UUID        string `json:"uuid"`
 }
 
 type SGXHostInfo struct {
 	HostName     string `json:"host_name"`
-	Description  string `json:"description, omitempty"`
+	Description  string `json:"description,omitempty"`
 	UUID         string `json:"uuid"`
 	SgxSupported bool   `json:"sgx_supported"`
 	SgxEnabled   bool   `json:"sgx_enabled"`
@@ -53,7 +52,7 @@ type SGXHostInfo struct {
 }
 
 type AttReportThreadData struct {
-	Uuid string
+	UUID string
 	Conn repository.SHVSDatabase
 }
 
@@ -84,27 +83,27 @@ func getHosts(db repository.SHVSDatabase) errorHandlerFunc {
 		id := mux.Vars(r)["id"]
 		validationErr := validation.ValidateUUIDv4(id)
 		if validationErr != nil {
-			slog.Errorf("resource/sgx_host_ops: getHosts() Input validation failed for host Id")
+			slog.Errorf("resource/sgx_host_ops: getHosts() Input validation failed for host ID")
 			return &resourceError{Message: validationErr.Error(), StatusCode: http.StatusBadRequest}
 		}
 
-		ext_host, err := db.HostRepository().Retrieve(types.Host{Id: id})
-		if ext_host == nil || err != nil {
+		extHost, err := db.HostRepository().Retrieve(&types.Host{ID: id})
+		if extHost == nil || err != nil {
 			log.WithError(err).WithField("id", id).Info("attempt to fetch invalid host")
 			return &resourceError{Message: "Host with given id don't exist",
 				StatusCode: http.StatusNotFound}
 		}
 
-		host_Info := RegisterHostInfo{
-			HostId:   ext_host.Id,
-			HostName: ext_host.Name,
-			UUID:     ext_host.HardwareUUID,
+		hostInfo := RegisterHostInfo{
+			HostID:   extHost.ID,
+			HostName: extHost.Name,
+			UUID:     extHost.HardwareUUID,
 		}
 
-		///Write the output here.
+		// Write the output here.
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		js, err := json.Marshal(host_Info)
+		js, err := json.Marshal(hostInfo)
 		if err != nil {
 			log.WithError(err).Info("resource/sgx_host_ops: getHosts() Marshalling unsuccessful")
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
@@ -158,7 +157,7 @@ func queryHosts(db repository.SHVSDatabase) errorHandlerFunc {
 			log.WithError(err).WithField("filter", filter).Info("failed to retrieve hosts")
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 		}
-		if len(hostData) == 0 {
+		if len(*hostData) == 0 {
 			log.Error("resource/sgx_host_ops: queryHosts() no data is found")
 			return &resourceError{Message: "no host is found", StatusCode: http.StatusNotFound}
 		}
@@ -188,7 +187,7 @@ func getPlatformData(db repository.SHVSDatabase) errorHandlerFunc {
 			return err
 		}
 
-		var platformData types.HostsSgxData
+		var platformData *types.HostsSgxData
 		response := make([]map[string]interface{}, 0)
 		hostName := r.URL.Query().Get("HostName")
 		if hostName != "" {
@@ -198,27 +197,27 @@ func getPlatformData(db repository.SHVSDatabase) errorHandlerFunc {
 					StatusCode: http.StatusBadRequest}
 			}
 			rs := types.Host{Name: hostName}
-			///Get hosts data with the given hostname
-			hostData, err := db.HostRepository().Retrieve(rs)
+			// Get hosts data with the given hostname
+			hostData, err := db.HostRepository().Retrieve(&rs)
 			if err != nil {
 				log.WithError(err).WithField("HostName", hostName).Info("failed to retrieve hosts")
 				return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 			}
-			rs1 := types.HostSgxData{HostId: hostData.Id}
-			platformData, err = db.HostSgxDataRepository().RetrieveAll(rs1)
+			rs1 := types.HostSgxData{HostID: hostData.ID}
+			platformData, err = db.HostSgxDataRepository().RetrieveAll(&rs1)
 			if err != nil {
 				log.WithError(err).WithField("HostName", hostName).Info("failed to retrieve host data")
 				return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 			}
 
-			hostStatus := types.HostStatus{HostId: hostData.Id}
-			nonExpiredHosts, err := db.HostStatusRepository().RetrieveNonExpiredHost(hostStatus)
+			hostStatus := types.HostStatus{HostID: hostData.ID}
+			nonExpiredHosts, err := db.HostStatusRepository().RetrieveNonExpiredHost(&hostStatus)
 			if err != nil {
 				log.WithError(err).WithField("HostName", hostName).Info("failed to retrieve host status.")
 				return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 			}
 
-			for _, platformDataForOneHost := range platformData {
+			for _, platformDataForOneHost := range *platformData {
 				marshalledData, err := json.Marshal(platformDataForOneHost)
 				if err != nil {
 					log.Error("getPlatformData: Error marshalling the platform data")
@@ -243,7 +242,7 @@ func getPlatformData(db repository.SHVSDatabase) errorHandlerFunc {
 						StatusCode: http.StatusBadRequest}
 				}
 			}
-			///Get all the hosts from host_statuses which are updated recently and status="CONNECTED"
+			// Get all the hosts from host_statuses which are updated recently and status="CONNECTED"
 			m, _ := time.ParseDuration(numberOfMinutes + "m")
 			updatedTime := time.Now().Add(time.Duration((-m)))
 
@@ -253,11 +252,11 @@ func getPlatformData(db repository.SHVSDatabase) errorHandlerFunc {
 				log.WithError(err).WithField("numberOfMinutes", updatedTime).Info("getPlatformData: failed to retrieve updated hosts")
 				return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
 			}
-			for _, platformDataForOneHost := range platformData {
-				hostStatus := types.HostStatus{HostId: platformDataForOneHost.HostId}
-				nonExpiredHosts, err := db.HostStatusRepository().RetrieveNonExpiredHost(hostStatus)
+			for _, platformDataForOneHost := range *platformData {
+				hostStatus := types.HostStatus{HostID: platformDataForOneHost.HostID}
+				nonExpiredHosts, err := db.HostStatusRepository().RetrieveNonExpiredHost(&hostStatus)
 				if err != nil {
-					log.WithError(err).WithField("numberOfMinutes", platformDataForOneHost.HostId).Info("getPlatformData: failed to retrieve host status")
+					log.WithError(err).WithField("numberOfMinutes", platformDataForOneHost.HostID).Info("getPlatformData: failed to retrieve host status")
 					continue
 				}
 				expiryTimeInString := (nonExpiredHosts.ExpiryTime).Format(time.RFC3339)
@@ -277,7 +276,7 @@ func getPlatformData(db repository.SHVSDatabase) errorHandlerFunc {
 			}
 		}
 		log.Debug("platformData: ", platformData)
-		if len(platformData) == 0 {
+		if len(*platformData) == 0 {
 			log.Info("getPlatformDataCB: no platform data has been updated")
 		}
 
@@ -307,34 +306,34 @@ func deleteHost(db repository.SHVSDatabase) errorHandlerFunc {
 		}
 
 		id := mux.Vars(r)["id"]
-		validation_err := validation.ValidateUUIDv4(id)
-		if validation_err != nil {
-			slog.Errorf("resource/sgx_host_ops: deleteHost() Input validation failed for host Id")
-			return &resourceError{Message: validation_err.Error(), StatusCode: http.StatusBadRequest}
+		validationErr := validation.ValidateUUIDv4(id)
+		if validationErr != nil {
+			slog.Errorf("resource/sgx_host_ops: deleteHost() Input validation failed for host ID")
+			return &resourceError{Message: validationErr.Error(), StatusCode: http.StatusBadRequest}
 		}
 
-		ext_host, err := db.HostRepository().Retrieve(types.Host{Id: id})
-		if ext_host == nil || err != nil {
+		extHost, err := db.HostRepository().Retrieve(&types.Host{ID: id})
+		if extHost == nil || err != nil {
 			log.WithError(err).WithField("id", id).Info("deleteHost: attempt to delete invalid host")
 			w.WriteHeader(http.StatusNoContent)
 			return nil
 		}
 
 		host := types.Host{
-			Id:           ext_host.Id,
-			Name:         ext_host.Name,
-			Description:  ext_host.Description,
-			HardwareUUID: ext_host.HardwareUUID,
-			CreatedTime:  ext_host.CreatedTime,
+			ID:           extHost.ID,
+			Name:         extHost.Name,
+			Description:  extHost.Description,
+			HardwareUUID: extHost.HardwareUUID,
+			CreatedTime:  extHost.CreatedTime,
 			UpdatedTime:  time.Now(),
 			Deleted:      true,
 		}
-		err = db.HostRepository().Update(host)
+		err = db.HostRepository().Update(&host)
 		if err != nil {
 			return errors.New("deleteHost: Error while Updating Host Information: " + err.Error())
 		}
-		slog.WithField("user", ext_host).Info("User deleted by:", r.RemoteAddr)
-		err = UpdateHostStatus(ext_host.Id, db, constants.HostStatusRemoved)
+		slog.WithField("user", extHost).Info("User deleted by:", r.RemoteAddr)
+		err = UpdateHostStatus(extHost.ID, db, constants.HostStatusRemoved)
 		if err != nil {
 			return errors.New("deleteHost: Error while Updating Host Status Information: " + err.Error())
 		}
@@ -348,7 +347,7 @@ func updateSGXHostInfo(db repository.SHVSDatabase, existingHostData *types.Host,
 	defer log.Trace("resource/sgx_host_ops: updateSGXHostInfo() Leaving")
 
 	host := types.Host{
-		Id:           existingHostData.Id,
+		ID:           existingHostData.ID,
 		Name:         hostInfo.HostName,
 		Description:  hostInfo.Description,
 		HardwareUUID: hostInfo.UUID,
@@ -357,12 +356,12 @@ func updateSGXHostInfo(db repository.SHVSDatabase, existingHostData *types.Host,
 
 		Deleted: false,
 	}
-	err := db.HostRepository().Update(host)
+	err := db.HostRepository().Update(&host)
 	if err != nil {
 		return errors.New("updateSGXHostInfo: Error while Updating Host Information: " + err.Error())
 	}
 
-	err = UpdateHostStatus(existingHostData.Id, db, constants.HostStatusConnected)
+	err = UpdateHostStatus(existingHostData.ID, db, constants.HostStatusConnected)
 	if err != nil {
 		log.WithError(err).Info("updateSGXHostInfo failed")
 		return errors.New("updateSGXHostInfo: Error while Updating Host Status Information: " + err.Error())
@@ -374,16 +373,16 @@ func createSGXHostInfo(db repository.SHVSDatabase, hostInfo RegisterHostInfo) (s
 	log.Trace("resource/sgx_host_ops: createSGXHostInfo() Entering")
 	defer log.Trace("resource/sgx_host_ops: createSGXHostInfo() Leaving")
 
-	hostId := uuid.New().String()
+	hostID := uuid.New().String()
 	host := types.Host{
-		Id:           hostId,
+		ID:           hostID,
 		Name:         hostInfo.HostName,
 		Description:  hostInfo.Description,
 		HardwareUUID: hostInfo.UUID,
 		CreatedTime:  time.Now(),
 		UpdatedTime:  time.Now(),
 	}
-	_, err := db.HostRepository().Create(host)
+	_, err := db.HostRepository().Create(&host)
 	if err != nil {
 		return "", errors.New("createSGXHostInfo: Error while caching Host Information: " + err.Error())
 	}
@@ -397,18 +396,18 @@ func createSGXHostInfo(db repository.SHVSDatabase, hostInfo RegisterHostInfo) (s
 	expiryTimeDuration, _ := time.ParseDuration(strconv.Itoa(expiryTimeInt) + "m")
 
 	hostStatus := types.HostStatus{
-		Id:          uuid.New().String(),
-		HostId:      hostId,
+		ID:          uuid.New().String(),
+		HostID:      hostID,
 		Status:      constants.HostStatusConnected,
 		CreatedTime: time.Now(),
 		UpdatedTime: time.Now(),
 		ExpiryTime:  time.Now().Add(time.Duration((expiryTimeDuration))),
 	}
-	_, err = db.HostStatusRepository().Create(hostStatus)
+	_, err = db.HostStatusRepository().Create(&hostStatus)
 	if err != nil {
 		return "", errors.New("createSGXHostInfo: Error while caching Host Status Information: " + err.Error())
 	}
-	return hostId, nil
+	return hostID, nil
 }
 
 func sendHostRegisterResponse(w http.ResponseWriter, res RegisterResponse) error {
@@ -416,7 +415,7 @@ func sendHostRegisterResponse(w http.ResponseWriter, res RegisterResponse) error
 	defer log.Trace("resource/sgx_host_ops: sendHostRegisterResponse() Leaving")
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(res.HttpStatus)
+	w.WriteHeader(res.HTTPStatus)
 
 	js, err := json.Marshal(res.Response)
 	if err != nil {
@@ -443,8 +442,8 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 		var data SGXHostInfo
 		if r.ContentLength == 0 {
 			slog.Error("resource/sgx_host_ops: registerHost() The request body was not provided")
-			res = RegisterResponse{HttpStatus: http.StatusBadRequest,
-				Response: ResponseJson{Status: "Failed",
+			res = RegisterResponse{HTTPStatus: http.StatusBadRequest,
+				Response: ResponseJSON{Status: "Failed",
 					Message: "registerHost: No request data"}}
 			return sendHostRegisterResponse(w, res)
 		}
@@ -454,8 +453,8 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 		err = dec.Decode(&data)
 		if err != nil {
 			slog.WithError(err).Errorf("resource/sgx_host_ops: registerHost() %s :  Failed to decode request body", commLogMsg.InvalidInputBadEncoding)
-			res = RegisterResponse{HttpStatus: http.StatusBadRequest,
-				Response: ResponseJson{Status: "Failed",
+			res = RegisterResponse{HTTPStatus: http.StatusBadRequest,
+				Response: ResponseJSON{Status: "Failed",
 					Message: "registerHost: Invalid Json Post Data"}}
 			return sendHostRegisterResponse(w, res)
 		}
@@ -466,8 +465,8 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 			!validateInputString(constants.UUID, data.UUID) ||
 			!validateInputString(constants.Description, data.Description) {
 			slog.Error("resource/sgx_host_ops: registerHost() Input validation failed")
-			res = RegisterResponse{HttpStatus: http.StatusBadRequest,
-				Response: ResponseJson{Status: "Failed",
+			res = RegisterResponse{HTTPStatus: http.StatusBadRequest,
+				Response: ResponseJSON{Status: "Failed",
 					Message: "registerHost: Invalid query Param Data"}}
 			return sendHostRegisterResponse(w, res)
 		}
@@ -476,75 +475,68 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 			HardwareUUID: data.UUID,
 		}
 
-		var hostInfo RegisterHostInfo
-		hostInfo = RegisterHostInfo{
+		hostInfo := RegisterHostInfo{
 			Description: data.Description,
 			HostName:    data.HostName,
 			UUID:        data.UUID,
 		}
 
-		existingHostData, err := db.HostRepository().Retrieve(*host)
+		existingHostData, _ := db.HostRepository().Retrieve(host)
 		if existingHostData != nil {
 			err = updateSGXHostInfo(db, existingHostData, hostInfo)
 			if err != nil {
-				res = RegisterResponse{HttpStatus: http.StatusInternalServerError,
-					Response: ResponseJson{Status: "Failed",
+				res = RegisterResponse{HTTPStatus: http.StatusInternalServerError,
+					Response: ResponseJSON{Status: "Failed",
 						Message: "registerHost: " + err.Error()}}
 				return sendHostRegisterResponse(w, res)
 			}
-			err = pushSGXEnablementInfoToDB(existingHostData.Id, db, data)
+			err = pushSGXEnablementInfoToDB(existingHostData.ID, db, &data)
 			if err != nil {
 				errors.New("resource/sgx_host_ops/registerHost : pushSGXEnablementInfoToDB failed ")
 			}
-			res = RegisterResponse{HttpStatus: http.StatusOK,
-				Response: ResponseJson{Status: "Success",
-					Id:      existingHostData.Id,
+			res = RegisterResponse{HTTPStatus: http.StatusOK,
+				Response: ResponseJSON{Status: "Success",
+					ID:      existingHostData.ID,
 					Message: "SGX Host Data Updated Successfully"}}
 			return sendHostRegisterResponse(w, res)
 
-		} else if existingHostData == nil {
-			hostId, err := createSGXHostInfo(db, hostInfo)
+		} else {
+			hostID, err := createSGXHostInfo(db, hostInfo)
 			if err != nil {
-				res = RegisterResponse{HttpStatus: http.StatusInternalServerError,
-					Response: ResponseJson{Status: "Failed",
+				res = RegisterResponse{HTTPStatus: http.StatusInternalServerError,
+					Response: ResponseJSON{Status: "Failed",
 						Message: "registerHost: " + err.Error()}}
 				return sendHostRegisterResponse(w, res)
 			}
-			err = pushSGXEnablementInfoToDB(hostId, db, data)
+			err = pushSGXEnablementInfoToDB(hostID, db, &data)
 			if err != nil {
 				errors.New("resource/sgx_host_ops/registerHost : pushSGXEnablementInfoToDB failed ")
 			}
-			res = RegisterResponse{HttpStatus: http.StatusCreated,
-				Response: ResponseJson{Status: "Success",
-					Id:      hostId,
+			res = RegisterResponse{HTTPStatus: http.StatusCreated,
+				Response: ResponseJSON{Status: "Success",
+					ID:      hostID,
 					Message: "SGX Host Data Created Successfully"}}
-			return sendHostRegisterResponse(w, res)
-		} else {
-
-			res = RegisterResponse{HttpStatus: http.StatusInternalServerError,
-				Response: ResponseJson{Status: "Failed",
-					Message: "Invalid data"}}
 			return sendHostRegisterResponse(w, res)
 		}
 	}
 }
 
-func pushSGXEnablementInfoToDB(hostId string, db repository.SHVSDatabase, hostInfo SGXHostInfo) error {
+func pushSGXEnablementInfoToDB(hostID string, db repository.SHVSDatabase, hostInfo *SGXHostInfo) error {
 	log.Trace("resource/sgx_atte_report_ops: pushSGXEnablementInfo() Entering")
 	defer log.Trace("resource/sgx_atte_report_ops: pushSGXEnablementInfo() Leaving")
 
 	hostData := &types.HostSgxData{
-		HostId: hostId,
+		HostID: hostID,
 	}
 
-	hostSGXData, err := db.HostSgxDataRepository().Retrieve(*hostData)
+	hostSGXData, err := db.HostSgxDataRepository().Retrieve(hostData)
 
 	if hostSGXData == nil || err != nil {
 		log.Debug("resource/sgx_atte_report_ops: No host record found will create new one")
 
 		sgxData := types.HostSgxData{
-			Id:           uuid.New().String(),
-			HostId:       hostId,
+			ID:           uuid.New().String(),
+			HostID:       hostID,
 			SgxSupported: hostInfo.SgxSupported,
 			SgxEnabled:   hostInfo.SgxEnabled,
 			FlcEnabled:   hostInfo.FlcEnabled,
@@ -553,12 +545,12 @@ func pushSGXEnablementInfoToDB(hostId string, db repository.SHVSDatabase, hostIn
 			TcbUptodate:  hostInfo.TcbUptodate,
 			CreatedTime:  time.Now(),
 		}
-		_, err = db.HostSgxDataRepository().Create(sgxData)
+		_, err = db.HostSgxDataRepository().Create(&sgxData)
 	} else {
 		log.Debug("resource/sgx_atte_report_ops: Host record found will update existing one")
 		sgxData := types.HostSgxData{
-			Id:           hostSGXData.Id,
-			HostId:       hostId,
+			ID:           hostSGXData.ID,
+			HostID:       hostID,
 			SgxSupported: hostInfo.SgxSupported,
 			SgxEnabled:   hostInfo.SgxEnabled,
 			FlcEnabled:   hostInfo.FlcEnabled,
@@ -567,7 +559,7 @@ func pushSGXEnablementInfoToDB(hostId string, db repository.SHVSDatabase, hostIn
 			TcbUptodate:  hostInfo.TcbUptodate,
 			CreatedTime:  time.Now(),
 		}
-		err = db.HostSgxDataRepository().Update(sgxData)
+		err = db.HostSgxDataRepository().Update(&sgxData)
 	}
 	if err != nil {
 		return errors.Wrap(err, "resource/sgx_atte_report_ops: Error in creating host sgx data")

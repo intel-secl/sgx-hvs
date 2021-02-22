@@ -5,7 +5,6 @@
 package scheduler
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -40,7 +39,7 @@ type Job struct {
 }
 
 type Worker struct {
-	wId     int
+	wID     int
 	wStatus int
 	wMutex  *sync.Mutex
 	wJob    *Job
@@ -167,7 +166,7 @@ func InitWorkerQueue() *WorkerQueue {
 
 		for i := 0; i < wq.wCount; i++ {
 			worker := &wq.workers[i]
-			worker.wId = i + 1
+			worker.wID = i + 1
 			worker.wMutex = new(sync.Mutex)
 			worker.UpdateWorkerStatus(WorkerStatusInit)
 		}
@@ -180,28 +179,6 @@ func InitWorkerQueue() *WorkerQueue {
 		return nil
 	}
 	return wq
-}
-
-func (wq *WorkerQueue) AddJobAndSendSignalToWorkQueue(job *Job) (error, int) {
-	if job == nil {
-		return errors.New("AddJobInWorkQueue: Job ptr is null"), JobStatusError
-	}
-
-	wq.wQCond.L.Lock()
-	job.UpdateJobStatus(JobStatusQueued)
-	wq.wList.AddElementToList(job)
-	wq.wQCond.Signal()
-	wq.wQCond.L.Unlock()
-	return nil, JobStatusQueued
-}
-
-func (wq *WorkerQueue) AddJobInWorkQueue(job *Job) (error, int) {
-
-	wq.wQCond.L.Lock()
-	job.UpdateJobStatus(JobStatusQueued)
-	wq.wList.AddElementToList(job)
-	wq.wQCond.L.Unlock()
-	return nil, JobStatusQueued
 }
 
 func (wq *WorkerQueue) SendSignalToWorkQueuew() {
@@ -243,7 +220,6 @@ func StartWorkqueueScheduler(timerSec int) error {
 			case <-stop:
 				fmt.Fprintln(os.Stderr, "StartWorkqueueScheduler: Got Signal for exit and exiting.... Refresh Timer")
 				wq.ShutdownSignalToWorkQueue()
-				break
 			case t := <-ticker.C:
 				log.Debug("StartWorkqueueScheduler: Timer started", t)
 				wq.SendSignalToWorkQueuew()

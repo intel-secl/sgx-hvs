@@ -23,7 +23,6 @@ type Server struct {
 }
 
 var log = commLog.GetDefaultLogger()
-var seclog = commLog.GetSecurityLogger()
 
 func (s Server) Run(c setup.Context) error {
 	log.Trace("tasks/server:Run() Entering")
@@ -32,7 +31,7 @@ func (s Server) Run(c setup.Context) error {
 	fmt.Fprintln(s.ConsoleWriter, "Running server setup...")
 	defaultPort, err := c.GetenvInt("SHVS_PORT", "SGX Host Verification secure port")
 	if err != nil {
-		defaultPort = constants.DefaultHttpsPort
+		defaultPort = constants.DefaultHTTPSPort
 	}
 	fs := flag.NewFlagSet("server", flag.ContinueOnError)
 
@@ -90,7 +89,7 @@ func (s Server) Run(c setup.Context) error {
 
 	s.Config.LogEnableStdout = false
 	logEnableStdout, err := c.GetenvString("SHVS_ENABLE_CONSOLE_LOG", "SGX Host Verification Service Enable standard output")
-	if err != nil || len(logEnableStdout) == 0 {
+	if err != nil || logEnableStdout == "" {
 		s.Config.LogEnableStdout = false
 	} else {
 		s.Config.LogEnableStdout = true

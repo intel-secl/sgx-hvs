@@ -29,13 +29,11 @@ func StartAutoRefreshSchedular(db repository.SHVSDatabase, timer int) {
 			select {
 			case <-stop:
 				fmt.Fprintln(os.Stderr, "StartAutoRefreshSchedular: Got Signal for exit and exiting.... Refresh Timer")
-				break
 			case t := <-ticker.C:
 				log.Debug("StartAutoRefreshSchedular: Timer started", t)
 				_, err := shvsAutoRefreshSchedulerJobCB(db)
 				if err != nil {
 					log.WithError(err).Info("StartAutoRefreshSchedular: HostQueueScheduler got error")
-					break
 				}
 			}
 		}
@@ -58,12 +56,12 @@ func shvsAutoRefreshSchedulerJobCB(db repository.SHVSDatabase) (bool, error) {
 	}
 	log.Debug("shvsAutoRefreshSchedulerJobCB hosts found")
 
-	///For each expired hosts change status in host_statuses = IN-ACTIVE
+	// For each expired hosts change status in host_statuses = IN-ACTIVE
 	for i := 0; i < len(expiredHosts); i++ {
 		hostData := expiredHosts[i]
-		hostId := hostData.HostId
-		log.Debug("shvsAutoRefreshSchedulerJobCB hostId: is expired.", hostId)
-		err = resource.UpdateHostStatus(hostId, db, constants.HostStatusInactive)
+		hostID := hostData.HostID
+		log.Debug("shvsAutoRefreshSchedulerJobCB hostID: is expired.", hostID)
+		err = resource.UpdateHostStatus(hostID, db, constants.HostStatusInactive)
 		if err != nil {
 			return false, errors.New("GetSGXDataFromAgentCB: Error while Updating Host Status Information: " + err.Error())
 		}

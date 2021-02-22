@@ -8,7 +8,6 @@ ifeq ($(PROXY_EXISTS),1)
 	DOCKER_PROXY_FLAGS = --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy}
 endif
 
-
 .PHONY: docker shvs installer test clean
 
 all: clean installer
@@ -17,9 +16,9 @@ shvs:
 	env GOOS=linux GOSUMDB=off GOPROXY=direct go build -ldflags "-X intel/isecl/shvs/v3/version.BuildDate=$(BUILDDATE) -X intel/isecl/shvs/v3/version.Version=$(VERSION) -X intel/isecl/shvs/v3/version.GitHash=$(GITCOMMIT)" -o out/shvs
 
 swagger-get:
-	wget https://github.com/go-swagger/go-swagger/releases/download/v0.25.0/swagger_linux_amd64 -O /usr/local/bin/swagger
+	wget https://github.com/go-swagger/go-swagger/releases/download/v0.26.1/swagger_linux_amd64 -O /usr/local/bin/swagger
 	chmod +x /usr/local/bin/swagger
-	wget https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.23/swagger-codegen-cli-3.0.23.jar -O /usr/local/bin/swagger-codegen-cli.jar
+	wget https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.24/swagger-codegen-cli-3.0.24.jar -O /usr/local/bin/swagger-codegen-cli.jar
 
 swagger-doc:
 	mkdir -p out/swagger
@@ -51,7 +50,6 @@ endif
 
 oci-archive: docker
 	skopeo copy docker-daemon:isecl/shvs:$(VERSION) oci-archive:out/shvs-$(VERSION)-$(GITCOMMIT).tar
-
 
 clean:
 	rm -f cover.*

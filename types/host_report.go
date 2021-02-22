@@ -8,10 +8,10 @@ import (
 	"time"
 )
 
-// Report struct is the database schema of a Report table
+// HostReport struct is the database schema of a Report table
 type HostReport struct {
-	Id             string    `json:"-" gorm:"type:uuid;primary_key"`
-	HostId         string    `json:"-" gorm:"type:uuid;not null"`
+	ID             string    `json:"-" gorm:"type:uuid;primary_key"`
+	HostID         string    `json:"-" gorm:"type:uuid;not null"`
 	TrustReport    string    `json:"-" gorm:"not null"`
 	CreatedTime    time.Time `json:"-"`
 	ExpirationTime time.Time `json:"-"`
@@ -19,9 +19,9 @@ type HostReport struct {
 }
 
 type SgxHostReportInputData struct {
-	Id             string
-	HostId         string
-	HostHardwareId string
+	ID             string
+	HostID         string
+	HostHardwareID string
 	HostName       string
 	Status         string
 	LatestperHost  bool

@@ -1,14 +1,13 @@
 SGX HVS
 =======
 
-SGX Agent pushes the platform enablement info to `SGX-Host Verification Service (SHVS)` at regular interval.
+SGX Host Verification Service aggregates the platform enablement info from multiple SGX Agent instances.
 
 Key features
 ------------
 
 -   If SGX Host Verification Service API URL is specified in SGX Agent env file, then SGX Agent will push the platform enablement info and TCB status to SHVS at regular interval, else, Agent pushes the platform enablement info and TCB status to SHVS once and terminates.  
--   SHVS saves platform specific information in its own database which
-    will be pulled by integration hub
+-   SHVS saves platform specific information in its own database which will be pulled by integration hub later
 
 System Requirements
 -------------------
@@ -62,7 +61,7 @@ Build SGX-Host Verification Service
 ``` {.shell}
 git clone https://github.com/intel-secl/sgx-hvs.git
 cd sgx-hvs
-git checkout v3.3.1
+git checkout v3.4.0
 make all
 ```
 
@@ -72,8 +71,6 @@ make all
     -   shvs start
 -   Stop service
     -   shvs stop
--   Restart service
-    -   shvs restart
 -   Status of service
     -   shvs status
 
@@ -98,7 +95,7 @@ Authentication and Authorization Service
   gorm       github.com/jinzhu/gorm                       v1.9.10
   logrus     github.com/sirupsen/logrus                   v1.4.0
   testify    github.com/stretchr/testify                  v1.3.0
-  yaml.v2    gopkg.in/yaml.v2                             v2.2.2
+  yaml.v2    gopkg.in/yaml.v2                             v2.4.0
   client     github.com/intel-secl/clients                v3.3.1
   common     github.com/intel-secl/common                 v3.3.1
 

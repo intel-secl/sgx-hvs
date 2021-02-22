@@ -10,8 +10,8 @@ import (
 
 // HostStatus struct is the database schema of a HostStatus table
 type HostStatus struct {
-	Id          string    `json:"-"  gorm:"type:uuid;primary_key"`
-	HostId      string    `json:"-" gorm:"type:uuid;not null"`
+	ID          string    `json:"-" gorm:"type:uuid;primary_key"`
+	HostID      string    `json:"-" gorm:"type:uuid;not null"`
 	Status      string    `json:"-"`
 	HostReport  string    `json:"-" gorm:"not null"`
 	CreatedTime time.Time `json:"-"`

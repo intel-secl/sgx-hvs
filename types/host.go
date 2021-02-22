@@ -10,7 +10,7 @@ import (
 
 // Host struct is the database schema of a Host table
 type Host struct {
-	Id           string    `json:"host_ID" gorm:"type:uuid;unique;primary_key;"`
+	ID           string    `json:"host_ID" gorm:"type:uuid;unique;primary_key;"`
 	Name         string    `json:"host_name" gorm:"not null;unique"`
 	Description  string    `json:"-"`
 	HardwareUUID string    `json:"uuid" gorm:"type:uuid"`

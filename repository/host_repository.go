@@ -7,10 +7,10 @@ package repository
 import "intel/isecl/shvs/v3/types"
 
 type HostRepository interface {
-	Create(types.Host) (*types.Host, error)
-	Retrieve(types.Host) (*types.Host, error)
-	RetrieveAll(user types.Host) (types.Hosts, error)
-	GetHostQuery(user *types.Host) (types.Hosts, error)
-	Update(types.Host) error
-	Delete(types.Host) error
+	Create(*types.Host) (*types.Host, error)
+	Retrieve(*types.Host) (*types.Host, error)
+	RetrieveAll(*types.Host) (*types.Hosts, error)
+	GetHostQuery(*types.Host) (*types.Hosts, error)
+	Update(*types.Host) error
+	Delete(*types.Host) error
 }

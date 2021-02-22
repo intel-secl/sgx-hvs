@@ -9,10 +9,10 @@ import (
 )
 
 type HostReportRepository interface {
-	Create(types.HostReport) (*types.HostReport, error)
-	Retrieve(types.HostReport) (*types.HostReport, error)
-	RetrieveAll(user types.HostReport) (types.HostReports, error)
-	Update(types.HostReport) error
-	Delete(types.HostReport) error
-	GetHostReportQuery(types.SgxHostReportInputData) (types.HostReports, error)
+	Create(*types.HostReport) (*types.HostReport, error)
+	Retrieve(*types.HostReport) (*types.HostReport, error)
+	RetrieveAll(*types.HostReport) (*types.HostReports, error)
+	Update(*types.HostReport) error
+	Delete(*types.HostReport) error
+	GetHostReportQuery(*types.SgxHostReportInputData) (*types.HostReports, error)
 }
