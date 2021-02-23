@@ -16,7 +16,7 @@ import (
 
 func TestServerSetup(t *testing.T) {
 	c := config.Configuration{}
-	s := Server{
+	s := Update_Service_Config{
 		Flags:         []string{"-port=1337"},
 		Config:        &c,
 		ConsoleWriter: os.Stdout,
@@ -30,7 +30,7 @@ func TestServerSetup(t *testing.T) {
 func TestServerSetupEnv(t *testing.T) {
 	os.Setenv("SHVS_PORT", "1337")
 	c := config.Configuration{}
-	s := Server{
+	s := Update_Service_Config{
 		Flags:         nil,
 		Config:        &c,
 		ConsoleWriter: os.Stdout,

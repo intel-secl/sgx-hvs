@@ -7,17 +7,17 @@ package config
 import (
 	"errors"
 	errorLog "github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
+	"github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 	commLog "intel/isecl/lib/common/v3/log"
 	"intel/isecl/lib/common/v3/setup"
 	"intel/isecl/shvs/v3/constants"
 	"os"
 	"path"
-	"strings"
 	"time"
 )
 
+var log = commLog.GetDefaultLogger()
 var slog = commLog.GetSecurityLogger()
 
 // Configuration is the global configuration struct that is marshalled/unmarshaled to a persisted yaml file
@@ -36,7 +36,7 @@ type Configuration struct {
 	}
 	LogMaxLength    int
 	LogEnableStdout bool
-	LogLevel        log.Level
+	LogLevel        logrus.Level
 
 	SHVS struct {
 		User     string
@@ -132,37 +132,6 @@ func (conf *Configuration) SaveConfiguration(c setup.Context) error {
 		return errorLog.Wrap(errors.New("CMS_BASE_URL is not defined in environment"), "SaveConfiguration() ENV variable not found")
 	}
 
-	aasAPIURL, err := c.GetenvString("AAS_API_URL", "AAS Base URL")
-	if err == nil && aasAPIURL != "" {
-		conf.AuthServiceURL = aasAPIURL
-	} else if conf.AuthServiceURL == "" {
-		commLog.GetDefaultLogger().Error("AAS_API_URL is not defined in environment")
-		return errorLog.Wrap(errors.New("AAS_API_URL is not defined in environment"), "SaveConfiguration() ENV variable not found")
-	}
-
-	scsBaseURL, err := c.GetenvString("SCS_BASE_URL", "SCS Base URL")
-	if err == nil && scsBaseURL != "" {
-		conf.ScsBaseURL = scsBaseURL
-	} else if conf.ScsBaseURL == "" {
-		log.Error("SCS_BASE_URL is not defined in environment")
-	}
-
-	shvsAASUser, err := c.GetenvString("SHVS_ADMIN_USERNAME", "SHVS Service Username")
-	if err == nil && shvsAASUser != "" {
-		conf.SHVS.User = shvsAASUser
-	} else if conf.SHVS.User == "" {
-		commLog.GetDefaultLogger().Error("SHVS_ADMIN_USERNAME is not defined in environment or configuration file")
-		return errorLog.Wrap(err, "SHVS_ADMIN_USERNAME is not defined in environment or configuration file")
-	}
-
-	shvsAASPassword, err := c.GetenvSecret("SHVS_ADMIN_PASSWORD", "SHVS Service Password")
-	if err == nil && shvsAASPassword != "" {
-		conf.SHVS.Password = shvsAASPassword
-	} else if strings.TrimSpace(conf.SHVS.Password) == "" {
-		commLog.GetDefaultLogger().Error("SHVS_ADMIN_PASSWORD is not defined in environment or configuration file")
-		return errorLog.Wrap(err, "SHVS_ADMIN_PASSWORD is not defined in environment or configuration file")
-	}
-
 	tlsCertCN, err := c.GetenvString("SHVS_TLS_CERT_CN", "SHVS TLS Certificate Common Name")
 	if err == nil && tlsCertCN != "" {
 		conf.Subject.TLSCertCommonName = tlsCertCN
@@ -187,12 +156,12 @@ func (conf *Configuration) SaveConfiguration(c setup.Context) error {
 	logLevel, err := c.GetenvString(constants.SHVSLogLevel, "SHVS Log Level")
 	if err != nil {
 		slog.Infof("config/config:SaveConfiguration() %s not defined, using default log level: Info", constants.SHVSLogLevel)
-		conf.LogLevel = log.InfoLevel
+		conf.LogLevel = logrus.InfoLevel
 	} else {
-		llp, err := log.ParseLevel(logLevel)
+		llp, err := logrus.ParseLevel(logLevel)
 		if err != nil {
 			slog.Info("config/config:SaveConfiguration() Invalid log level specified in env, using default log level: Info")
-			conf.LogLevel = log.InfoLevel
+			conf.LogLevel = logrus.InfoLevel
 		} else {
 			conf.LogLevel = llp
 			slog.Infof("config/config:SaveConfiguration() Log level set %s\n", logLevel)
@@ -204,27 +173,6 @@ func (conf *Configuration) SaveConfiguration(c setup.Context) error {
 		conf.CertSANList = sanList
 	} else if conf.CertSANList == "" {
 		conf.CertSANList = constants.DefaultSHVSTlsSan
-	}
-
-	schedulerTimeout, err := c.GetenvInt("SHVS_SCHEDULER_TIMER", "SHVS Scheduler Timeout Seconds")
-	if err == nil && schedulerTimeout != 0 {
-		conf.SchedulerTimer = schedulerTimeout
-	} else if conf.SchedulerTimer == 0 {
-		conf.SchedulerTimer = constants.DefaultSHVSSchedulerTimer
-	}
-
-	autoRefreshTimeout, err := c.GetenvInt("SHVS_AUTO_REFRESH_TIMER", "SHVS autoRefresh Timeout Seconds")
-	if err == nil && autoRefreshTimeout != 0 {
-		conf.SHVSRefreshTimer = autoRefreshTimeout
-	} else if conf.SHVSRefreshTimer == 0 {
-		conf.SHVSRefreshTimer = constants.DefaultSHVSAutoRefreshTimer
-	}
-
-	hostPlatformInfoexpiryTime, err := c.GetenvInt("SHVS_HOST_PLATFORM_EXPIRY_TIME", "SHVS autoRefresh Timeout Seconds")
-	if err == nil && hostPlatformInfoexpiryTime != 0 {
-		conf.SHVSHostInfoExpiryTime = hostPlatformInfoexpiryTime
-	} else if conf.SHVSHostInfoExpiryTime == 0 {
-		conf.SHVSHostInfoExpiryTime = constants.DefaultSHVSHostInfoExpiryTime
 	}
 
 	return conf.Save()
@@ -248,7 +196,7 @@ func Load(filePath string) *Configuration {
 			log.WithError(err).Error("Failed to decode config.yml contents")
 		}
 	} else {
-		c.LogLevel = log.InfoLevel
+		c.LogLevel = logrus.InfoLevel
 	}
 	c.configFile = filePath
 	return &c

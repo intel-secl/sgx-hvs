@@ -8,15 +8,17 @@ import (
 	"flag"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	commLog "intel/isecl/lib/common/v3/log"
 	"intel/isecl/lib/common/v3/setup"
 	"intel/isecl/shvs/v3/config"
 	"intel/isecl/shvs/v3/constants"
 	"io"
+	"strings"
 	"time"
 )
 
-type Server struct {
+type Update_Service_Config struct {
 	Flags         []string
 	Config        *config.Configuration
 	ConsoleWriter io.Writer
@@ -24,7 +26,7 @@ type Server struct {
 
 var log = commLog.GetDefaultLogger()
 
-func (s Server) Run(c setup.Context) error {
+func (s Update_Service_Config) Run(c setup.Context) error {
 	log.Trace("tasks/server:Run() Entering")
 	defer log.Trace("tasks/server:Run() Leaving")
 
@@ -80,6 +82,73 @@ func (s Server) Run(c setup.Context) error {
 		s.Config.MaxHeaderBytes = maxHeaderBytes
 	}
 
+	aasApiUrl, err := c.GetenvString("AAS_API_URL", "AAS Base URL")
+	if err == nil && aasApiUrl != "" {
+		s.Config.AuthServiceURL = aasApiUrl
+	} else if s.Config.AuthServiceURL == "" {
+		commLog.GetDefaultLogger().Error("AAS_API_URL is not defined in environment")
+		return errors.Wrap(errors.New("AAS_API_URL is not defined in environment"), "SaveConfiguration() ENV variable not found")
+	}
+
+	scsBaseUrl, err := c.GetenvString("SCS_BASE_URL", "SCS Base URL")
+	if err == nil && scsBaseUrl != "" {
+		s.Config.ScsBaseURL = scsBaseUrl
+	} else if s.Config.ScsBaseURL == "" {
+		log.Error("SCS_BASE_URL is not defined in environment")
+	}
+
+	shvsAASUser, err := c.GetenvString("SHVS_ADMIN_USERNAME", "SHVS Service Username")
+	if err == nil && shvsAASUser != "" {
+		s.Config.SHVS.User = shvsAASUser
+	} else if s.Config.SHVS.User == "" {
+		commLog.GetDefaultLogger().Error("SHVS_ADMIN_USERNAME is not defined in environment or configuration file")
+		return errors.Wrap(err, "SHVS_ADMIN_USERNAME is not defined in environment or configuration file")
+	}
+
+	shvsAASPassword, err := c.GetenvSecret("SHVS_ADMIN_PASSWORD", "SHVS Service Password")
+	if err == nil && shvsAASPassword != "" {
+		s.Config.SHVS.Password = shvsAASPassword
+	} else if strings.TrimSpace(s.Config.SHVS.Password) == "" {
+		commLog.GetDefaultLogger().Error("SHVS_ADMIN_PASSWORD is not defined in environment or configuration file")
+		return errors.Wrap(err, "SHVS_ADMIN_PASSWORD is not defined in environment or configuration file")
+	}
+
+	schedulerTimeout, err := c.GetenvInt("SHVS_SCHEDULER_TIMER", "SHVS Scheduler Timeout Seconds")
+	if err == nil && schedulerTimeout != 0 {
+		s.Config.SchedulerTimer = schedulerTimeout
+	} else if s.Config.SchedulerTimer == 0 {
+		s.Config.SchedulerTimer = constants.DefaultSHVSSchedulerTimer
+	}
+
+	autoRefreshTimeout, err := c.GetenvInt("SHVS_AUTO_REFRESH_TIMER", "SHVS autoRefresh Timeout Seconds")
+	if err == nil && autoRefreshTimeout != 0 {
+		s.Config.SHVSRefreshTimer = autoRefreshTimeout
+	} else if s.Config.SHVSRefreshTimer == 0 {
+		s.Config.SHVSRefreshTimer = constants.DefaultSHVSAutoRefreshTimer
+	}
+
+	hostPlatformInfoexpiryTime, err := c.GetenvInt("SHVS_HOST_PLATFORM_EXPIRY_TIME", "SHVS Host Platform Expiry Time in seconds")
+	if err == nil && hostPlatformInfoexpiryTime != 0 {
+		s.Config.SHVSHostInfoExpiryTime = hostPlatformInfoexpiryTime
+	} else if s.Config.SHVSHostInfoExpiryTime == 0 {
+		s.Config.SHVSHostInfoExpiryTime = constants.DefaultSHVSHostInfoExpiryTime
+	}
+
+	logLevel, err := c.GetenvString(constants.SHVSLogLevel, "SHVS Log Level")
+	if err != nil {
+		slog.Infof("config/config:SaveConfiguration() %s not defined, using default log level: Info", constants.SHVSLogLevel)
+		s.Config.LogLevel = logrus.InfoLevel
+	} else {
+		llp, err := logrus.ParseLevel(logLevel)
+		if err != nil {
+			slog.Info("config/config:SaveConfiguration() Invalid log level specified in env, using default log level: Info")
+			s.Config.LogLevel = logrus.InfoLevel
+		} else {
+			s.Config.LogLevel = llp
+			slog.Infof("config/config:SaveConfiguration() Log level set %s\n", logLevel)
+		}
+	}
+
 	logMaxLen, err := c.GetenvInt("SHVS_LOG_MAX_LENGTH", "SGX Host Verification Service Log maximum length")
 	if err != nil || logMaxLen < constants.DefaultLogEntryMaxLength {
 		s.Config.LogMaxLength = constants.DefaultLogEntryMaxLength
@@ -102,7 +171,7 @@ func (s Server) Run(c setup.Context) error {
 	return nil
 }
 
-func (s Server) Validate(c setup.Context) error {
+func (s Update_Service_Config) Validate(c setup.Context) error {
 	log.Trace("tasks/server:Validate() Entering")
 	defer log.Trace("tasks/server:Validate() Leaving")
 
