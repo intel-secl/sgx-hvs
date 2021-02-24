@@ -25,13 +25,22 @@ if [ ! -f $CONFIG_PATH/.setup_done ]; then
   fi
   touch $CONFIG_PATH/.setup_done
 fi
-if [ ! -z $SETUP_TASK ]; then
+
+if [ ! -z "$SETUP_TASK" ]; then
   IFS=',' read -ra ADDR <<< "$SETUP_TASK"
   for task in "${ADDR[@]}"; do
+    if [ "$task" == "update_service_config" ]; then
+        shvs setup $task
+        if [ $? -ne 0 ]; then
+          exit 1
+        fi
+        continue 1
+    fi
     shvs setup $task --force
     if [ $? -ne 0 ]; then
       exit 1
     fi
   done
 fi
+
 shvs run
