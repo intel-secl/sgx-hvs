@@ -43,7 +43,7 @@ func (r *PostgresHostRepository) Retrieve(h *types.Host, criteria *types.HostInf
 	sgx := types.SGX{}
 	meta := types.SGXMeta{}
 
-	if criteria != nil {
+	if criteria != nil && (criteria.GetPlatformData || criteria.GetStatus){
 		row = buildHostInfoFetchQuery(tx, criteria).Where(&h).Row()
 		if criteria.GetPlatformData && criteria.GetStatus {
 			err = row.Scan(&host.ID, &host.Name, &host.HardwareUUID, &sgx.Supported,
@@ -55,8 +55,7 @@ func (r *PostgresHostRepository) Retrieve(h *types.Host, criteria *types.HostInf
 			err = row.Scan(&host.ID, &host.Name, &host.HardwareUUID, &host.Status)
 		}
 	} else {
-		row = tx.Select("hosts.id, hosts.name, hosts.hardware_uuid").Where(&h).Row()
-		err = row.Scan(&host.ID, &host.Name, &host.HardwareUUID)
+		err = tx.Select(hostsFields).Where(&h).Row().Scan(&host.ID, &host.Name, &host.HardwareUUID)
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "Retrieve: failed to Retrieve Host")
@@ -82,10 +81,10 @@ func (r *PostgresHostRepository) GetHostQuery(queryData *types.Host, criteria *t
 	if tx == nil {
 		return hrs, errors.New("Unexpected Error. Could not build a gorm query object in Hosts GetHostQuery function.")
 	}
-	if criteria != nil {
+	if criteria != nil && (criteria.GetPlatformData || criteria.GetStatus) {
 		tx = buildHostInfoFetchQuery(tx, criteria)
 	} else {
-		tx = tx.Select("hosts.id, hosts.name, hosts.hardware_uuid")
+		tx = tx.Select(hostsFields)
 	}
 
 	rows, err := tx.Rows()
@@ -99,7 +98,7 @@ func (r *PostgresHostRepository) GetHostQuery(queryData *types.Host, criteria *t
 		}
 	}()
 
-	if criteria != nil {
+	if criteria != nil && (criteria.GetPlatformData || criteria.GetStatus){
 		hrs, err = getAdditionalHostInfo(criteria, rows)
 	} else {
 		for rows.Next() {
@@ -116,6 +115,8 @@ func (r *PostgresHostRepository) GetHostQuery(queryData *types.Host, criteria *t
 }
 
 func buildHostInfoFetchQuery(tx *gorm.DB, criteria *types.HostInfoFetchCriteria) *gorm.DB {
+	log.Trace("repository/postgres/pg_host: buildHostInfoFetchQuery() Entering")
+	defer log.Trace("repository/postgres/pg_host: buildHostInfoFetchQuery() Leaving")
 
 	if criteria.GetPlatformData && criteria.GetStatus {
 		tx = tx.Select(hostsFields + ", " + sgxDataFields + ", host_statuses.status").
@@ -151,6 +152,8 @@ func getAdditionalHostInfo(criteria *types.HostInfoFetchCriteria, rows *sql.Rows
 				&sgx.Enabled, &meta.FlcEnabled, &meta.EpcSize, &meta.TcbUpToDate)
 		} else if criteria.GetStatus {
 			err = rows.Scan(&host.ID, &host.Name, &host.HardwareUUID, &host.Status)
+		} else {
+			err = rows.Scan(&host.ID, &host.Name, &host.HardwareUUID)
 		}
 		if err != nil {
 			return nil, errors.Wrap(err, "getAdditionalHostInfo: failed to scan row from db")
