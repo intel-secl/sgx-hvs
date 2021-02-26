@@ -96,8 +96,8 @@ Authentication and Authorization Service
   logrus     github.com/sirupsen/logrus                   v1.4.0
   testify    github.com/stretchr/testify                  v1.3.0
   yaml.v2    gopkg.in/yaml.v2                             v2.4.0
-  client     github.com/intel-secl/clients                v3.3.1
-  common     github.com/intel-secl/common                 v3.3.1
+  client     github.com/intel-secl/clients                v3.4.0
+  common     github.com/intel-secl/common                 v3.4.0
 
 ### Indirect Dependencies
 
