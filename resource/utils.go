@@ -5,6 +5,7 @@
 package resource
 
 import (
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"strconv"
 	"sync"
@@ -17,7 +18,7 @@ import (
 
 var statusUpdateLock *sync.Mutex
 
-func UpdateHostStatus(hostID string, db repository.SHVSDatabase, status string) error {
+func UpdateHostStatus(hostID uuid.UUID, db repository.SHVSDatabase, status string) error {
 	log.Trace("resource/utils: UpdateHostStatus() Entering")
 	defer log.Trace("resource/utils: UpdateHostStatus() Leaving")
 

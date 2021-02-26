@@ -5,18 +5,45 @@
 package types
 
 import (
+	"github.com/google/uuid"
 	"time"
 )
 
 // Host struct is the database schema of a Host table
 type Host struct {
-	ID           string    `json:"host_ID" gorm:"type:uuid;unique;primary_key;"`
+	ID           uuid.UUID `json:"host_ID" gorm:"type:uuid;unique;primary_key;"`
 	Name         string    `json:"host_name" gorm:"not null;unique"`
 	Description  string    `json:"-"`
-	HardwareUUID string    `json:"uuid" gorm:"type:uuid"`
+	HardwareUUID uuid.UUID `json:"uuid" gorm:"type:uuid"`
 	CreatedTime  time.Time `json:"-"`
 	UpdatedTime  time.Time `json:"-"`
 	Deleted      bool      `json:"-" gorm:"type:bool;not null;default:false"`
+}
+
+type HostStatusInfo struct {
+	Host
+	Status           *string           `json:"status,omitempty"`
+}
+
+type HostInfo struct {
+	HostStatusInfo
+	HardwareFeatures *HardwareFeatures `json:"hardware_features,omitempty"`
+}
+
+type HardwareFeatures struct {
+	SGX *SGX `json:"SGX,omitempty"`
+}
+
+type SGX struct {
+	Supported *bool    `json:"-"`
+	Enabled   *bool    `json:"enabled,omitempty"`
+	Meta      *SGXMeta `json:"meta,omitempty"`
+}
+
+type SGXMeta struct {
+	FlcEnabled  *bool   `json:"flc_enabled,omitempty"`
+	EpcSize     *string `json:"epc_size,omitempty"`
+	TcbUpToDate *bool   `json:"tcb_upToDate,omitempty"`
 }
 
 type Hosts []Host

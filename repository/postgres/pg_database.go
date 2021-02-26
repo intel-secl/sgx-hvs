@@ -29,7 +29,6 @@ func (pd *PostgresDatabase) Migrate() error {
 
 	pd.DB.AutoMigrate(types.Host{})
 	pd.DB.AutoMigrate(types.HostStatus{}).AddForeignKey("host_id", "hosts(id)", "RESTRICT", "RESTRICT")
-	pd.DB.AutoMigrate(types.HostReport{}).AddForeignKey("host_id", "hosts(id)", "RESTRICT", "RESTRICT")
 	pd.DB.AutoMigrate(types.HostSgxData{}).AddForeignKey("host_id", "hosts(id)", "RESTRICT", "RESTRICT")
 	return nil
 }
@@ -40,10 +39,6 @@ func (pd *PostgresDatabase) HostRepository() repository.HostRepository {
 
 func (pd *PostgresDatabase) HostStatusRepository() repository.HostStatusRepository {
 	return &PostgresHostStatusRepository{db: pd.DB}
-}
-
-func (pd *PostgresDatabase) HostReportRepository() repository.HostReportRepository {
-	return &PostgresHostReportRepository{db: pd.DB}
 }
 
 func (pd *PostgresDatabase) HostSgxDataRepository() repository.HostSgxDataRepository {

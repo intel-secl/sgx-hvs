@@ -7,6 +7,7 @@ package resource
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	commLogMsg "intel/isecl/lib/common/v3/log/message"
 	"intel/isecl/shvs/v3/constants"
 	"intel/isecl/shvs/v3/repository"
@@ -14,8 +15,8 @@ import (
 )
 
 type HostStatusResponse struct {
-	HostID string `json:"host_id"`
-	Status string `json:"host_status"`
+	HostID uuid.UUID `json:"host_id"`
+	Status string    `json:"host_status"`
 }
 
 func hostStateInformation(db repository.SHVSDatabase) errorHandlerFunc {

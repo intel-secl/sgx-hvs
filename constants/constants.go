@@ -57,4 +57,5 @@ const (
 	HostStatusInactive             = "IN-ACTIVE"
 	HostStatusConnected            = "CONNECTED"
 	HostStatusRemoved              = "REMOVED"
+	MaxQueryParamsLength           = 50
 )

@@ -6,7 +6,6 @@ CONFIG_PATH=/etc/shvs
 CERTS_DIR=${CONFIG_PATH}/certs
 TRUSTED_CERTS=${CERTS_DIR}/trustedca
 CERTDIR_TRUSTEDJWTCERTS=${CERTS_DIR}/trustedjwt
-DB_SCRIPT_PATH=/opt/shvs/dbscripts
 
 
 if [ ! -f $CONFIG_PATH/.setup_done ]; then
