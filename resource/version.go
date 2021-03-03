@@ -5,7 +5,6 @@
 package resource
 
 import (
-	"fmt"
 	"intel/isecl/shvs/v3/version"
 	"net/http"
 
@@ -21,7 +20,7 @@ func getVersion() http.HandlerFunc {
 	defer log.Trace("resource/version:getVersion() Leaving")
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		verStr := fmt.Sprintf("%s-%s", version.Version, version.GitHash)
+		verStr := version.GetVersion()
 		w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
 		_, err := w.Write([]byte(verStr))
 		if err != nil {

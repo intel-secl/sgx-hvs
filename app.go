@@ -296,7 +296,7 @@ func (a *App) Run(args []string) error {
 		log.Info("app:Run() Uninstalled SGX Host Verification Service")
 		os.Exit(0)
 	case "version", "--version", "-v":
-		fmt.Fprintf(a.consoleWriter(), "SGX Host Verification Service %s-%s\nBuilt %s\n", version.Version, version.GitHash, version.BuildDate)
+		fmt.Println(version.GetVersion())
 		return nil
 	case "setup":
 		a.configureLogs(a.configuration().LogEnableStdout, true)

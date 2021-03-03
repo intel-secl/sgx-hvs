@@ -26,6 +26,7 @@ const (
 	JWTCertsCacheTime              = "60m"
 	DefaultSSLCertFilePath         = ConfigDir + "shvs-dbcert.pem"
 	ServiceName                    = "SHVS"
+	ExplicitServiceName            = "SGX Host Verification Service"
 	HostDataUpdaterGroupName       = "HostDataUpdater"
 	HostListReaderGroupName        = "HostsListReader"
 	HostDataReaderGroupName        = "HostDataReader"
@@ -40,7 +41,6 @@ const (
 	DefaultSHVSSchedulerTimer      = 60
 	DefaultSHVSAutoRefreshTimer    = 120
 	DefaultSHVSHostInfoExpiryTime  = 4 * 60 * 60
-	DefaultJwtValidateCacheKeyMins = 60
 	SHVSLogLevel                   = "SHVS_LOGLEVEL"
 	DefaultReadTimeout             = 30 * time.Second
 	DefaultReadHeaderTimeout       = 10 * time.Second
