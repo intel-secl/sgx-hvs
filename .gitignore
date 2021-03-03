@@ -1,5 +1,6 @@
 out/*
 .out.log
 go.sum
+.idea
 .register_host_create.json
 .re-register_host_create.json
