@@ -61,7 +61,7 @@ func (r *PostgresHostRepository) Retrieve(h *types.Host, criteria *types.HostInf
 		return nil, errors.Wrap(err, "Retrieve: failed to Retrieve Host")
 	}
 
-	if sgx.Supported == nil || *sgx.Supported == false {
+	if !*sgx.Supported {
 		host.HardwareFeatures = nil
 	} else {
 		host.HardwareFeatures = &types.HardwareFeatures{SGX: &types.SGX{
@@ -159,7 +159,7 @@ func getAdditionalHostInfo(criteria *types.HostInfoFetchCriteria, rows *sql.Rows
 			return nil, errors.Wrap(err, "getAdditionalHostInfo: failed to scan row from db")
 		}
 
-		if sgx.Supported == nil || *sgx.Supported == false {
+		if !*sgx.Supported {
 			host.HardwareFeatures = nil
 		} else {
 			host.HardwareFeatures = &types.HardwareFeatures{SGX: &types.SGX{

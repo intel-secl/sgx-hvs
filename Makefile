@@ -39,7 +39,6 @@ installer: shvs
 	cp dist/linux/db_rotation.sql out/installer/db_rotation.sql
 	cp out/shvs out/installer/shvs
 	makeself out/installer out/shvs-$(VERSION).bin "SGX Host Verification Service $(VERSION)" ./install.sh
-	cp dist/linux/install_pgshvsdb.sh out/install_pgshvsdb.sh && chmod +x out/install_pgshvsdb.sh
 
 docker: installer
 ifeq ($(PROXY_EXISTS),1)

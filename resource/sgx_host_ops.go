@@ -481,7 +481,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 
 		log.Debug("Calling registerHost.................", data)
 
-		hardwareUuid, err := uuid.Parse(data.UUID)
+		hardwareUUID, err := uuid.Parse(data.UUID)
 
 		if !validateInputString(constants.HostName, data.HostName) || err != nil ||
 			!validateInputString(constants.Description, data.Description) {
@@ -508,7 +508,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 		hostInfo := RegisterHostInfo{
 			Description: data.Description,
 			HostName:    data.HostName,
-			UUID:        hardwareUuid,
+			UUID:        hardwareUUID,
 		}
 
 		existingHostData, err := db.HostRepository().Retrieve(host, nil)

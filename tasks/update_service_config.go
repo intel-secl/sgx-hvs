@@ -98,17 +98,17 @@ func (s Update_Service_Config) Run(c setup.Context) error {
 		s.Config.MaxHeaderBytes = maxHeaderBytes
 	}
 
-	aasApiUrl, err := c.GetenvString("AAS_API_URL", "AAS Base URL")
-	if err == nil && aasApiUrl != "" {
-		s.Config.AuthServiceURL = aasApiUrl
+	aasAPIURL, err := c.GetenvString("AAS_API_URL", "AAS Base URL")
+	if err == nil && aasAPIURL != "" {
+		s.Config.AuthServiceURL = aasAPIURL
 	} else if s.Config.AuthServiceURL == "" {
 		commLog.GetDefaultLogger().Error("AAS_API_URL is not defined in environment")
 		return errors.Wrap(errors.New("AAS_API_URL is not defined in environment"), "SaveConfiguration() ENV variable not found")
 	}
 
-	scsBaseUrl, err := c.GetenvString("SCS_BASE_URL", "SCS Base URL")
-	if err == nil && scsBaseUrl != "" {
-		s.Config.ScsBaseURL = scsBaseUrl
+	scsBaseURL, err := c.GetenvString("SCS_BASE_URL", "SCS Base URL")
+	if err == nil && scsBaseURL != "" {
+		s.Config.ScsBaseURL = scsBaseURL
 	} else if s.Config.ScsBaseURL == "" {
 		log.Error("SCS_BASE_URL is not defined in environment")
 	}
