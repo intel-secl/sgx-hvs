@@ -7,7 +7,7 @@ COPY out/shvs /usr/bin/shvs
 
 RUN mkdir -p /opt/shvs/dbscripts/
 
-COPY out/installer/db_rotation.sql /opt/shvs/dbscripts/
+COPY out/db_rotation.sql /opt/shvs/dbscripts/
 
 COPY dist/image/entrypoint.sh /entrypoint.sh
 

@@ -1,0 +1,75 @@
+#  Copyright (C) 2021 Intel Corporation
+#  SPDX-License-Identifier: BSD-3-Clause
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shvs-deployment
+  namespace: isecl
+  labels:
+    app: shvs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shvs
+  template:
+    metadata:
+      labels:
+        app: shvs
+    spec:
+      securityContext:
+        fsGroup: 2000
+      hostAliases:
+      containers:
+        - name: shvs
+          image: <image-name>:<image-tag>
+          imagePullPolicy: Always
+          securityContext:
+            runAsUser: 1001
+            runAsGroup: 1001
+          ports:
+            - containerPort: 13000
+          envFrom:
+            - configMapRef:
+                name: shvs-config
+          env:
+            - name: SHVS_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: shvs-service-credentials
+                  key: SHVS_ADMIN_USERNAME
+            - name: SHVS_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shvs-service-credentials
+                  key: SHVS_ADMIN_PASSWORD
+            - name: SHVS_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: shvs-db-credentials
+                  key: SHVS_DB_USERNAME
+            - name: SHVS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shvs-db-credentials
+                  key: SHVS_DB_PASSWORD
+          volumeMounts:
+            - name: shvs-config-volume
+              mountPath: /etc/shvs/
+            - name: shvs-logs-volume
+              mountPath: /var/log/shvs/
+            - name: shvs-db-certs
+              mountPath: /etc/postgresql/
+      volumes:
+        - name: shvs-logs-volume
+          persistentVolumeClaim:
+            claimName: shvs-logs-pvc
+        - name: shvs-config-volume
+          persistentVolumeClaim:
+            claimName: shvs-config-pvc
+        - name: shvs-db-certs
+          secret:
+            secretName: shvs-db-certs
+            defaultMode: 0640
