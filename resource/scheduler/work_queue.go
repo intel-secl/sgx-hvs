@@ -63,12 +63,12 @@ const (
 func (wq *WorkerQueue) getJobFromWQList() *Job {
 	log.Debug("getJobFromWQList: Get job from list")
 	if wq.wList == nil {
-		log.Error("getJobFromWQList: WorkQueue list is empty")
+		log.Debug("getJobFromWQList: WorkQueue list is empty.")
 		return nil
 	}
 	i := wq.wList.GetElementFromList()
 	if i == nil {
-		log.Error("getJobFromWQList: Invalid job got from workqueue")
+		log.Debug("getJobFromWQList: No jobs in WorkQueue list.")
 		return nil
 	}
 	job := i.(*Job)
