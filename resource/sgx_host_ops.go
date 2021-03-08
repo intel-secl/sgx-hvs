@@ -61,7 +61,8 @@ type AttReportThreadData struct {
 
 var hostsSearchParams = map[string]bool{"getPlatformData": true, "getStatus": true, "HardwareUUID": true, "HostName": true}
 var hostsRetrieveParams = map[string]bool{"getPlatformData": true, "getStatus": true}
-const RowsNotFound   = "no rows in result set"
+
+const RowsNotFound = "no rows in result set"
 
 func SGXHostRegisterOps(r *mux.Router, db repository.SHVSDatabase) {
 	log.Trace("resource/sgx_host_ops: SGXHostRegisterOps() Entering")
@@ -112,6 +113,7 @@ func getHosts(db repository.SHVSDatabase) errorHandlerFunc {
 
 		///Write the output here.
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Add(constants.HstsHeaderKey, constants.HstsHeaderValue)
 		w.WriteHeader(http.StatusOK)
 		js, err := json.Marshal(extHost)
 
@@ -185,6 +187,7 @@ func queryHosts(db repository.SHVSDatabase) errorHandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK) // HTTP 200
+		w.Header().Add(constants.HstsHeaderKey, constants.HstsHeaderValue)
 		js, err := json.Marshal(hostData)
 		if err != nil {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
@@ -303,6 +306,7 @@ func getPlatformData(db repository.SHVSDatabase) errorHandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK) // HTTP 200
+		w.Header().Add(constants.HstsHeaderKey, constants.HstsHeaderValue)
 		js, err := json.Marshal(response)
 		if err != nil {
 			return &resourceError{Message: err.Error(), StatusCode: http.StatusInternalServerError}
@@ -358,6 +362,7 @@ func deleteHost(db repository.SHVSDatabase) errorHandlerFunc {
 			return errors.New("deleteHost: Error while Updating Host Status Information: " + err.Error())
 		}
 		w.WriteHeader(http.StatusNoContent)
+		w.Header().Add(constants.HstsHeaderKey, constants.HstsHeaderValue)
 		return nil
 	}
 }
@@ -435,6 +440,7 @@ func sendHostRegisterResponse(w http.ResponseWriter, res RegisterResponse) error
 	defer log.Trace("resource/sgx_host_ops: sendHostRegisterResponse() Leaving")
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Add(constants.HstsHeaderKey, constants.HstsHeaderValue)
 	w.WriteHeader(res.HTTPStatus)
 
 	js, err := json.Marshal(res.Response)
@@ -496,7 +502,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 		if err != nil || tokenSubject != data.UUID {
 			slog.Errorf("resource/sgx_host_ops: registerHost() %s : Failed to match host identity from token", commLogMsg.AuthenticationFailed)
 			res = RegisterResponse{HTTPStatus: http.StatusUnauthorized,
-				Response:   ResponseJSON{Status: "Failed",
+				Response: ResponseJSON{Status: "Failed",
 					Message: "registerHost: Invalid Token"}}
 			return sendHostRegisterResponse(w, res)
 		}
@@ -512,7 +518,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 		}
 
 		existingHostData, err := db.HostRepository().Retrieve(host, nil)
-		if err != nil && !strings.Contains(err.Error(), RowsNotFound){
+		if err != nil && !strings.Contains(err.Error(), RowsNotFound) {
 			slog.Error("resource/sgx_host_ops: registerHost() Error retrieving data from database")
 			res = RegisterResponse{HTTPStatus: http.StatusInternalServerError,
 				Response: ResponseJSON{Status: "Failed",
@@ -523,7 +529,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 			if existingHostData.HardwareUUID.String() != tokenSubject {
 				slog.Errorf("resource/sgx_host_ops: registerHost() %s : Failed to match host identity from database", commLogMsg.AuthenticationFailed)
 				res = RegisterResponse{HTTPStatus: http.StatusUnauthorized,
-					Response:   ResponseJSON{Status: "Failed",
+					Response: ResponseJSON{Status: "Failed",
 						Message: "registerHost: Invalid Token"}}
 				return sendHostRegisterResponse(w, res)
 			}

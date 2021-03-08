@@ -40,6 +40,7 @@ func hostStateInformation(db repository.SHVSDatabase) errorHandlerFunc {
 		log.Debug("hostStatusData", hostStatusData)
 
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Add(constants.HstsHeaderKey, constants.HstsHeaderValue)
 		w.WriteHeader(http.StatusOK) // HTTP 200
 
 		hostStatusResponses := make([]HostStatusResponse, 0)

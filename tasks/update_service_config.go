@@ -172,7 +172,6 @@ func (s Update_Service_Config) Run(c setup.Context) error {
 		s.Config.LogMaxLength = logMaxLen
 	}
 
-	s.Config.LogEnableStdout = false
 	logEnableStdout, err := c.GetenvString("SHVS_ENABLE_CONSOLE_LOG", "SGX Host Verification Service Enable standard output")
 	if err != nil || logEnableStdout == "" {
 		s.Config.LogEnableStdout = false

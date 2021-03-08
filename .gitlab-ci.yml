@@ -1,5 +1,7 @@
 ---
 stages:
+  - build
+  - test
   - scan
 
 variables:
@@ -10,6 +12,44 @@ variables:
   https_proxy: "${HTTPS_PROXY}"
   no_proxy: "${NO_PROXY}"
 
+compile:
+  stage: build
+  image: golang:1.14
+  before_script:
+    - git config --global http."https://${GITLAB_SERVER}".proxy ""
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@${GITLAB_SERVER}".insteadOf "https://${GITLAB_SERVER}"
+
+    - echo "[http \"https://${GITLAB_SERVER}\"]" >> ~/.gitconfig
+    - echo "        proxy = \"\"" >> ~/.gitconfig
+    - cd $CI_PROJECT_DIR
+    - apt update -yq && apt install -yq makeself
+  tags:
+    - k8s
+  script:
+    - make
+  artifacts:
+    paths:
+      - "out/shvs-*.bin"
+    expire_in: 1 week
+
+test:
+  stage: test
+  image: golang:1.14
+  before_script:
+    - git config --global http."https://${GITLAB_SERVER}".proxy ""
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@${GITLAB_SERVER}".insteadOf "https://${GITLAB_SERVER}"
+
+    - echo "[http \"https://${GITLAB_SERVER}\"]" >> ~/.gitconfig
+    - echo "        proxy = \"\"" >> ~/.gitconfig
+    - cd $CI_PROJECT_DIR
+    - apt update -yq && apt install -yq make
+  tags:
+    - k8s
+  script:
+    - make test
+  artifacts:
+    paths:
+      - "cover.html"
 
 Stylechecker:
     stage: scan

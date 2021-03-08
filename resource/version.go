@@ -5,6 +5,7 @@
 package resource
 
 import (
+	"intel/isecl/shvs/v3/constants"
 	"intel/isecl/shvs/v3/version"
 	"net/http"
 
@@ -21,7 +22,7 @@ func getVersion() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		verStr := version.GetVersion()
-		w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
+		w.Header().Add(constants.HstsHeaderKey, constants.HstsHeaderValue)
 		_, err := w.Write([]byte(verStr))
 		if err != nil {
 			log.WithError(err).Error("Could not write version to response")
