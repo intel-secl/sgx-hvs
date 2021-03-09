@@ -43,14 +43,14 @@ func (r *PostgresHostRepository) Retrieve(h *types.Host, criteria *types.HostInf
 	sgx := types.SGX{}
 	meta := types.SGXMeta{}
 
-	if criteria != nil && (criteria.GetPlatformData || criteria.GetStatus){
+	if criteria != nil && (criteria.GetPlatformData || criteria.GetStatus) {
 		row = buildHostInfoFetchQuery(tx, criteria).Where(&h).Row()
 		if criteria.GetPlatformData && criteria.GetStatus {
 			err = row.Scan(&host.ID, &host.Name, &host.HardwareUUID, &sgx.Supported,
 				&sgx.Enabled, &meta.FlcEnabled, &meta.EpcSize, &meta.TcbUpToDate, &host.Status)
 		} else if criteria.GetPlatformData {
 			err = row.Scan(&host.ID, &host.Name, &host.HardwareUUID, &sgx.Supported,
-				&sgx.Enabled, &meta.FlcEnabled, &meta.EpcSize, &meta.TcbUpToDate, )
+				&sgx.Enabled, &meta.FlcEnabled, &meta.EpcSize, &meta.TcbUpToDate)
 		} else if criteria.GetStatus {
 			err = row.Scan(&host.ID, &host.Name, &host.HardwareUUID, &host.Status)
 		}
@@ -98,7 +98,7 @@ func (r *PostgresHostRepository) GetHostQuery(queryData *types.Host, criteria *t
 		}
 	}()
 
-	if criteria != nil && (criteria.GetPlatformData || criteria.GetStatus){
+	if criteria != nil && (criteria.GetPlatformData || criteria.GetStatus) {
 		hrs, err = getAdditionalHostInfo(criteria, rows)
 	} else {
 		for rows.Next() {

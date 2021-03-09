@@ -12,9 +12,9 @@ import (
 // Host struct is the database schema of a Host table
 type Host struct {
 	// swagger:strfmt uuid
-	ID           uuid.UUID `json:"host_ID" gorm:"type:uuid;unique;primary_key;"`
-	Name         string    `json:"host_name" gorm:"not null;unique"`
-	Description  string    `json:"-"`
+	ID          uuid.UUID `json:"host_ID" gorm:"type:uuid;unique;primary_key;"`
+	Name        string    `json:"host_name" gorm:"not null;unique"`
+	Description string    `json:"-"`
 	// swagger:strfmt uuid
 	HardwareUUID uuid.UUID `json:"uuid" gorm:"type:uuid"`
 	CreatedTime  time.Time `json:"-"`
@@ -24,7 +24,7 @@ type Host struct {
 
 type HostStatusInfo struct {
 	Host
-	Status           *string           `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 }
 
 type HostInfo struct {
