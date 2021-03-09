@@ -18,7 +18,7 @@ type RegisterHostInfoResponse struct {
 	Body resource.RegisterHostInfo
 }
 
-// ResponseJson response payload
+// ResponseJSON response payload
 // swagger:response ResponseJSON
 type JSONResponse struct {
 	// in:body
@@ -111,7 +111,7 @@ type SwaggNewHostsSgxDataInfo struct {
 //   '201':
 //      description: Successfully registered the host.
 //      schema:
-//        "$ref": "#/definitions/ResponseJson"
+//        "$ref": "#/definitions/ResponseJSON"
 //
 // x-sample-call-endpoint: https://sgx-hvs.com:13000/sgx-hvs/v2/hosts
 // x-sample-call-input: |
@@ -153,6 +153,14 @@ type SwaggNewHostsSgxDataInfo struct {
 //   description: Name of the host.
 //   in: query
 //   type: string
+// - name: getPlatformData
+//   description: Add platform data to the host info.
+//   in: query
+//   type: boolean
+// - name: getStatus
+//   description: Add host status to the host info.
+//   in: query
+//   type: boolean
 // responses:
 //   '200':
 //     description: Successfully retrieved the hosts.
@@ -214,6 +222,14 @@ type SwaggNewHostsSgxDataInfo struct {
 //   required: true
 //   type: string
 //   format: uuid
+// - name: getPlatformData
+//   description: Add platform data to the host info.
+//   in: query
+//   type: boolean
+// - name: getStatus
+//   description: Add host status to the host info.
+//   in: query
+//   type: boolean
 // responses:
 //   '200':
 //     description: Successfully retrieved the host associated with the specified host id.

@@ -11,9 +11,11 @@ import (
 
 // Host struct is the database schema of a Host table
 type Host struct {
+	// swagger:strfmt uuid
 	ID           uuid.UUID `json:"host_ID" gorm:"type:uuid;unique;primary_key;"`
 	Name         string    `json:"host_name" gorm:"not null;unique"`
 	Description  string    `json:"-"`
+	// swagger:strfmt uuid
 	HardwareUUID uuid.UUID `json:"uuid" gorm:"type:uuid"`
 	CreatedTime  time.Time `json:"-"`
 	UpdatedTime  time.Time `json:"-"`
@@ -46,4 +48,4 @@ type SGXMeta struct {
 	TcbUpToDate *bool   `json:"tcb_upToDate,omitempty"`
 }
 
-type Hosts []Host
+type Hosts []HostInfo
