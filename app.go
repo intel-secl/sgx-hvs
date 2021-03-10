@@ -526,7 +526,11 @@ func (a *App) start() error {
 	if err != nil {
 		return err
 	}
-	return syscall.Exec(systemctl, []string{"systemctl", "start", "shvs"}, os.Environ())
+	cmd := exec.Command(systemctl, "start", "shvs")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Env = os.Environ()
+	return cmd.Run()
 }
 
 func (a *App) stop() error {
@@ -538,7 +542,11 @@ func (a *App) stop() error {
 	if err != nil {
 		return err
 	}
-	return syscall.Exec(systemctl, []string{"systemctl", "stop", "shvs"}, os.Environ())
+	cmd := exec.Command(systemctl, "stop", "shvs")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Env = os.Environ()
+	return cmd.Run()
 }
 
 func (a *App) status() error {
@@ -550,7 +558,11 @@ func (a *App) status() error {
 	if err != nil {
 		return err
 	}
-	return syscall.Exec(systemctl, []string{"systemctl", "status", "shvs"}, os.Environ())
+	cmd := exec.Command(systemctl, "status", "shvs")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Env = os.Environ()
+	return cmd.Run()
 }
 
 func (a *App) uninstall(purge bool) {
