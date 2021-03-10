@@ -526,7 +526,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 			return sendHostRegisterResponse(w, res)
 		}
 		if existingHostData != nil {
-			if existingHostData.HardwareUUID.String() != tokenSubject {
+			if !strings.EqualFold(existingHostData.HardwareUUID.String(), tokenSubject) {
 				slog.Errorf("resource/sgx_host_ops: registerHost() %s : Failed to match host identity from database", commLogMsg.AuthenticationFailed)
 				res = RegisterResponse{HTTPStatus: http.StatusUnauthorized,
 					Response: ResponseJSON{Status: "Failed",
