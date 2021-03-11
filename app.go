@@ -307,7 +307,7 @@ func (a *App) Run(args []string) error {
 		if args[2] != "download_ca_cert" &&
 			args[2] != "download_cert" &&
 			args[2] != "database" &&
-			args[2] != "update_service_config" &&
+			args[2] != "update-service-config" &&
 			args[2] != "all" {
 			a.printUsage()
 			return errors.New("No such setup task")
@@ -688,7 +688,7 @@ func validateSetupArgs(cmd string, args []string) error {
 		}
 		return validateCmdAndEnv(envNamesCmdOpts, fs)
 
-	case "update_service_config":
+	case "update-service-config":
 		return nil
 
 	case "all":
