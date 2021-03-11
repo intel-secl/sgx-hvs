@@ -44,7 +44,7 @@ func (r *PostgresHostRepository) Retrieve(h *types.Host, criteria *types.HostInf
 	meta := types.SGXMeta{}
 
 	if criteria != nil && (criteria.GetPlatformData || criteria.GetStatus) {
-		row = buildHostInfoFetchQuery(tx, criteria).Where(&h).Row()
+		row = buildHostInfoFetchQuery(tx, criteria).Where(&h).Where("deleted='f'").Row()
 		if criteria.GetPlatformData && criteria.GetStatus {
 			err = row.Scan(&host.ID, &host.Name, &host.HardwareUUID, &sgx.Supported,
 				&sgx.Enabled, &meta.FlcEnabled, &meta.EpcSize, &meta.TcbUpToDate, &host.Status)
@@ -55,15 +55,13 @@ func (r *PostgresHostRepository) Retrieve(h *types.Host, criteria *types.HostInf
 			err = row.Scan(&host.ID, &host.Name, &host.HardwareUUID, &host.Status)
 		}
 	} else {
-		err = tx.Select(hostsFields).Where(&h).Row().Scan(&host.ID, &host.Name, &host.HardwareUUID)
+		err = tx.Select(hostsFields).Where(&h).Where("deleted='f'").Row().Scan(&host.ID, &host.Name, &host.HardwareUUID)
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "Retrieve: failed to Retrieve Host")
 	}
 
-	if !*sgx.Supported {
-		host.HardwareFeatures = nil
-	} else {
+	if sgx.Supported != nil && *sgx.Supported {
 		host.HardwareFeatures = &types.HardwareFeatures{SGX: &types.SGX{
 			Enabled: sgx.Enabled,
 			Meta:    &meta,
@@ -159,9 +157,7 @@ func getAdditionalHostInfo(criteria *types.HostInfoFetchCriteria, rows *sql.Rows
 			return nil, errors.Wrap(err, "getAdditionalHostInfo: failed to scan row from db")
 		}
 
-		if !*sgx.Supported {
-			host.HardwareFeatures = nil
-		} else {
+		if sgx.Supported != nil && *sgx.Supported {
 			host.HardwareFeatures = &types.HardwareFeatures{SGX: &types.SGX{
 				Enabled: sgx.Enabled,
 				Meta:    &meta,
