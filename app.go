@@ -71,7 +71,7 @@ func (a *App) printUsage() {
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "    shvs <command> [arguments]")
 	fmt.Fprintln(w, "")
-	fmt.Fprintln(w, "Avaliable Commands:")
+	fmt.Fprintln(w, "Available Commands:")
 	fmt.Fprintln(w, "    help|-h|--help        Show this help message")
 	fmt.Fprintln(w, "    setup [task]          Run setup task")
 	fmt.Fprintln(w, "    start                 Start SGX Host Verification Service")
@@ -88,7 +88,7 @@ func (a *App) printUsage() {
 	fmt.Fprintln(w, "                                  - get optional env variables from all the setup tasks")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "    shvs setup database [-force] [--arguments=<argument_value>]")
-	fmt.Fprintln(w, "        - Avaliable arguments are:")
+	fmt.Fprintln(w, "        - Available arguments are:")
 	fmt.Fprintln(w, "            - db-host    alternatively, set environment variable SHVS_DB_HOSTNAME")
 	fmt.Fprintln(w, "            - db-port    alternatively, set environment variable SHVS_DB_PORT")
 	fmt.Fprintln(w, "            - db-user    alternatively, set environment variable SHVS_DB_USERNAME")
@@ -318,8 +318,10 @@ func (a *App) Run(args []string) error {
 			return errors.Wrap(err, "app:Run() Invalid setup task arguments")
 		}
 
+		taskName := args[2]
+
 		a.Config = config.Global()
-		err = a.Config.SaveConfiguration(setupContext)
+		err = a.Config.SaveConfiguration(taskName, setupContext)
 		if err != nil {
 			fmt.Println("Error saving configuration: " + err.Error())
 			os.Exit(1)

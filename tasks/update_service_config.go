@@ -14,6 +14,7 @@ import (
 	"intel/isecl/shvs/v3/config"
 	"intel/isecl/shvs/v3/constants"
 	"io"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -100,24 +101,33 @@ func (s Update_Service_Config) Run(c setup.Context) error {
 
 	aasAPIURL, err := c.GetenvString("AAS_API_URL", "AAS Base URL")
 	if err == nil && aasAPIURL != "" {
-		s.Config.AuthServiceURL = aasAPIURL
+		if _, err = url.Parse(aasAPIURL); err != nil {
+			return errors.Wrap(err, "SaveConfiguration() AAS_API_URL provided is invalid")
+		} else {
+			s.Config.AuthServiceURL = aasAPIURL
+		}
 	} else if s.Config.AuthServiceURL == "" {
-		commLog.GetDefaultLogger().Error("AAS_API_URL is not defined in environment")
+		log.Error("AAS_API_URL is not defined in environment")
 		return errors.Wrap(errors.New("AAS_API_URL is not defined in environment"), "SaveConfiguration() ENV variable not found")
 	}
 
 	scsBaseURL, err := c.GetenvString("SCS_BASE_URL", "SCS Base URL")
 	if err == nil && scsBaseURL != "" {
-		s.Config.ScsBaseURL = scsBaseURL
+		if _, err = url.Parse(scsBaseURL); err != nil {
+			return errors.Wrap(err, "SaveConfiguration() SCS_BASE_URL provided is invalid")
+		} else {
+			s.Config.ScsBaseURL = scsBaseURL
+		}
 	} else if s.Config.ScsBaseURL == "" {
 		log.Error("SCS_BASE_URL is not defined in environment")
+		return errors.Wrap(errors.New("SCS_BASE_URL is not defined in environment"), "SaveConfiguration() ENV variable not found")
 	}
 
 	shvsAASUser, err := c.GetenvString("SHVS_ADMIN_USERNAME", "SHVS Service Username")
 	if err == nil && shvsAASUser != "" {
 		s.Config.SHVS.User = shvsAASUser
 	} else if s.Config.SHVS.User == "" {
-		commLog.GetDefaultLogger().Error("SHVS_ADMIN_USERNAME is not defined in environment or configuration file")
+		log.Error("SHVS_ADMIN_USERNAME is not defined in environment or configuration file")
 		return errors.Wrap(err, "SHVS_ADMIN_USERNAME is not defined in environment or configuration file")
 	}
 
@@ -125,7 +135,7 @@ func (s Update_Service_Config) Run(c setup.Context) error {
 	if err == nil && shvsAASPassword != "" {
 		s.Config.SHVS.Password = shvsAASPassword
 	} else if strings.TrimSpace(s.Config.SHVS.Password) == "" {
-		commLog.GetDefaultLogger().Error("SHVS_ADMIN_PASSWORD is not defined in environment or configuration file")
+		log.Error("SHVS_ADMIN_PASSWORD is not defined in environment or configuration file")
 		return errors.Wrap(err, "SHVS_ADMIN_PASSWORD is not defined in environment or configuration file")
 	}
 
