@@ -37,34 +37,6 @@ func (r *PostgresHostStatusRepository) Retrieve(h *types.HostStatus) (*types.Hos
 	return &p, nil
 }
 
-func (r *PostgresHostStatusRepository) RetrieveAll(h *types.HostStatus) (*types.HostsStatus, error) {
-	log.Trace("repository/postgres/pg_host_status: RetrieveAll() Entering")
-	defer log.Trace("repository/postgres/pg_host_status: RetrieveAll() Leaving")
-
-	var hs types.HostsStatus
-	err := r.db.Where(h).Find(&hs).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "RetrieveAll(): failed to RetrieveAll HostStatus")
-	}
-
-	slog.WithField("db hs", hs).Trace("RetrieveAll")
-	return &hs, errors.Wrap(err, "RetrieveAll(): failed to RetrieveAll HostStatus")
-}
-
-func (r *PostgresHostStatusRepository) RetrieveAllQueues(status []string) (*types.HostsStatus, error) {
-	log.Trace("repository/postgres/pg_host_status: RetrieveAllQueues() Entering")
-	defer log.Trace("repository/postgres/pg_host_status: RetrieveAllQueues() Leaving")
-
-	var hs types.HostsStatus
-	err := r.db.Where("status IN (?)", status).Find(&hs).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "RetrieveAllQueues(): failed to RetrieveAll HostStatus")
-	}
-
-	slog.WithField("db hs", hs).Trace("RetrieveAllQueues")
-	return &hs, errors.Wrap(err, "RetrieveAllQueues(): failed to RetrieveAll HostStatus")
-}
-
 func (r *PostgresHostStatusRepository) RetrieveNonExpiredHost(h *types.HostStatus) (*types.HostStatus, error) {
 	log.Trace("repository/postgres/pg_host_status: RetrieveNonExpiredHost() Entering")
 	defer log.Trace("repository/postgres/pg_host_status: RetrieveNonExpiredHost() Leaving")
@@ -78,11 +50,11 @@ func (r *PostgresHostStatusRepository) RetrieveNonExpiredHost(h *types.HostStatu
 	return &hs, nil
 }
 
-func (r *PostgresHostStatusRepository) RetrieveExpiredHosts() (types.HostsStatus, error) {
+func (r *PostgresHostStatusRepository) RetrieveExpiredHosts() (types.HostStatuses, error) {
 	log.Trace("repository/postgres/pg_host_status: RetrieveExpiredHosts() Entering")
 	defer log.Trace("repository/postgres/pg_host_status: RetrieveExpiredHosts() Leaving")
 
-	var hs types.HostsStatus
+	var hs types.HostStatuses
 	var currentTime = time.Now()
 	err := r.db.Where("(expiry_time < (?) and STATUS in ('CONNECTED')) OR (STATUS in ('IN-ACTIVE'))", currentTime).Find(&hs).Error
 	if err != nil {
@@ -101,31 +73,4 @@ func (r *PostgresHostStatusRepository) Update(h *types.HostStatus) error {
 		return errors.Wrap(err, "Update(): failed to update HostStatus")
 	}
 	return nil
-}
-
-func (r *PostgresHostStatusRepository) Delete(h *types.HostStatus) error {
-	log.Trace("repository/postgres/pg_host_status: Delete() Entering")
-	defer log.Trace("repository/postgres/pg_host_status: Delete() Leaving")
-
-	if err := r.db.Delete(h).Error; err != nil {
-		return errors.Wrap(err, "Delete(): failed to delete HostStatus")
-	}
-	return nil
-}
-
-func (r *PostgresHostStatusRepository) GetHostStateInfo() (*types.HostsStatus, error) {
-	log.Trace("repository/postgres/pg_host_status: GetHostStatusQuary() Entering")
-	defer log.Trace("repository/postgres/pg_host_status: GetHostStatusQuary() Leaving")
-
-	var hs types.HostsStatus
-
-	query := `SELECT *FROM host_statuses WHERE host_id IN (SELECT Id FROM hosts WHERE deleted='f')`
-
-	log.Debug("query:", query)
-
-	r.db.Raw(query).Scan(&hs)
-	if len(hs) == 0 {
-		return nil, errors.New("GetHostStateInfo(): Could not retrieve host status")
-	}
-	return &hs, nil
 }

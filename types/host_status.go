@@ -19,4 +19,4 @@ type HostStatus struct {
 	ExpiryTime  time.Time `json:"validTo"`
 }
 
-type HostsStatus []HostStatus
+type HostStatuses []HostStatus

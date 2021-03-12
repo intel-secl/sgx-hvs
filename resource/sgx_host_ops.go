@@ -72,7 +72,7 @@ func SGXHostRegisterOps(r *mux.Router, db repository.SHVSDatabase) {
 	r.Handle("/hosts/{id}", handlers.ContentTypeHandler(getHosts(db), "application/json")).Methods("GET")
 	r.Handle("/hosts", handlers.ContentTypeHandler(queryHosts(db), "application/json")).Methods("GET")
 	r.Handle("/platform-data", handlers.ContentTypeHandler(getPlatformData(db), "application/json")).Methods("GET")
-	r.Handle("/host-status", handlers.ContentTypeHandler(hostStateInformation(db), "application/json")).Methods("GET")
+	r.Handle("/host-status", handlers.ContentTypeHandler(getHostStateInformation(db), "application/json")).Methods("GET")
 	r.Handle("/hosts/{id}", deleteHost(db)).Methods("DELETE")
 }
 
@@ -632,7 +632,7 @@ func validateQueryParams(params url.Values, validQueries map[string]bool) error 
 	}
 	for param := range params {
 		if _, hasQuery := validQueries[param]; !hasQuery {
-			return errors.New("Invalid query parameter provided. Refer to product guide for details.")
+			return errors.New("Invalid query parameter provided. Refer to swagger doc for details.")
 		}
 	}
 	return nil
