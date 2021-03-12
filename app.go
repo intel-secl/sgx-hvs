@@ -104,7 +104,7 @@ func (a *App) printUsage() {
 	fmt.Fprintln(w, "                         mandatory if db-sslcert does not already exist")
 	fmt.Fprintln(w, "                         alternatively, set environment variable SHVS_DB_SSLCERTSRC")
 	fmt.Fprintln(w, "")
-	fmt.Fprintln(w, "    update-service-config    Updates Service Configuration")
+	fmt.Fprintln(w, "    update_service_config    Updates Service Configuration")
 	fmt.Fprintln(w, "                             Required env variables:")
 	fmt.Fprintln(w, "                                 - SHVS_PORT                                         : SGX Host Verification Service port")
 	fmt.Fprintln(w, "                                 - SHVS_SERVER_READ_TIMEOUT                          : SGX Host Verification Service Read Timeout")
@@ -307,7 +307,7 @@ func (a *App) Run(args []string) error {
 		if args[2] != "download_ca_cert" &&
 			args[2] != "download_cert" &&
 			args[2] != "database" &&
-			args[2] != "update-service-config" &&
+			args[2] != "update_service_config" &&
 			args[2] != "all" {
 			a.printUsage()
 			return errors.New("No such setup task")
@@ -688,7 +688,7 @@ func validateSetupArgs(cmd string, args []string) error {
 		}
 		return validateCmdAndEnv(envNamesCmdOpts, fs)
 
-	case "update-service-config":
+	case "update_service_config":
 		return nil
 
 	case "all":
