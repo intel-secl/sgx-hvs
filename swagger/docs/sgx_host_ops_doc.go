@@ -11,11 +11,11 @@ import (
 	"time"
 )
 
-// RegisterHostInfo response payload
-// swagger:response RegisterHostInfo
+// SGXHostInfo response payload
+// swagger:response SGXHostInfo
 type RegisterHostInfoResponse struct {
 	// in:body
-	Body resource.RegisterHostInfo
+	Body resource.SGXHostInfo
 }
 
 // ResponseJSON response payload
@@ -30,6 +30,13 @@ type JSONResponse struct {
 type SwaggHostsInfo struct {
 	// in:body
 	Body types.Hosts
+}
+
+// HostInfo response payload
+// swagger:response HostInfo
+type HostInfo struct {
+	// in:body
+	Body types.HostInfo
 }
 
 type NewHostSgxData struct {
@@ -106,7 +113,7 @@ type SwaggNewHostsSgxDataInfo struct {
 //   required: true
 //   in: body
 //   schema:
-//     "$ref": "#/definitions/RegisterHostInfo"
+//     "$ref": "#/definitions/SGXHostInfo"
 // responses:
 //   '201':
 //      description: Successfully registered the host.
@@ -234,7 +241,7 @@ type SwaggNewHostsSgxDataInfo struct {
 //   '200':
 //     description: Successfully retrieved the host associated with the specified host id.
 //     schema:
-//       "$ref": "#/definitions/RegisterHostInfo"
+//       "$ref": "#/definitions/HostInfo"
 //
 // x-sample-call-endpoint: |
 //    https://sgx-hvs.com:13000/sgx-hvs/v2/hosts/d60c9d18-a272-49b9-bf45-872f28407775

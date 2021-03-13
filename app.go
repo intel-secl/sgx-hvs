@@ -448,7 +448,7 @@ func (a *App) startServer() error {
 	r.SkipClean(true)
 
 	// Create Router, set routes
-	sr := r.PathPrefix("/sgx-hvs/v2/noauth").Subrouter()
+	sr := r.PathPrefix("/sgx-hvs/v2/").Subrouter()
 	func(setters ...func(*mux.Router)) {
 		for _, setter := range setters {
 			setter(sr)
