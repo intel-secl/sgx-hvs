@@ -15,11 +15,11 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strings"
 	"time"
 )
 
 var log = commLog.GetDefaultLogger()
-var slog = commLog.GetSecurityLogger()
 
 // Configuration is the global configuration struct that is marshalled/unmarshaled to a persisted yaml file
 type Configuration struct {
@@ -118,7 +118,7 @@ func (conf *Configuration) SaveConfiguration(taskName string, c setup.Context) e
 	// target config changes only in scope for the setup task
 	if taskName == "all" || taskName == "download_ca_cert" || taskName == "download_cert" {
 		tlsCertDigest, err := c.GetenvString("CMS_TLS_CERT_SHA384", "TLS certificate digest")
-		if err == nil && tlsCertDigest != "" {
+		if err == nil && strings.TrimSpace(tlsCertDigest) != "" {
 			conf.CmsTLSCertDigest = tlsCertDigest
 		} else if conf.CmsTLSCertDigest == "" {
 			log.Error("CMS_TLS_CERT_SHA384 is not defined in environment")
@@ -126,8 +126,8 @@ func (conf *Configuration) SaveConfiguration(taskName string, c setup.Context) e
 		}
 
 		cmsBaseURL, err := c.GetenvString("CMS_BASE_URL", "CMS Base URL")
-		if err == nil && cmsBaseURL != "" {
-			if _, err = url.Parse(cmsBaseURL); err != nil {
+		if err == nil && strings.TrimSpace(cmsBaseURL) != "" {
+			if _, err = url.ParseRequestURI(cmsBaseURL); err != nil {
 				log.Error("CMS_BASE_URL provided is invalid")
 				return errorLog.Wrap(err, "SaveConfiguration() CMS_BASE_URL provided is invalid")
 			}
@@ -141,28 +141,28 @@ func (conf *Configuration) SaveConfiguration(taskName string, c setup.Context) e
 
 	if taskName == "all" || taskName == "download_cert" {
 		tlsCertCN, err := c.GetenvString("SHVS_TLS_CERT_CN", "SHVS TLS Certificate Common Name")
-		if err == nil && tlsCertCN != "" {
+		if err == nil && strings.TrimSpace(tlsCertCN) != "" {
 			conf.Subject.TLSCertCommonName = tlsCertCN
 		} else if conf.Subject.TLSCertCommonName == "" {
 			conf.Subject.TLSCertCommonName = constants.DefaultSHVSTlsCn
 		}
 
 		tlsKeyPath, err := c.GetenvString("KEY_PATH", "Filepath where TLS key needs to be stored")
-		if err == nil && tlsKeyPath != "" {
+		if err == nil && strings.TrimSpace(tlsKeyPath) != "" {
 			conf.TLSKeyFile = tlsKeyPath
 		} else if conf.TLSKeyFile == "" {
 			conf.TLSKeyFile = constants.DefaultTLSKeyFile
 		}
 
 		tlsCertPath, err := c.GetenvString("CERT_PATH", "Filepath where TLS certificate needs to be stored")
-		if err == nil && tlsCertPath != "" {
+		if err == nil && strings.TrimSpace(tlsCertPath) != "" {
 			conf.TLSCertFile = tlsCertPath
 		} else if conf.TLSCertFile == "" {
 			conf.TLSCertFile = constants.DefaultTLSCertFile
 		}
 
 		sanList, err := c.GetenvString("SAN_LIST", "SAN list for TLS")
-		if err == nil && sanList != "" {
+		if err == nil && strings.TrimSpace(sanList) != "" {
 			conf.CertSANList = sanList
 		} else if conf.CertSANList == "" {
 			conf.CertSANList = constants.DefaultSHVSTlsSan

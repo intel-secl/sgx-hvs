@@ -101,7 +101,7 @@ func (s Update_Service_Config) Run(c setup.Context) error {
 
 	aasAPIURL, err := c.GetenvString("AAS_API_URL", "AAS Base URL")
 	if err == nil && aasAPIURL != "" {
-		if _, err = url.Parse(aasAPIURL); err != nil {
+		if _, err = url.ParseRequestURI(aasAPIURL); err != nil {
 			return errors.Wrap(err, "SaveConfiguration() AAS_API_URL provided is invalid")
 		} else {
 			s.Config.AuthServiceURL = aasAPIURL
@@ -113,7 +113,7 @@ func (s Update_Service_Config) Run(c setup.Context) error {
 
 	scsBaseURL, err := c.GetenvString("SCS_BASE_URL", "SCS Base URL")
 	if err == nil && scsBaseURL != "" {
-		if _, err = url.Parse(scsBaseURL); err != nil {
+		if _, err = url.ParseRequestURI(scsBaseURL); err != nil {
 			return errors.Wrap(err, "SaveConfiguration() SCS_BASE_URL provided is invalid")
 		} else {
 			s.Config.ScsBaseURL = scsBaseURL
