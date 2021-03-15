@@ -6,8 +6,7 @@ SGX Host Verification Service aggregates the platform enablement info from multi
 Key features
 ------------
 
--   If SGX Host Verification Service API URL is specified in SGX Agent env file, then SGX Agent will push the platform enablement info and TCB status to SHVS at regular interval, else, Agent pushes the platform enablement info and TCB status to SHVS once and terminates.  
--   SHVS saves platform specific information in its own database which will be pulled by integration hub later
+-   SHVS saves platform specific information provided by a sgx agent instance, in its own database which will be pulled by integration hub later
 
 System Requirements
 -------------------
@@ -21,6 +20,7 @@ Software requirements
 
 -   git
 -   makeself
+-   docker
 -   Go 1.14.1 or newer
 
 Step By Step Build Instructions
@@ -32,7 +32,7 @@ Install required shell commands
 ### Install tools from `dnf`
 
 ``` {.shell}
-sudo dnf install -y git wget makeself
+sudo dnf install -y git wget makeself docker
 ```
 
 ### Install `go 1.14.1` or newer
@@ -61,7 +61,7 @@ Build SGX-Host Verification Service
 ``` {.shell}
 git clone https://github.com/intel-secl/sgx-hvs.git
 cd sgx-hvs
-git checkout v3.4.0
+git checkout v3.5.0
 make all
 ```
 
@@ -85,29 +85,22 @@ Authentication and Authorization Service
 
 ### Direct dependencies
 
-  Name       Repo URL                            Minimum Version Required
-  ---------- ----------------------------- ------------------------------------
-  uuid       github.com/google/uuid                       v1.1.1
-  errors     github.com/pkg/errors                        V0.9.1
-  handlers   github.com/gorilla/handlers                  v1.4.0
-  mux        github.com/gorilla/mux                       v1.7.3
-  jwt-go     github.com/dgrijalva/jwt-go           v3.2.0+incompatible
-  gorm       github.com/jinzhu/gorm                       v1.9.10
-  logrus     github.com/sirupsen/logrus                   v1.4.0
-  testify    github.com/stretchr/testify                  v1.3.0
-  yaml.v2    gopkg.in/yaml.v2                             v2.4.0
-  client     github.com/intel-secl/clients                v3.3.1
-  common     github.com/intel-secl/common                 v3.3.1
+|  Name       | Repo URL                      | Minimum Version Required  |
+|  ---------- | ----------------------------- | :-----------------------: |
+|  uuid       | github.com/google/uuid        | v1.1.2                    |
+|  errors     | github.com/pkg/errors         | V0.9.1                    |
+|  handlers   | github.com/gorilla/handlers   | v1.4.0                    |
+|  mux        | github.com/gorilla/mux        | v1.7.3                    |
+|  gorm       | github.com/jinzhu/gorm        | v1.9.10                   |
+|  logrus     | github.com/sirupsen/logrus    | v1.4.0                    |
+|  testify    | github.com/stretchr/testify   | v1.3.0                    |
+|  yaml.v2    | gopkg.in/yaml.v2              | v2.4.0                    |
+|  common     | github.com/intel-secl/common  | v3.5.0                    |
 
 ### Indirect Dependencies
 
   Repo URL                     Minimum version required
   --------------------------- --------------------------
-  https://github.com/lib/pq             1.0.0
+  https://github.com/lib/pq             1.1.0
 
 *Note: All dependencies are listed in go.mod*
-
-Links
-=====
-
-<https://01.org/intel-secl/>

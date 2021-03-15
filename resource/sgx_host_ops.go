@@ -111,7 +111,7 @@ func getHosts(db repository.SHVSDatabase) errorHandlerFunc {
 				StatusCode: http.StatusNotFound}
 		}
 
-		///Write the output here.
+		// Write the output here.
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Add(constants.HstsHeaderKey, constants.HstsHeaderValue)
 		w.WriteHeader(http.StatusOK)
@@ -221,7 +221,7 @@ func getPlatformData(db repository.SHVSDatabase) errorHandlerFunc {
 					StatusCode: http.StatusBadRequest}
 			}
 			rs := types.Host{Name: hostName}
-			///Get hosts data with the given hostname
+			// Get hosts data with the given hostname
 			hostData, err := db.HostRepository().Retrieve(&rs, nil)
 			if err != nil {
 				log.WithError(err).WithField("HostName", hostName).Info("failed to retrieve hosts")
