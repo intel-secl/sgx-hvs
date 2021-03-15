@@ -35,12 +35,10 @@ installer: shvs
 	mkdir -p out/installer
 	cp dist/linux/shvs.service out/installer/shvs.service
 	cp dist/linux/install.sh out/installer/install.sh && chmod +x out/installer/install.sh
-	cp dist/linux/db_rotation.sql out/installer/db_rotation.sql
 	cp out/shvs out/installer/shvs
 	makeself out/installer out/shvs-$(VERSION).bin "SGX Host Verification Service $(VERSION)" ./install.sh
 
 docker: shvs
-	cp dist/linux/db_rotation.sql out/db_rotation.sql
 ifeq ($(PROXY_EXISTS),1)
 	docker build ${DOCKER_PROXY_FLAGS} -f dist/image/Dockerfile -t isecl/shvs:$(VERSION) .
 else
