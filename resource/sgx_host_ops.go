@@ -61,6 +61,7 @@ type AttReportThreadData struct {
 
 var hostsSearchParams = map[string]bool{"getPlatformData": true, "getStatus": true, "HardwareUUID": true, "HostName": true}
 var hostsRetrieveParams = map[string]bool{"getPlatformData": true, "getStatus": true}
+var platformDataRetrieveParams = map[string]bool{"HostName": true, "numberOfMinutes": true}
 
 const RowsNotFound = "no rows in result set"
 
@@ -209,6 +210,11 @@ func getPlatformData(db repository.SHVSDatabase) errorHandlerFunc {
 		err := authorizeEndpoint(r, constants.HostDataReaderGroupName, true)
 		if err != nil {
 			return err
+		}
+
+		if err := validateQueryParams(r.URL.Query(), platformDataRetrieveParams); err != nil {
+			slog.WithError(err).Errorf("resource/sgx_host_ops: getPlatformData() %s", commLogMsg.InvalidInputBadParam)
+			return &resourceError{Message: err.Error(), StatusCode: http.StatusBadRequest}
 		}
 
 		var platformData *types.HostsSgxData
