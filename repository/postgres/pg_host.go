@@ -35,7 +35,6 @@ func (r *PostgresHostRepository) Retrieve(h *types.Host, criteria *types.HostInf
 	defer log.Trace("repository/postgres/pg_host: Retrieve() Leaving")
 
 	var host types.HostInfo
-	slog.WithField("Host", h).Debug("Retrieve Call")
 
 	var tx = r.db.Model(types.Host{})
 	var err error
@@ -66,6 +65,19 @@ func (r *PostgresHostRepository) Retrieve(h *types.Host, criteria *types.HostInf
 			Enabled: sgx.Enabled,
 			Meta:    &meta,
 		}}
+	}
+	return &host, nil
+}
+
+func (r *PostgresHostRepository) RetrieveAnyIfExists(h *types.Host) (*types.HostInfo, error) {
+	log.Trace("repository/postgres/pg_host: RetrieveAnyIfExists() Entering")
+	defer log.Trace("repository/postgres/pg_host: RetrieveAnyIfExists() Leaving")
+
+	var host types.HostInfo
+
+	if err := r.db.Model(types.Host{}).Select(hostsFields).Where(&h).Row().Scan(&host.ID, &host.Name,
+		&host.HardwareUUID); err != nil {
+		return nil, errors.Wrap(err, "RetrieveAnyIfExists: failed to Retrieve Host")
 	}
 	return &host, nil
 }

@@ -523,7 +523,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 			UUID:        hardwareUUID,
 		}
 
-		existingHostData, err := db.HostRepository().Retrieve(host, nil)
+		existingHostData, err := db.HostRepository().RetrieveAnyIfExists(host)
 		if err != nil && !strings.Contains(err.Error(), RowsNotFound) {
 			slog.Error("resource/sgx_host_ops: registerHost() Error retrieving data from database")
 			res = RegisterResponse{HTTPStatus: http.StatusInternalServerError,

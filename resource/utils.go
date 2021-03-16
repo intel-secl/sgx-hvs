@@ -52,7 +52,7 @@ func UpdateHostStatus(hostID uuid.UUID, db repository.SHVSDatabase, status strin
 		Status:      status,
 		CreatedTime: existingHostStatusRec.CreatedTime,
 		UpdatedTime: time.Now(),
-		ExpiryTime:  time.Now().Add(time.Duration((expiryTimeDuration))),
+		ExpiryTime:  time.Now().Add(expiryTimeDuration),
 	}
 
 	err = db.HostStatusRepository().Update(&hostStatus)
