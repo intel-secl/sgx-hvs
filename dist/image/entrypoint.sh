@@ -1,5 +1,12 @@
 #!/bin/bash
 
+source /etc/secret-volume/secrets.txt
+export SHVS_ADMIN_USERNAME
+export SHVS_ADMIN_PASSWORD
+export SHVS_DB_USERNAME
+export SHVS_DB_PASSWORD
+export BEARER_TOKEN
+
 USER_ID=$(id -u)
 LOG_PATH=/var/log/shvs
 CONFIG_PATH=/etc/shvs
