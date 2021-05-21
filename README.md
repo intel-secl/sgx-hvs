@@ -61,7 +61,7 @@ Build SGX-Host Verification Service
 ``` {.shell}
 git clone https://github.com/intel-secl/sgx-hvs.git
 cd sgx-hvs
-git checkout v3.5.0
+git checkout v3.6.0
 make all
 ```
 
