@@ -1,4 +1,4 @@
-module intel/isecl/shvs/v3
+module intel/isecl/shvs/v4
 
 require (
 
@@ -10,7 +10,7 @@ require (
 	github.com/sirupsen/logrus v1.4.0
 	github.com/stretchr/testify v1.3.0
 	gopkg.in/yaml.v2 v2.4.0
-	intel/isecl/lib/common/v3 v3.6.0
+	intel/isecl/lib/common/v4 v4.0.0
 )
 
-replace intel/isecl/lib/common/v3 => github.com/intel-secl/common/v3 v3.6.0
+replace intel/isecl/lib/common/v4 => gitlab.devtools.intel.com/sst/isecl/lib/common.git/v4 v4.0/develop

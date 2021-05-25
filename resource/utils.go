@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"intel/isecl/shvs/v3/config"
-	"intel/isecl/shvs/v3/repository"
-	"intel/isecl/shvs/v3/types"
+	"intel/isecl/shvs/v4/config"
+	"intel/isecl/shvs/v4/repository"
+	"intel/isecl/shvs/v4/types"
 )
 
 var statusUpdateLock *sync.Mutex

@@ -16,12 +16,12 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
-	"intel/isecl/lib/common/v3/context"
-	commLogMsg "intel/isecl/lib/common/v3/log/message"
-	"intel/isecl/shvs/v3/config"
-	"intel/isecl/shvs/v3/constants"
-	"intel/isecl/shvs/v3/repository"
-	"intel/isecl/shvs/v3/types"
+	"intel/isecl/lib/common/v4/context"
+	commLogMsg "intel/isecl/lib/common/v4/log/message"
+	"intel/isecl/shvs/v4/config"
+	"intel/isecl/shvs/v4/constants"
+	"intel/isecl/shvs/v4/repository"
+	"intel/isecl/shvs/v4/types"
 )
 
 type ResponseJSON struct {

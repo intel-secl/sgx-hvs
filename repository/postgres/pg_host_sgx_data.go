@@ -7,7 +7,7 @@ package postgres
 import (
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
-	"intel/isecl/shvs/v3/types"
+	"intel/isecl/shvs/v4/types"
 	"time"
 )
 

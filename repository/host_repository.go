@@ -4,7 +4,7 @@
  */
 package repository
 
-import "intel/isecl/shvs/v3/types"
+import "intel/isecl/shvs/v4/types"
 
 type HostRepository interface {
 	Create(*types.Host) (*types.Host, error)

@@ -5,8 +5,8 @@
 package resource
 
 import (
-	"intel/isecl/shvs/v3/constants"
-	"intel/isecl/shvs/v3/version"
+	"intel/isecl/shvs/v4/constants"
+	"intel/isecl/shvs/v4/version"
 	"net/http"
 
 	"github.com/gorilla/mux"

@@ -8,10 +8,10 @@ package resource
 import (
 	"encoding/json"
 	"github.com/google/uuid"
-	commLogMsg "intel/isecl/lib/common/v3/log/message"
-	"intel/isecl/shvs/v3/constants"
-	"intel/isecl/shvs/v3/repository"
-	"intel/isecl/shvs/v3/types"
+	commLogMsg "intel/isecl/lib/common/v4/log/message"
+	"intel/isecl/shvs/v4/constants"
+	"intel/isecl/shvs/v4/repository"
+	"intel/isecl/shvs/v4/types"
 	"net/http"
 	"strings"
 )

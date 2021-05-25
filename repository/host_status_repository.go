@@ -5,7 +5,7 @@
 package repository
 
 import (
-	"intel/isecl/shvs/v3/types"
+	"intel/isecl/shvs/v4/types"
 )
 
 type HostStatusRepository interface {
