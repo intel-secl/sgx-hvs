@@ -9,7 +9,7 @@ import "intel/isecl/shvs/v3/types"
 type HostRepository interface {
 	Create(*types.Host) (*types.Host, error)
 	Retrieve(*types.Host, *types.HostInfoFetchCriteria) (*types.HostInfo, error)
-	RetrieveAnyIfExists(*types.Host) (*types.HostInfo, error)
+	RetrieveAnyIfExists(*types.Host) (*types.Host, error)
 	GetHostQuery(*types.Host, *types.HostInfoFetchCriteria) ([]*types.HostInfo, error)
 	Update(*types.Host) error
 	Delete(*types.Host) error

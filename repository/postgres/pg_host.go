@@ -69,17 +69,15 @@ func (r *PostgresHostRepository) Retrieve(h *types.Host, criteria *types.HostInf
 	return &host, nil
 }
 
-func (r *PostgresHostRepository) RetrieveAnyIfExists(h *types.Host) (*types.HostInfo, error) {
+func (r *PostgresHostRepository) RetrieveAnyIfExists(h *types.Host) (*types.Host, error) {
 	log.Trace("repository/postgres/pg_host: RetrieveAnyIfExists() Entering")
 	defer log.Trace("repository/postgres/pg_host: RetrieveAnyIfExists() Leaving")
 
-	var host types.HostInfo
-
-	if err := r.db.Model(types.Host{}).Select(hostsFields).Where(&h).Row().Scan(&host.ID, &host.Name,
-		&host.HardwareUUID); err != nil {
-		return nil, errors.Wrap(err, "RetrieveAnyIfExists: failed to Retrieve Host")
+	err := r.db.Where(h).First(h).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "RetrieveAnyIfExists: failed to retrieve a record from hosts table")
 	}
-	return &host, nil
+	return h, nil
 }
 
 func (r *PostgresHostRepository) GetHostQuery(queryData *types.Host, criteria *types.HostInfoFetchCriteria) ([]*types.HostInfo, error) {

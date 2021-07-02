@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	"intel/isecl/lib/common/v3/context"
 	commLogMsg "intel/isecl/lib/common/v3/log/message"
@@ -373,7 +374,7 @@ func deleteHost(db repository.SHVSDatabase) errorHandlerFunc {
 	}
 }
 
-func updateSGXHostInfo(db repository.SHVSDatabase, existingHostData *types.HostInfo, hostInfo RegisterHostInfo) error {
+func updateSGXHostInfo(db repository.SHVSDatabase, existingHostData *types.Host, hostInfo RegisterHostInfo) error {
 	log.Trace("resource/sgx_host_ops: updateSGXHostInfo() Entering")
 	defer log.Trace("resource/sgx_host_ops: updateSGXHostInfo() Leaving")
 
@@ -524,7 +525,7 @@ func registerHost(db repository.SHVSDatabase) errorHandlerFunc {
 		}
 
 		existingHostData, err := db.HostRepository().RetrieveAnyIfExists(host)
-		if err != nil && !strings.Contains(err.Error(), RowsNotFound) {
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			slog.Error("resource/sgx_host_ops: registerHost() Error retrieving data from database")
 			res = RegisterResponse{HTTPStatus: http.StatusInternalServerError,
 				Response: ResponseJSON{Status: "Failed",
