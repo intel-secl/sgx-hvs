@@ -192,6 +192,7 @@ type SwaggNewHostsSgxDataInfo struct {
 // description: |
 //   Deletes a host associated with the specified host id from the SHVS database.
 //   A valid bearer token is required to authorize this REST call.
+//   Once done, Please make sure to uninstall the SGX Agent running on the corresponding host.
 //
 // security:
 //  - bearerAuth: []
