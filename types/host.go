@@ -13,7 +13,7 @@ import (
 type Host struct {
 	// swagger:strfmt uuid
 	ID          uuid.UUID `json:"host_ID" gorm:"type:uuid;unique;primary_key;"`
-	Name        string    `json:"host_name" gorm:"not null;unique"`
+	Name        string    `json:"host_name" gorm:"index:idx_hostname;not null;unique"`
 	Description string    `json:"-"`
 	// swagger:strfmt uuid
 	HardwareUUID uuid.UUID `json:"uuid" gorm:"type:uuid"`

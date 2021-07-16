@@ -60,4 +60,6 @@ const (
 	MaxQueryParamsLength          = 50
 	HstsHeaderKey                 = "Strict-Transport-Security"
 	HstsHeaderValue               = "max-age=63072000; includeSubDomains"
+	DBMaxConnPercentage           = 70 // Percentage of DB's max connection. Ideally this should be around 25 to 75 % as we don't want to exhaust DB's connections.
+	DBConnMaxLifetimeMinutes      = 20 // DB connection lifetime.
 )
