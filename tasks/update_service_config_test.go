@@ -6,9 +6,9 @@ package tasks
 
 import (
 	"github.com/sirupsen/logrus"
-	"intel/isecl/lib/common/v4/setup"
-	"intel/isecl/shvs/v4/config"
-	"intel/isecl/shvs/v4/constants"
+	"intel/isecl/lib/common/v5/setup"
+	"intel/isecl/shvs/v5/config"
+	"intel/isecl/shvs/v5/constants"
 	"os"
 	"strings"
 

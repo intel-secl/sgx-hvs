@@ -6,7 +6,7 @@
 package docs
 
 import (
-	"intel/isecl/shvs/v4/resource"
+	"intel/isecl/shvs/v5/resource"
 )
 
 // HostStatusResponse response payload

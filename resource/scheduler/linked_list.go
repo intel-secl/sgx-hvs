@@ -6,7 +6,7 @@ package scheduler
 
 import (
 	"container/list"
-	clog "intel/isecl/lib/common/v4/log"
+	clog "intel/isecl/lib/common/v5/log"
 	"sync"
 )
 

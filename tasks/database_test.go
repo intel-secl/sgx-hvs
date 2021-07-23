@@ -5,8 +5,8 @@
 package tasks
 
 import (
-	"intel/isecl/lib/common/v4/setup"
-	"intel/isecl/shvs/v4/config"
+	"intel/isecl/lib/common/v5/setup"
+	"intel/isecl/shvs/v5/config"
 	"os"
 	"testing"
 

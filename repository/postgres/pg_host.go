@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
-	"intel/isecl/shvs/v4/types"
+	"intel/isecl/shvs/v5/types"
 )
 
 type PostgresHostRepository struct {
