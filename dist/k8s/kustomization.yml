@@ -14,6 +14,7 @@ resources:
   - configMap.yml
   - config-pv.yml
   - config-pvc.yml
+  - secrets.yml
   - logs-pv.yml
   - logs-pvc.yml
   - deployment.yml
