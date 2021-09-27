@@ -1,7 +1,6 @@
 module intel/isecl/shvs/v5
 
 require (
-
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.7.3
