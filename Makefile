@@ -52,9 +52,9 @@ installer: shvs
 
 docker: shvs
 ifeq ($(PROXY_EXISTS),1)
-	docker build ${DOCKER_PROXY_FLAGS} -f dist/image/Dockerfile -t isecl/shvs:$(VERSION) .
+	docker build ${DOCKER_PROXY_FLAGS} --label org.label-schema.build-date=$(BUILDDATE)  -f dist/image/Dockerfile -t isecl/shvs:$(VERSION) .
 else
-	docker build -f dist/image/Dockerfile -t isecl/shvs:$(VERSION) .
+	docker build -f dist/image/Dockerfile --label org.label-schema.build-date=$(BUILDDATE) -t isecl/shvs:$(VERSION) .
 endif
 
 oci-archive: docker
