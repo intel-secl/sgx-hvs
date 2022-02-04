@@ -61,7 +61,7 @@ Build SGX-Host Verification Service
 ``` {.shell}
 git clone https://github.com/intel-secl/sgx-hvs.git
 cd sgx-hvs
-git checkout v4.0.1
+git checkout v4.0.2
 make all
 ```
 
@@ -95,7 +95,7 @@ Authentication and Authorization Service
 |  logrus     | github.com/sirupsen/logrus    | v1.4.0                    |
 |  testify    | github.com/stretchr/testify   | v1.3.0                    |
 |  yaml.v2    | gopkg.in/yaml.v2              | v2.4.0                    |
-|  common     | github.com/intel-secl/common  | v3.5.0                    |
+|  common     | github.com/intel-secl/common  | v4.0.2                    |
 
 ### Indirect Dependencies
 
