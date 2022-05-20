@@ -61,7 +61,7 @@ Build SGX-Host Verification Service
 ``` {.shell}
 git clone https://github.com/intel-secl/sgx-hvs.git
 cd sgx-hvs
-git checkout v4.1.1
+git checkout v4.1.2
 make all
 ```
 
@@ -85,17 +85,17 @@ Authentication and Authorization Service
 
 ### Direct dependencies
 
-|  Name       | Repo URL                      | Minimum Version Required  |
-|  ---------- | ----------------------------- | :-----------------------: |
-|  uuid       | github.com/google/uuid        | v1.1.2                    |
-|  errors     | github.com/pkg/errors         | V0.9.1                    |
-|  handlers   | github.com/gorilla/handlers   | v1.4.0                    |
-|  mux        | github.com/gorilla/mux        | v1.7.3                    |
-|  gorm       | github.com/jinzhu/gorm        | v1.9.10                   |
-|  logrus     | github.com/sirupsen/logrus    | v1.4.0                    |
-|  testify    | github.com/stretchr/testify   | v1.3.0                    |
-|  yaml.v2    | gopkg.in/yaml.v2              | v2.4.0                    |
-|  common     | github.com/intel-secl/common  | v4.1.1                    |
+|  Name       | Repo URL                      | Minimum Version Required |
+|  ---------- | ----------------------------- |:------------------------:|
+|  uuid       | github.com/google/uuid        |          v1.1.2          |
+|  errors     | github.com/pkg/errors         |          V0.9.1          |
+|  handlers   | github.com/gorilla/handlers   |          v1.4.0          |
+|  mux        | github.com/gorilla/mux        |          v1.7.3          |
+|  gorm       | github.com/jinzhu/gorm        |         v1.9.10          |
+|  logrus     | github.com/sirupsen/logrus    |          v1.4.0          |
+|  testify    | github.com/stretchr/testify   |          v1.3.0          |
+|  yaml.v2    | gopkg.in/yaml.v2              |          v2.4.0          |
+|  common     | github.com/intel-secl/common  |          v4.1.2          |
 
 ### Indirect Dependencies
 
