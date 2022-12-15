@@ -8,7 +8,7 @@ import (
 	"errors"
 	errorLog "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	commLog "intel/isecl/lib/common/v5/log"
 	"intel/isecl/lib/common/v5/setup"
 	"intel/isecl/shvs/v5/constants"
