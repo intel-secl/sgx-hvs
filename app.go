@@ -24,24 +24,24 @@ import (
 	"syscall"
 	"time"
 
-	"intel/isecl/lib/common/v4/middleware"
-	"intel/isecl/shvs/v4/config"
-	"intel/isecl/shvs/v4/constants"
-	"intel/isecl/shvs/v4/repository"
-	"intel/isecl/shvs/v4/repository/postgres"
-	"intel/isecl/shvs/v4/resource"
-	"intel/isecl/shvs/v4/resource/scheduler"
-	"intel/isecl/shvs/v4/tasks"
-	"intel/isecl/shvs/v4/version"
+	"intel/isecl/lib/common/v5/middleware"
+	"intel/isecl/shvs/v5/config"
+	"intel/isecl/shvs/v5/constants"
+	"intel/isecl/shvs/v5/repository"
+	"intel/isecl/shvs/v5/repository/postgres"
+	"intel/isecl/shvs/v5/resource"
+	"intel/isecl/shvs/v5/resource/scheduler"
+	"intel/isecl/shvs/v5/tasks"
+	"intel/isecl/shvs/v5/version"
 
-	"intel/isecl/lib/common/v4/crypt"
-	e "intel/isecl/lib/common/v4/exec"
-	commLog "intel/isecl/lib/common/v4/log"
-	commLogMsg "intel/isecl/lib/common/v4/log/message"
-	commLogInt "intel/isecl/lib/common/v4/log/setup"
-	cos "intel/isecl/lib/common/v4/os"
-	"intel/isecl/lib/common/v4/setup"
-	"intel/isecl/lib/common/v4/validation"
+	"intel/isecl/lib/common/v5/crypt"
+	e "intel/isecl/lib/common/v5/exec"
+	commLog "intel/isecl/lib/common/v5/log"
+	commLogMsg "intel/isecl/lib/common/v5/log/message"
+	commLogInt "intel/isecl/lib/common/v5/log/setup"
+	cos "intel/isecl/lib/common/v5/os"
+	"intel/isecl/lib/common/v5/setup"
+	"intel/isecl/lib/common/v5/validation"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -129,7 +129,7 @@ func (a *App) printUsage() {
 	fmt.Fprintln(w, "                                 - CMS_BASE_URL=<url>                                : for CMS API url")
 	fmt.Fprintln(w, "                                 - CMS_TLS_CERT_SHA384=<CMS TLS cert sha384 hash>    : to ensure that SHVS is talking to the right CMS instance")
 	fmt.Fprintln(w, "")
-	fmt.Fprintln(w, "    download_cert TLS        Generates Key pair and CSR, gets it signed from CMS")
+	fmt.Fprintln(w, "    download_cert_tls        Generates Key pair and CSR, gets it signed from CMS")
 	fmt.Fprintln(w, "                             - Option [--force] overwrites any existing files, and always downloads newly signed TLS cert")
 	fmt.Fprintln(w, "                             Required env variable if SHVS_NOSETUP=true or variable not set in config.yml:")
 	fmt.Fprintln(w, "                                 - CMS_TLS_CERT_SHA384=<CMS TLS cert sha384 hash>      : to ensure that SHVS is talking to the right CMS instance")
@@ -305,7 +305,7 @@ func (a *App) Run(args []string) error {
 		}
 
 		if args[2] != "download_ca_cert" &&
-			args[2] != "download_cert" &&
+			args[2] != "download_cert_tls" &&
 			args[2] != "database" &&
 			args[2] != "update_service_config" &&
 			args[2] != "all" {
@@ -329,7 +329,7 @@ func (a *App) Run(args []string) error {
 
 		task := strings.ToLower(args[2])
 		flags := args[3:]
-		if args[2] == "download_cert" && len(args) > 3 {
+		if args[2] == "download_cert_tls" && len(args) > 3 {
 			flags = args[4:]
 		}
 
@@ -409,7 +409,7 @@ func (a *App) Run(args []string) error {
 		if err != nil {
 			return errors.Wrap(err, "Error while changing file ownership")
 		}
-		if task == "download_cert" {
+		if task == "download_cert_tls" {
 			err = os.Chown(a.Config.TLSKeyFile, uid, gid)
 			if err != nil {
 				return errors.Wrap(err, "Error while changing ownership of TLS Key file")
@@ -659,7 +659,7 @@ func validateSetupArgs(cmd string, args []string) error {
 	case "download_ca_cert":
 		return nil
 
-	case "download_cert":
+	case "download_cert_tls":
 		return nil
 
 	case "database":

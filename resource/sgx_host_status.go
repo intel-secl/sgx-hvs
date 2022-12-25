@@ -7,13 +7,14 @@ package resource
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
-	commLogMsg "intel/isecl/lib/common/v4/log/message"
-	"intel/isecl/shvs/v4/constants"
-	"intel/isecl/shvs/v4/repository"
-	"intel/isecl/shvs/v4/types"
+	commLogMsg "intel/isecl/lib/common/v5/log/message"
+	"intel/isecl/shvs/v5/constants"
+	"intel/isecl/shvs/v5/repository"
+	"intel/isecl/shvs/v5/types"
 	"net/http"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type HostStatusResponse struct {
