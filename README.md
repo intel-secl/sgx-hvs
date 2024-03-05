@@ -1,7 +1,7 @@
 SGX HVS
 =======
 
-SGX Host Verification Service aggregates the platform enablement info from multiple SGX Agent instances.
+SGX Host Verification Service aggregates the platform enablement info from multiple SGX Agent instances. 
 
 Key features
 ------------
